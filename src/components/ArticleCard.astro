@@ -1,0 +1,29 @@
+---
+import AudioPlayer from './AudioPlayer.astro';
+import { categoryLabel, pathFor, readingTime } from '../lib/utils';
+const { article } = Astro.props;
+const data = article.data;
+const bodyText = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.body || ''}`;
+const href = pathFor(`/article/${article.id}/`);
+const image = pathFor(data.image || '/images/repere.svg');
+const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(data.pubDate);
+---
+<article class="article-card">
+  <a class="card-cover" href={href} tabindex="-1" aria-hidden="true">
+    <img src={image} alt="" width="1200" height="675" loading="lazy" decoding="async" />
+  </a>
+  <div class="card-content">
+    <div class="card-topline">
+      <a class="category-pill" href={pathFor(`/categorie/${data.category}/`)}>{categoryLabel(data.category)}</a>
+      {data.kind === 'repère' && <span class="meta article-kind">Dossier</span>}
+    </div>
+    <h3 class="article-title"><a href={href}>{data.title}</a></h3>
+    <p class="card-summary">{data.summary}</p>
+    <div class="why"><strong>Pourquoi c’est important</strong>{data.whyItMatters}</div>
+    <div class="card-footer">
+      <span class="card-source">{data.source} · <time datetime={data.pubDate.toISOString()}>{date}</time></span>
+      <span class="card-meta">{readingTime(bodyText)} min</span>
+      <AudioPlayer text={bodyText} slug={article.id} />
+    </div>
+  </div>
+</article>

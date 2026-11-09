@@ -1,0 +1,22 @@
+---
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+interface Props { text: string; slug: string; label?: string }
+const { text, slug, label = 'Écouter' } = Astro.props;
+const fileName = `${slug}.mp3`;
+const hasMp3 = existsSync(resolve(process.cwd(), 'public', 'audio', fileName));
+const mp3 = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/audio/${fileName}`;
+---
+<div class="audio-control">
+  <button class="audio-button" type="button" data-audio data-audio-text={text} data-state="idle" data-audio-src={hasMp3 ? mp3 : undefined} aria-pressed="false" aria-label={`${label} l’article à voix haute`}>
+    <svg class="icon audio-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    <svg class="icon audio-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+    <svg class="icon audio-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg>
+    <span class="audio-label">{label}</span>
+    <span class="audio-progress" aria-hidden="true"><span></span></span>
+  </button>
+  {hasMp3 && <audio preload="none" src={mp3} aria-label={`Version audio de l’article ${slug}`}></audio>}
+</div>
+<style>
+  .audio-progress > span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--accent); }
+</style>

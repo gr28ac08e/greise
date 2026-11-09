@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { pathFor } from '../lib/utils';
+---
+<BaseLayout title="À propos de Greise — Média indépendant" description="Découvrez la mission de Greise, média indépendant d’actualité internationale en français.">
+  <article class="container prose">
+    <p class="eyebrow">Notre démarche</p><h1>L’actualité, sans frontières.</h1>
+    <p>Greise est un média indépendant en français consacré à l’actualité internationale. Son ambition : rendre les grands sujets plus faciles à lire, à écouter et à comprendre, sans inscription ni abonnement.</p>
+    <h2>Une lecture sourcée</h2>
+    <p>Les articles d’actualité renvoient vers leur publication d’origine. Les résumés automatisés, lorsqu’ils sont activés, sont produits à partir des titres et extraits fournis par les flux RSS référencés; ils ne remplacent pas la lecture de la source. Les dossiers de repères sont identifiés séparément.</p>
+    <p>Les titres, extraits, dates et liens sont attribués aux éditeurs d’origine. En cas d’erreur, de demande de correction ou de retrait, écrivez-nous à <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>.</p>
+    <h2>Un média gratuit</h2>
+    <p>La consultation est libre : pas de compte, pas de paywall. La lecture audio peut utiliser la synthèse vocale de votre navigateur; les versions audio générées sont proposées lorsque disponibles.</p>
+    <h2>Contact</h2><p>Une question, une remarque ou une demande éditoriale ? <a href={pathFor('/contact/')}>Contactez Greise</a>.</p>
+  </article>
+</BaseLayout>

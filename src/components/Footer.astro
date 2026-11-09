@@ -1,0 +1,34 @@
+---
+import { categories, pathFor } from '../lib/utils';
+import SocialLinks from './SocialLinks.astro';
+---
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a class="brand" href={pathFor('/')} aria-label="Greise, accueil"><img class="brand-avatar" src={pathFor('/avatar.jpg')} alt="" width="36" height="36" />GREISE<span class="brand-dot">.</span></a>
+      <p>L’actualité internationale, sans frontières. Des repères clairs, des histoires à comprendre et à écouter.</p>
+    </div>
+    <nav class="footer-column" aria-label="Catégories">
+      <h2>Catégories</h2>
+      <ul>{categories.map((category) => <li><a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a></li>)}</ul>
+    </nav>
+    <nav class="footer-column" aria-label="À propos de Greise">
+      <h2>À propos</h2>
+      <ul>
+        <li><a href={pathFor('/a-propos/')}>Notre démarche</a></li>
+        <li><a href={pathFor('/contact/')}>Contact</a></li>
+        <li><a href={pathFor('/mentions-legales/')}>Mentions légales</a></li>
+        <li><a href={pathFor('/politique-editoriale/')}>Politique éditoriale</a></li>
+      </ul>
+    </nav>
+    <div class="footer-column">
+      <h2>Suivre & contacter</h2>
+      <SocialLinks />
+      <p style="margin-top: .8rem"><a href="mailto:greise013@gmail.com">greise013@gmail.com</a></p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <span>© 2025 Greise — Média indépendant</span>
+    <span>Fait pour lire, écouter et comprendre.</span>
+  </div>
+</footer>

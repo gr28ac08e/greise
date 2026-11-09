@@ -1,0 +1,47 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import AudioPlayer from '../components/AudioPlayer.astro';
+import { categoryLabel, pathFor, readingTime } from '../lib/utils';
+const { article } = Astro.props;
+const { Content } = await render(article);
+const data = article.data;
+const spoken = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.body || ''}`;
+const href = new URL(pathFor(`/article/${article.id}/`), Astro.site).toString();
+const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.pubDate);
+---
+<BaseLayout title={`${data.title} — Greise`} description={data.summary} image={data.image} type="article" canonicalPath={`/article/${article.id}/`}>
+  <article class="container article-page">
+    <header class="article-head">
+      <a class="category-pill" href={pathFor(`/categorie/${data.category}/`)}>{categoryLabel(data.category)}</a>
+      <p class="eyebrow" style="margin-top: 1.15rem">{data.kind === 'repère' ? 'Dossier de repères' : 'À la une'}</p>
+      <h1>{data.title}</h1>
+      <p class="article-deck">{data.summary}</p>
+      <div class="article-byline meta"><span>{data.source}</span><span aria-hidden="true">·</span><time datetime={data.pubDate.toISOString()}>{formattedDate}</time><span aria-hidden="true">·</span><span>{readingTime(spoken)} min de lecture</span></div>
+    </header>
+    <img class="article-hero-image" src={pathFor(data.image)} alt="Illustration éditoriale" width="1200" height="675" fetchpriority="high" />
+    <div class="article-sticky-audio"><AudioPlayer text={spoken} slug={article.id} /></div>
+    <aside class="article-importance" aria-labelledby="importance-title"><h2 id="importance-title">Pourquoi c’est important</h2><p>{data.whyItMatters}</p></aside>
+    <div class="article-body"><Content /></div>
+    <section class="source-box" aria-labelledby="source-title">
+      <h2 id="source-title">Sources</h2>
+      <p>{data.sourceUrl ? <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer">Consulter l’article original publié par {data.source} ↗</a> : <span>Dossier de repères préparé par la rédaction de Greise.</span>}</p>
+      <p class="meta">Greise propose un résumé/contextualisation et renvoie à la source originale. Consultez celle-ci pour le texte complet et ses mises à jour.</p>
+    </section>
+    <div class="share-row" aria-label="Partager cet article">
+      <a class="button" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(href)}`} target="_blank" rel="noopener noreferrer">Partager sur Facebook</a>
+      <a class="button" href="https://tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">Greise sur TikTok</a>
+      <button class="button" type="button" data-copy-link={href}>Copier le lien</button>
+      <span class="copy-status" aria-live="polite"></span>
+    </div>
+    <script>
+      document.querySelectorAll<HTMLButtonElement>('[data-copy-link]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const status = button.parentElement?.querySelector<HTMLElement>('.copy-status');
+          try { await navigator.clipboard.writeText(button.dataset.copyLink || location.href); if (status) status.textContent = 'Lien copié.'; }
+          catch { if (status) status.textContent = 'Copiez l’adresse depuis la barre du navigateur.'; }
+        });
+      });
+    </script>
+  </article>
+</BaseLayout>

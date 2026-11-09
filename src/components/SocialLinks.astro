@@ -1,0 +1,19 @@
+---
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+---
+<div class:list={['social-links', { compact }]} aria-label="Réseaux et contact Greise">
+  <a href="https://tiktok.com/@gresie13" target="_blank" rel="me noopener noreferrer" aria-label="Greise sur TikTok">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M19.6 7.4a7.2 7.2 0 0 1-4.3-1.4v8.4a5.4 5.4 0 1 1-4.7-5.3v3.1a2.4 2.4 0 1 0 1.7 2.3V2.5h3a4.3 4.3 0 0 0 4.3 3.8v3.1z"/></svg>
+    {!compact && <span>TikTok</span>}
+  </a>
+  <a href="https://www.facebook.com/profile.php?id=61590273613236" target="_blank" rel="me noopener noreferrer" aria-label="Greise sur Facebook">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5h1.7V3.6c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.2v2.2H7.7V13h2.7v8z"/></svg>
+    {!compact && <span>Facebook</span>}
+  </a>
+  {!compact && <a href="mailto:greise013@gmail.com" aria-label="Écrire à Greise par email"><span aria-hidden="true">✉</span><span>Email</span></a>}
+</div>
+<style>
+  .compact { gap: .15rem; }
+  .compact a { width: 38px; min-height: 38px; justify-content: center; padding: .25rem; border: 0; }
+</style>

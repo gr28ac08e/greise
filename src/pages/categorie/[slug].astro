@@ -1,0 +1,17 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { categories, pathFor } from '../../lib/utils';
+export async function getStaticPaths() {
+  return categories.map((category) => ({ params: { slug: category.slug }, props: { category } }));
+}
+const { category } = Astro.props;
+const articles = (await getCollection('articles', ({ data }) => data.category === category.slug)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+<BaseLayout title={`${category.label} — Greise`} description={`${category.short}. Décryptages et actualités ${category.label.toLowerCase()} en français, gratuitement.`} canonicalPath={`/categorie/${category.slug}/`}>
+  <section class="container page-intro"><p class="eyebrow">Les rubriques de Greise</p><h1>{category.label}</h1><p>{category.short}. Retrouvez les articles et les repères publiés dans cette rubrique.</p><a class="button" href={pathFor('/')}>← Retour à toutes les actualités</a></section>
+  <section class="container section" aria-label={`Articles ${category.label}`}>
+    {articles.length ? <div class="article-grid">{articles.map((article) => <ArticleCard article={article} />)}</div> : <div class="empty-state">Aucun article pour le moment dans cette rubrique.</div>}
+  </section>
+</BaseLayout>

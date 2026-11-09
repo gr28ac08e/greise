@@ -1,0 +1,62 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { pathFor } from '../lib/utils';
+interface Props { title: string; description: string; image?: string; type?: string; canonicalPath?: string; noIndex?: boolean }
+const { title, description, image = '/avatar.jpg', type = 'website', canonicalPath = Astro.url.pathname.replace(import.meta.env.BASE_URL, '/'), noIndex = false } = Astro.props;
+const canonical = new URL(pathFor(canonicalPath), Astro.site).toString();
+const socialImage = new URL(pathFor(image), Astro.site).toString();
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fafaf7" />
+    <meta name="description" content={description} />
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="keywords" content="actualité internationale, décryptage, économie, technologie, culture, sport" />
+    <meta name="author" content="Greise" />
+    <link rel="icon" type="image/png" sizes="192x192" href={pathFor('/favicon.png')} />
+    <link rel="canonical" href={canonical} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="Greise" />
+    <meta property="og:image" content={socialImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <title>{title}</title>
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('greise-theme');
+        const systemDark = matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = saved || (systemDark ? 'dark' : 'light');
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <Header />
+    <main id="contenu"><slot /></main>
+    <Footer />
+    <script>
+      import { initAudioPlayers } from '../lib/audio';
+      initAudioPlayers();
+      const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
+      toggle?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        toggle.setAttribute('aria-label', next === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre');
+        try { localStorage.setItem('greise-theme', next); } catch {}
+      });
+    </script>
+  </body>
+</html>

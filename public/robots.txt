@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://gr28ac08e.github.io/greise/sitemap-index.xml

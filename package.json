@@ -1,0 +1,27 @@
+{
+  "name": "greise",
+  "type": "module",
+  "version": "1.0.0",
+  "private": false,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "fetch": "node scripts/fetch-news.mjs",
+    "summarize": "node scripts/generate-summaries.mjs",
+    "audio": "node scripts/generate-audio.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.5.1",
+    "astro": "^7.4.7",
+    "openai": "^7.53.0",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  }
+}

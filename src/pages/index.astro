@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { categories, pathFor } from '../lib/utils';
+const articles = (await getCollection('articles')).sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const featured = articles.filter((a) => a.data.featured).slice(0, 3);
+const top = featured.length >= 3 ? featured : articles.slice(0, 3);
+const shown = articles.filter((a) => !top.some((f) => f.id === a.id));
+---
+<BaseLayout title="Greise — L’actualité mondiale, lisible et écoutable" description="L’actualité internationale en français, contextualisée et écoutable. Des résumés sourcés, des repères et une lecture claire, gratuitement.">
+  <section class="container hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow">Le monde, en clair</p>
+      <h1 id="hero-title">L’actualité mondiale, lisible et écoutable.</h1>
+      <p class="hero-lede">Des histoires venues d’ailleurs, remises en contexte et racontées en français. Pour comprendre ce qui se passe, et pourquoi cela compte.</p>
+      <span class="hero-note">Indépendant · gratuit · sans inscription</span>
+    </div>
+    <div class="hero-art"><img src={pathFor('/images/une-monde.svg')} alt="Illustration du monde relié par des lignes d’information" width="520" height="420" fetchpriority="high" /></div>
+  </section>
+  <section class="container section" aria-labelledby="top-title">
+    <div class="section-heading"><div><p class="eyebrow">À retenir</p><h2 id="top-title">Les grands repères</h2></div><p>Les sujets mis en avant par la rédaction pour prendre le temps de comprendre.</p></div>
+    {top.length ? <div class="top-grid">{top.map((article) => <ArticleCard article={article} />)}</div> : <div class="empty-state">Les prochains articles arriveront bientôt. Revenez nous lire.</div>}
+  </section>
+  <section class="container section" id="tous-les-articles" aria-labelledby="latest-title">
+    <div class="section-heading"><div><p class="eyebrow">Le fil de Greise</p><h2 id="latest-title">Explorer l’actualité</h2></div></div>
+    <nav class="category-bar" aria-label="Filtrer par catégorie"><a href={pathFor('/')} aria-current="page">Tout</a>{categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a>)}</nav>
+    {shown.length ? <div class="article-grid" id="article-grid">{shown.map((article, index) => <div class="article-grid-item" data-page-item data-index={index}><ArticleCard article={article} /></div>)}</div> : <div class="empty-state">Les nouvelles publications de Greise s’afficheront ici.</div>}
+    {shown.length > 6 && <div class="load-more-wrap"><button class="button" type="button" id="load-more">Charger plus</button></div>}
+  </section>
+  <script>
+    const items = Array.from(document.querySelectorAll<HTMLElement>('[data-page-item]'));
+    const button = document.querySelector<HTMLButtonElement>('#load-more');
+    let visible = 6;
+    const update = () => { items.forEach((item, index) => { item.hidden = index >= visible; }); if (button) button.hidden = visible >= items.length; };
+    update();
+    button?.addEventListener('click', () => { visible += 6; update(); });
+  </script>
+</BaseLayout>
