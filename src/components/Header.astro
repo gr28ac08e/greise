@@ -1,53 +1,34 @@
 ---
 import { categories, pathFor } from '../lib/utils';
-import SocialLinks from './SocialLinks.astro';
-const norm = (p: string) => p.replace(/\/+$/, '');
+const norm = (p: string) => p.replace(/\\/+$/, '');
 const here = norm(Astro.url.pathname);
 const base = norm(import.meta.env.BASE_URL);
 const isHome = here === base || here === '';
 const current = Astro.url.pathname.replace(import.meta.env.BASE_URL, '/');
+const today = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 ---
 <header class="greise-header">
   <div class="container greise-masthead">
-    <a class="greise-brand" href={pathFor('/')} aria-label="Greise, accueil">
-      <img src={pathFor('/logo.svg')} alt="" width="250" height="58" />
-      <span class="greise-brand-caption">ACTUALITÉS &amp; ANALYSES</span>
-    </a>
-    <div class="greise-promise">
-      <span class="promise-globe" aria-hidden="true">◎</span>
-      <span>Média d'actualité internationale, sans frontières —<br /><em>visible et écoutable</em></span>
+    <div class="masthead-left">
+      <button class="masthead-menu" id="masthead-menu" type="button" aria-expanded="false" aria-controls="edition-nav" aria-label="Ouvrir le menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <time class="masthead-date" datetime={new Date().toISOString()}>{today}</time>
     </div>
+    <a class="greise-brand" href={pathFor('/')} aria-label="Greise, accueil"><img src={pathFor('/logo.svg')} alt="Greise" width="250" height="58" /><span class="greise-brand-caption">ACTUALITÉS &amp; ANALYSES</span></a>
     <div class="greise-tools">
-      <div class="greise-social"><SocialLinks compact={true} /></div>
-      <span class="greise-tool-divider" aria-hidden="true"></span>
-      <div class="font-controls" role="group" aria-label="Taille du texte">
-        <button type="button" data-fontsize="normal" aria-pressed="true" aria-label="Taille normale">A</button>
-        <button type="button" data-fontsize="large" aria-pressed="false" aria-label="Texte agrandi">A+</button>
-        <button type="button" data-fontsize="xl" aria-pressed="false" aria-label="Texte très agrandi">A++</button>
-      </div>
-      <button class="icon-button" id="theme-toggle" type="button" aria-label="Changer le thème" title="Changer le thème">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
-      </button>
-      <a class="greise-subscribe" href={pathFor('/abonnement/#newsletter')}>♧ S'abonner</a>
+      <label class="masthead-search"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="greise-search" type="search" placeholder="Rechercher" aria-label="Rechercher une actualité" /></label>
+      <a class="greise-subscribe" href={pathFor('/abonnement/#newsletter')}>S'abonner</a>
     </div>
   </div>
-  <nav class="edition-nav" aria-label="Navigation principale">
-    <div class="container edition-inner">
-      <div class="edition-links">
-        <a href={pathFor('/')} aria-current={isHome ? 'page' : undefined}>
-          <svg class="icon nav-home-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
-          Accueil
-        </a>
-        {categories.map((category) => (
-          <a href={pathFor(`/categorie/${category.slug}/`)} aria-current={current.includes(`/categorie/${category.slug}`) ? 'page' : undefined}>{category.label}</a>
-        ))}
-        <a href={pathFor('/a-propos/')}>Analyses</a>
-      </div>
-      <div class="edition-side">
-        <a href={pathFor('/a-propos/')}>Notre démarche</a>
-        <a class="subscribe" href={pathFor('/abonnement/#connexion')}>Se connecter</a>
-      </div>
-      <button class="eco-toggle" id="eco-toggle" type="button" aria-pressed="false" title="Réduire les images et les effets pour les connexions lentes">Éco-mode</button>
-    </div>
-  </nav>
+  <nav class="edition-nav" id="edition-nav" aria-label="Navigation principale"><div class="container edition-inner"><div class="edition-links">
+    <a href={pathFor('/')} aria-current={isHome ? 'page' : undefined}>Accueil</a>
+    {categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)} aria-current={current.includes(`/categorie/${category.slug}`) ? 'page' : undefined}>{category.label}</a>)}
+    <a href={pathFor('/a-propos/')}>Analyses</a>
+  </div></div></nav>
 </header>
+<script>
+const menu=document.querySelector<HTMLButtonElement>('#masthead-menu');
+const nav=document.querySelector<HTMLElement>('#edition-nav');
+menu?.addEventListener('click',()=>{const expanded=menu.getAttribute('aria-expanded')==='true';menu.setAttribute('aria-expanded',String(!expanded));nav?.classList.toggle('is-open',!expanded);});
+const search=document.querySelector<HTMLInputElement>('#greise-search');
+search?.addEventListener('input',()=>{const query=(search.value||'').trim().toLocaleLowerCase('fr');document.querySelectorAll<HTMLElement>('[data-page-item]').forEach(item=>{item.hidden=!!query&&!item.innerText.toLocaleLowerCase('fr').includes(query);});});
+</script>
