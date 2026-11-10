@@ -8,8 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "fetch": "node scripts/fetch-news.mjs",
-    "summarize": "node scripts/generate-summaries.mjs",
-    "audio": "node scripts/generate-audio.mjs"
+    "summarize": "node --env-file-if-exists=.env scripts/generate-summaries.mjs",
+    "audio": "node --env-file-if-exists=.env scripts/generate-audio.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.5.1",
