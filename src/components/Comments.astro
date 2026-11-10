@@ -78,7 +78,7 @@ const configured = backendConfigured();
     }
 
     function displayName() {
-      if (user && user.email) return user.email.split('@')[0];
+      if (user && user.user_metadata && user.user_metadata.display_name) return user.user_metadata.display_name;\n      if (user && user.email) return user.email.split('@')[0];
       return 'Lecteur';
     }
 
@@ -136,7 +136,7 @@ const configured = backendConfigured();
         authArea.innerHTML =
           '<form class="auth-box" data-authform>' +
           '<strong class="auth-title">Rejoindre le débat</strong>' +
-          '<input type="email" name="email" required placeholder="Votre adresse email" autocomplete="email" />' +
+          '<input type="text" name="display_name" maxlength="40" placeholder="Nom public (facultatif)" autocomplete="nickname" />' +\n          '<input type="email" name="email" required placeholder="Votre adresse email" autocomplete="email" />' +
           '<input type="password" name="password" required minlength="8" placeholder="Mot de passe (8 caractères min.)" autocomplete="current-password" />' +
           '<button type="submit" class="button">Se connecter</button>' +
           '<button type="button" class="button button-primary" data-signup>Créer un compte</button>' +
@@ -161,7 +161,7 @@ const configured = backendConfigured();
       setGlobal(mode === 'login' ? 'Connexion…' : 'Création de votre compte…');
       try {
         if (mode === 'signup') {
-          var res = await supabase.auth.signUp({ email: email, password: password });
+          var displayNameInput = authForm.querySelector('[name="display_name"]');\n          var displayNameValue = displayNameInput ? displayNameInput.value.trim() : '';\n          var res = await supabase.auth.signUp({ email: email, password: password, options: { data: { display_name: displayNameValue || email.split('@')[0] } } });
           if (res.error) throw res.error;
           if (!res.data.session) {
             setGlobal("Compte créé ! Ouvrez l'email de confirmation qui vient de partir, puis connectez-vous.");
