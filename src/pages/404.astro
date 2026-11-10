@@ -2,6 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { pathFor } from '../lib/utils';
 ---
-<BaseLayout title="Page introuvable — Greise" description="Cette page n’existe pas ou n’est plus disponible." canonicalPath="/404/" noIndex={true}>
+<BaseLayout title="Page introuvable | Greise" description="Cette page n’existe pas ou n’est plus disponible." canonicalPath="/404/" noIndex={true}>
   <section class="container prose"><p class="eyebrow">Erreur 404</p><h1>Cette page a pris un autre chemin.</h1><p>Le lien est peut-être ancien ou l’adresse comporte une erreur.</p><a class="button button-primary" href={pathFor('/')}>Revenir à l’accueil</a></section>
 </BaseLayout>

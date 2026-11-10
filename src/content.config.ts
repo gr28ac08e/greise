@@ -12,6 +12,7 @@ const articles = defineCollection({
     summary: z.string(),
     whyItMatters: z.string(),
     image: z.string().default('/images/repere.svg'),
+    imageUrl: z.string().url().optional(),
     audioFile: z.string().optional(),
     featured: z.boolean().default(false),
     generatedBy: z.string().optional(),

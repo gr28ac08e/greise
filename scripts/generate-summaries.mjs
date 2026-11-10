@@ -15,9 +15,18 @@ function slugify(value) {
   return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 66);
 }
 function quote(value) { return JSON.stringify(String(value ?? '')); }
-function safeExcerpt(value) {
-  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 600);
+function cleanCopy(value) {
+  return String(value ?? '')
+    .replace(/\s+[\u2014\u2013]\s+/g, ', ')
+    .replace(/[\u2014\u2013]/g, '-')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/[ \t]+\n[ \t]*/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\s+([,;:.!?])/g, '$1')
+    .replace(/([,;:.!?]){2,}/g, '$1')
+    .trim();
 }
+function safeExcerpt(value) { return cleanCopy(value).slice(0, 600); }
 function makeFallback(article) {
   const excerpt = safeExcerpt(article.rawDescription);
   return {
@@ -29,7 +38,7 @@ function makeFallback(article) {
 async function summarize(article) {
   const fallback = makeFallback(article);
   if (!openai) { fallbackCount++; return fallback; }
-  const prompt = `Tu es journaliste francophone pour Greise. Résume avec prudence uniquement les informations présentes dans le titre et l’extrait fournis. N’invente ni détails, ni citations, ni faits manquants. Si l’extrait est insuffisant, dis-le clairement et renvoie à la source. Rédige en français neutre.\nRetourne un JSON strict : {"summary":"3 à 5 phrases, 90 mots maximum","whyItMatters":"2 phrases prudentes sur le contexte ou ce qu’il faut vérifier","report":"6 à 10 phrases, 220 mots maximum, ne déduis pas des détails absents"}.\nTitre : ${article.title}\nSource : ${article.source}\nExtrait RSS : ${safeExcerpt(article.rawDescription) || '[aucun extrait fourni]'}\nLien d’origine : ${article.link}`;
+  const prompt = `Tu es journaliste francophone pour Greise. Résume avec prudence uniquement les informations présentes dans le titre et l’extrait fournis. N’invente ni détails, ni citations, ni faits manquants. Si l’extrait est insuffisant, dis-le clairement et renvoie à la source. Rédige en français neutre. Évite les tirets longs et préfère une ponctuation simple.\nRetourne un JSON strict : {"summary":"3 à 5 phrases, 90 mots maximum","whyItMatters":"2 phrases prudentes sur le contexte ou ce qu’il faut vérifier","report":"6 à 10 phrases, 220 mots maximum, ne déduis pas des détails absents"}.\nTitre : ${article.title}\nSource : ${article.source}\nExtrait RSS : ${safeExcerpt(article.rawDescription) || '[aucun extrait fourni]'}\nLien d’origine : ${article.link}`;
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -41,32 +50,66 @@ async function summarize(article) {
     if (!content) throw new Error('réponse OpenAI vide ou au format inattendu');
     const parsed = JSON.parse(content);
     aiCount++;
-    return { summary: parsed.summary || fallback.summary, whyItMatters: parsed.whyItMatters || fallback.whyItMatters, report: parsed.report || fallback.report };
+    return {
+      summary: cleanCopy(parsed.summary || fallback.summary),
+      whyItMatters: cleanCopy(parsed.whyItMatters || fallback.whyItMatters),
+      report: cleanCopy(parsed.report || fallback.report),
+    };
   } catch (error) {
     fallbackCount++;
     console.warn(`[repli RSS] ${article.title}: ${error.message}`);
     return fallback;
   }
 }
+function normalizeMarkdown(markdown, article = null) {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!match) return cleanCopy(markdown);
+  let frontmatter = match[1];
+  for (const field of ['title', 'summary', 'whyItMatters']) {
+    const pattern = new RegExp(`^${field}: ("(?:\\\\.|[^"\\\\])*")$`, 'm');
+    frontmatter = frontmatter.replace(pattern, (line, encoded) => {
+      try { return `${field}: ${quote(cleanCopy(JSON.parse(encoded)))}`; }
+      catch { return line; }
+    });
+  }
+  if (article?.imageUrl) {
+    const imageLine = `imageUrl: ${quote(article.imageUrl)}`;
+    if (/^imageUrl:/m.test(frontmatter)) frontmatter = frontmatter.replace(/^imageUrl:.*$/m, imageLine);
+    else frontmatter = frontmatter.replace(/^(image:.*)$/m, `$1\n${imageLine}`);
+  }
+  const body = cleanCopy(match[2]);
+  return `---\n${frontmatter}\n---\n\n${body}\n`;
+}
+function sourceUrlFromMarkdown(markdown) {
+  const value = markdown.match(/^sourceUrl: ("(?:\\\\.|[^"\\\\])*")$/m)?.[1];
+  if (!value) return '';
+  try { return JSON.parse(value); } catch { return ''; }
+}
 
 async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
   const raw = JSON.parse(await fs.readFile(IN, 'utf8'));
+  const byLink = new Map(raw.map((article) => [article.link, article]));
   const generated = [];
   const keep = new Set();
   for (const article of raw.slice(0, 40)) {
     try {
       const hash = createHash('sha256').update(article.link).digest('hex').slice(0, 7);
       const slug = `${slugify(article.title) || 'article'}-${hash}`;
-      const file = path.join(OUT_DIR, `${slug}.md`);
-      keep.add(`${slug}.md`);
+      const fileName = `${slug}.md`;
+      const file = path.join(OUT_DIR, fileName);
+      keep.add(fileName);
       try {
-        await fs.access(file);
+        const existing = await fs.readFile(file, 'utf8');
+        const updated = normalizeMarkdown(existing, article);
+        if (updated !== existing) await fs.writeFile(file, updated);
         generated.push({ ...article, slug });
         continue;
-      } catch {}
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
       const text = await summarize(article);
-      const markdown = `---\ntitle: ${quote(article.title)}\nsource: ${quote(article.source)}\nsourceUrl: ${quote(article.link)}\ncategory: ${article.category}\npubDate: ${quote(article.pubDate)}\nsummary: ${quote(text.summary)}\nwhyItMatters: ${quote(text.whyItMatters)}\nimage: ${CATEGORY_IMAGE[article.category] || '/images/repere.svg'}\naudioFile: ${quote(`/audio/${slug}.mp3`)}\nfeatured: false\ngeneratedBy: rss\nkind: actualité\n---\n\n${text.report}\n`;
+      const markdown = `---\ntitle: ${quote(article.title)}\nsource: ${quote(article.source)}\nsourceUrl: ${quote(article.link)}\ncategory: ${article.category}\npubDate: ${quote(article.pubDate)}\nsummary: ${quote(cleanCopy(text.summary))}\nwhyItMatters: ${quote(cleanCopy(text.whyItMatters))}\nimage: ${CATEGORY_IMAGE[article.category] || '/images/repere.svg'}\n${article.imageUrl ? `imageUrl: ${quote(article.imageUrl)}\n` : ''}audioFile: ${quote(`/audio/${slug}.mp3`)}\nfeatured: false\ngeneratedBy: rss\nkind: actualité\n---\n\n${cleanCopy(text.report)}\n`;
       await fs.writeFile(file, markdown);
       generated.push({ ...article, slug });
       console.log(`✓ ${slug}`);
@@ -74,13 +117,18 @@ async function main() {
       console.warn(`[skip] ${article.title}: ${error.message}`);
     }
   }
+
   const cutoff = Date.now() - 72 * 60 * 60 * 1000;
   for (const name of await fs.readdir(OUT_DIR)) {
-    if (!name.endsWith('.md') || keep.has(name)) continue;
+    if (!name.endsWith('.md')) continue;
     const file = path.join(OUT_DIR, name);
     const content = await fs.readFile(file, 'utf8');
     if (!content.startsWith('---\n') || !content.includes('generatedBy: rss')) continue;
-    const date = content.match(/^pubDate:\s*"?([^"\n]+)"?/m)?.[1];
+    const linkedArticle = byLink.get(sourceUrlFromMarkdown(content));
+    const updated = normalizeMarkdown(content, linkedArticle);
+    if (updated !== content) await fs.writeFile(file, updated);
+    if (keep.has(name)) continue;
+    const date = updated.match(/^pubDate:\s*"?([^"\n]+)"?/m)?.[1];
     if (date && new Date(date).valueOf() < cutoff) await fs.rm(file, { force: true });
   }
   await fs.writeFile(CACHE, JSON.stringify(generated, null, 2));

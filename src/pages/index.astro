@@ -4,11 +4,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { categories, pathFor } from '../lib/utils';
 const articles = (await getCollection('articles')).sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const featured = articles.filter((a) => a.data.featured).slice(0, 3);
-const top = featured.length >= 3 ? featured : articles.slice(0, 3);
-const shown = articles.filter((a) => !top.some((f) => f.id === a.id));
+const recentNews = articles.filter((article) => article.data.generatedBy === 'rss').slice(0, 3);
+const top = recentNews.length >= 3 ? recentNews : articles.filter((article) => article.data.featured).slice(0, 3);
+const shown = articles.filter((article) => !top.some((featured) => featured.id === article.id)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
-<BaseLayout title="Greise — L’actualité mondiale, lisible et écoutable" description="L’actualité internationale en français, contextualisée et écoutable. Des résumés sourcés, des repères et une lecture claire, gratuitement.">
+<BaseLayout title="Greise | L’actualité mondiale, lisible et écoutable" description="L’actualité internationale en français, contextualisée et écoutable. Des résumés sourcés, des repères et une lecture claire, gratuitement.">
   <section class="container hero" aria-labelledby="hero-title">
     <div class="hero-copy">
       <p class="eyebrow">Le monde, en clair</p>
@@ -19,7 +19,7 @@ const shown = articles.filter((a) => !top.some((f) => f.id === a.id));
     <div class="hero-art"><img src={pathFor('/images/une-monde.svg')} alt="Illustration du monde relié par des lignes d’information" width="520" height="420" fetchpriority="high" /></div>
   </section>
   <section class="container section" aria-labelledby="top-title">
-    <div class="section-heading"><div><p class="eyebrow">À retenir</p><h2 id="top-title">Les grands repères</h2></div><p>Les sujets mis en avant par la rédaction pour prendre le temps de comprendre.</p></div>
+    <div class="section-heading"><div><p class="eyebrow">À la une</p><h2 id="top-title">Les dernières actualités</h2></div><p>Les sujets récents, leurs photos et les liens vers les médias sources.</p></div>
     {top.length ? <div class="top-grid">{top.map((article) => <ArticleCard article={article} />)}</div> : <div class="empty-state">Les prochains articles arriveront bientôt. Revenez nous lire.</div>}
   </section>
   <section class="container section" id="tous-les-articles" aria-labelledby="latest-title">

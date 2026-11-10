@@ -5,13 +5,16 @@ const { article } = Astro.props;
 const data = article.data;
 const bodyText = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.body || ''}`;
 const href = pathFor(`/article/${article.id}/`);
-const image = pathFor(data.image || '/images/repere.svg');
+const image = data.imageUrl || pathFor(data.image || '/images/repere.svg');
 const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(data.pubDate);
 ---
 <article class="article-card">
-  <a class="card-cover" href={href} tabindex="-1" aria-hidden="true">
-    <img src={image} alt="" width="1200" height="675" loading="lazy" decoding="async" />
-  </a>
+  <figure class="card-figure">
+    <a class="card-cover" href={href} tabindex="-1" aria-hidden="true">
+      <img src={image} alt="" width="1200" height="675" loading="lazy" decoding="async" />
+    </a>
+    {data.imageUrl && <figcaption class="image-credit">Photo : {data.source}, via son flux RSS</figcaption>}
+  </figure>
   <div class="card-content">
     <div class="card-topline">
       <a class="category-pill" href={pathFor(`/categorie/${data.category}/`)}>{categoryLabel(data.category)}</a>

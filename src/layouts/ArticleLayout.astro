@@ -8,9 +8,11 @@ const { Content } = await render(article);
 const data = article.data;
 const spoken = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.body || ''}`;
 const href = new URL(pathFor(`/article/${article.id}/`), Astro.site).toString();
+const image = data.imageUrl || data.image;
+const imageAlt = data.imageUrl ? `Photo associée à l’article : ${data.title}` : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}`;
 const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.pubDate);
 ---
-<BaseLayout title={`${data.title} — Greise`} description={data.summary} image={data.image} type="article" canonicalPath={`/article/${article.id}/`}>
+<BaseLayout title={`${data.title} | Greise`} description={data.summary} image={image} type="article" canonicalPath={`/article/${article.id}/`}>
   <article class="container article-page">
     <header class="article-head">
       <a class="category-pill" href={pathFor(`/categorie/${data.category}/`)}>{categoryLabel(data.category)}</a>
@@ -19,7 +21,10 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 
       <p class="article-deck">{data.summary}</p>
       <div class="article-byline meta"><span>{data.source}</span><span aria-hidden="true">·</span><time datetime={data.pubDate.toISOString()}>{formattedDate}</time><span aria-hidden="true">·</span><span>{readingTime(spoken)} min de lecture</span></div>
     </header>
-    <img class="article-hero-image" src={pathFor(data.image)} alt="Illustration éditoriale" width="1200" height="675" fetchpriority="high" />
+    <figure class="article-photo">
+      <img class="article-hero-image" src={image} alt={imageAlt} width="1200" height="675" fetchpriority="high" />
+      {data.imageUrl && <figcaption class="image-credit">Photo : {data.source}, via son flux RSS</figcaption>}
+    </figure>
     <div class="article-sticky-audio"><AudioPlayer text={spoken} slug={article.id} /></div>
     <aside class="article-importance" aria-labelledby="importance-title"><h2 id="importance-title">Pourquoi c’est important</h2><p>{data.whyItMatters}</p></aside>
     <div class="article-body"><Content /></div>

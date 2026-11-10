@@ -3,7 +3,7 @@ title: "Qui fait quoi dans les institutions internationales ?"
 source: "Dossier de repères Greise"
 category: international
 pubDate: 2026-11-07T12:00:00.000Z
-summary: "Les organisations internationales n’ont pas toutes le même mandat. Distinguer leur rôle, leurs membres et leurs pouvoirs aide à comprendre ce qu’une décision peut — ou ne peut pas — changer."
+summary: "Les organisations internationales n’ont pas toutes le même mandat. Distinguer leur rôle, leurs membres et leurs pouvoirs aide à comprendre ce qu’une décision peut changer ou ne pas changer."
 whyItMatters: "Une déclaration, une recommandation et une décision contraignante ne produisent pas les mêmes effets. Identifier l’institution et son mandat évite de surestimer la portée d’une annonce."
 image: /images/international.svg
 featured: true

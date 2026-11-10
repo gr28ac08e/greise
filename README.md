@@ -1,10 +1,10 @@
 # Greise
 
-**L’actualité internationale, sans frontières.** Greise est un site d’actualité français, statique et gratuit, construit avec Astro et publié sur GitHub Pages. Il n’y a ni inscription ni paywall. Les articles d’actualité renvoient à leur média source; les dossiers de repères sont identifiés comme tels.
+**L’actualité internationale, sans frontières.** Greise est un site d’actualité français, statique et gratuit, construit avec Astro et publié sur GitHub Pages. Il n’y a ni inscription ni paywall. Les articles renvoient à leur média source; les dossiers de repères sont identifiés comme tels.
 
 ## Prérequis
 
-Node.js 22.23.4 ou plus récent et npm (Astro 7). Pour activer les résumés enrichis et les MP3, une clé OpenAI API est nécessaire; sans secret, les scripts publient un résumé prudent fondé sur l’extrait RSS et le lecteur vocal utilise la synthèse vocale du navigateur.
+Node.js 22.23.4 ou plus récent et npm (Astro 7). Aucune clé API n’est nécessaire pour installer, construire ou publier le site, ni pour afficher les photos RSS ou utiliser la synthèse vocale du navigateur. Les résumés IA et les fichiers MP3 sont des options facultatives et peuvent occasionner des frais si une clé OpenAI est ajoutée.
 
 ## Installation et développement local
 
@@ -25,24 +25,28 @@ npm run preview
 
 ```bash
 npm run fetch       # lit les flux, garde les nouvelles récentes et dédoublonne
-npm run summarize   # écrit les articles Markdown; OpenAI si la clé est présente
+npm run summarize   # écrit les articles Markdown; OpenAI si une clé est présente
 npm run audio       # produit des MP3 manquants si OPENAI_API_KEY est configurée
 npm run build
 ```
 
-Les scripts examinent les flux configurés dans `scripts/sources.config.mjs`. Les nouveaux articles sont limités aux 48 dernières heures lors de la collecte; les entrées sont dédoublonnées et plafonnées à 40 pour la génération. Les scripts peuvent échouer pour un flux momentanément inaccessible sans bloquer les autres. Les workflows mettent en cache les Markdown et MP3 générés pour réutiliser les contenus existants et éviter de payer plusieurs fois les mêmes résumés/audio; les sorties vieillissantes sont supprimées. Les fichiers bruts restent dans `scripts/.cache` et ne sont pas versionnés. Les MP3 ne sont pas ajoutés au dépôt.
+Quinze flux sont configurés dans `scripts/sources.config.mjs`, dont cinq nouvelles rubriques franceinfo : Monde, Économie, Sciences, Culture et Sports. Les flux Les Échos et L’Équipe ont été retirés après des réponses HTTP 403. Les flux de Radio-Canada indiquent « usage personnel seulement » et ne sont donc pas utilisés sur cette publication publique. Les flux régionaux RSF vérifiés n’ont pas d’articles datant des dernières 48 heures lors du test et ne sont pas activés.
+
+La collecte lit les 48 dernières heures, dédoublonne les entrées et plafonne à 40 les articles générés par exécution. Les flux sont lus avec une concurrence bornée afin de rester rapides. Les scripts peuvent ignorer un flux momentanément inaccessible sans bloquer les autres. Les workflows mettent en cache les Markdown et MP3 pour réutiliser les contenus existants; les sorties vieillissantes sont supprimées. Les fichiers bruts restent dans `scripts/.cache` et ne sont pas versionnés.
+
+Quand un flux fournit une photo, le site affiche son URL HTTPS, crédite le média source sur la carte et sur l’article, et renvoie au contenu d’origine. Les photos ne sont pas téléchargées ni réhébergées par Greise. Si le flux ne fournit pas d’image, la couverture SVG locale de la rubrique est utilisée. Aucun service payant n’est requis pour cette fonction.
 
 ## Déploiement GitHub Pages
 
 Le dépôt vise `https://gr28ac08e.github.io/greise` et le sous-chemin `/greise`. Dans GitHub, ouvrez **Settings → Pages** et choisissez **GitHub Actions** comme source. Les pushes sur `main` lancent `deploy.yml`. `fetch-news.yml` s’exécute toutes les trois heures (UTC) et peut aussi être lancé manuellement depuis l’onglet Actions.
 
-Pour les résumés IA et l’audio TTS, ajoutez `OPENAI_API_KEY` dans **Settings → Secrets and variables → Actions → New repository secret**. La clé reste uniquement dans le gestionnaire de secrets GitHub; ne la mettez jamais dans un fichier commité. Les appels de génération à OpenAI peuvent occasionner des frais selon votre compte et les contenus générés. Si la clé n’est pas configurée, le site reste compilable, la collecte produit une version fondée sur l’extrait, et la voix du navigateur est utilisée.
+Pour les résumés IA et l’audio TTS uniquement, ajoutez `OPENAI_API_KEY` dans **Settings → Secrets and variables → Actions → New repository secret**. La clé reste uniquement dans le gestionnaire de secrets GitHub; ne la mettez jamais dans un fichier commité. Ces fonctionnalités ne sont pas activées par défaut. Sans cette clé, la collecte utilise les extraits RSS et l’audio repose sur la synthèse vocale gratuite du navigateur.
 
 La variable d’environnement locale facultative `SITE_URL` permet de définir une autre URL canonique; `.env.example` est un modèle sans secret réel.
 
 ## Accessibilité et contenus
 
-Navigation au clavier, lien de saut au contenu, focus visibles, contrastes renforcés, mode clair/sombre mémorisé localement, réduction des animations respectant `prefers-reduced-motion`, images SVG locales, attributs alternatifs et synthèse Web Speech en `fr-FR`. Les métadonnées et le contenu des pages sont rendus côté serveur au build afin d’être lisibles sans JavaScript.
+Navigation au clavier, lien de saut au contenu, focus visibles, contrastes renforcés, mode clair/sombre mémorisé localement, réduction des animations respectant `prefers-reduced-motion`, couvertures SVG locales de repli, crédit des photos RSS et synthèse Web Speech en `fr-FR`. Les métadonnées et le contenu des pages sont rendus au build afin d’être lisibles sans JavaScript.
 
 La photo `public/avatar.jpg` provient du profil public [@gresie13 sur TikTok](https://tiktok.com/@gresie13). Elle est affichée avec le mot-symbole dans l’en-tête et le pied de page; un PNG réduit sert de favicon.
 
