@@ -1,8 +1,9 @@
 ---
-// Abonnement infolettre via FormSubmit (gratuit, sans inscription).
+// Abonnement infolettre via FormSubmit en AJAX (gratuit, sans inscription).
 // Premier envoi : un email d'activation est envoyé à greise013@gmail.com.
+// L'envoi se fait en arrière-plan : le visiteur ne quitte jamais le site.
 ---
-<form class="newsletter-form" action="https://formsubmit.co/greise013@gmail.com" method="POST">
+<form class="newsletter-form" data-newsletter-form action="https://formsubmit.co/ajax/greise013@gmail.com" method="POST">
   <input type="hidden" name="_subject" value="Nouvel abonnement à l'infolettre Greise" />
   <input type="hidden" name="_template" value="table" />
   <input type="hidden" name="_captcha" value="false" />
@@ -11,3 +12,48 @@
   <button type="submit">OK</button>
 </form>
 <p class="newsletter-note">L'essentiel de l'actualité internationale chaque semaine dans votre boîte mail. Gratuit, sans inscription au site, désinscription en un clic.</p>
+<p class="form-status" data-newsletter-status aria-live="polite"></p>
+
+<script is:inline>
+  (function () {
+    var form = document.querySelector('[data-newsletter-form]');
+    if (!form) return;
+    var status = document.querySelector('[data-newsletter-status]');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = form.email.value.trim();
+      if (!email) return;
+      var btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      if (status) { status.textContent = 'Envoi en cours…'; status.classList.remove('is-success', 'is-error'); }
+      fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          _subject: "Nouvel abonnement à l'infolettre Greise",
+          _template: 'table',
+          _captcha: 'false',
+        }),
+      })
+        .then(function (res) { return res.json().catch(function () { return {}; }); })
+        .then(function (data) {
+          var ok = data && (data.success === 'true' || data.success === true);
+          if (ok) {
+            if (status) status.textContent = 'Merci ! Votre inscription à la lettre Greise est enregistrée.';
+            if (status) status.classList.add('is-success');
+            form.reset();
+          } else if (data && typeof data.message === 'string' && /review|activ/i.test(data.message)) {
+            if (status) status.textContent = "Votre demande est presque partie : le service d'envoi s'active une première fois. Réessayez dans quelques minutes.";
+          } else {
+            if (status) status.textContent = "L'inscription n'a pas pu aboutir. Réessayez ou écrivez à greise013@gmail.com.";
+            if (status) status.classList.add('is-error');
+          }
+        })
+        .catch(function () {
+          if (status) { status.textContent = 'Connexion impossible. Vérifiez votre réseau et réessayez.'; status.classList.add('is-error'); }
+        })
+        .finally(function () { btn.disabled = false; });
+    });
+  })();
+</script>

@@ -463,3 +463,11 @@ html[data-eco='on'] .lead-figure img, html[data-eco='on'] .card-cover img { tran
 .contact-list a:hover { text-decoration: underline; }
 @media (min-width: 900px) { .contact-grid { grid-template-columns: minmax(0, 3fr) minmax(260px, 2fr); } .form-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 680px) { .contact-card { padding: 1.2rem 1.1rem; } }
+
+
+/* ---------- Statuts des formulaires (envoi sans quitter le site) ---------- */
+.form-status { min-height: 1.3rem; margin: .5rem 0 0; color: var(--text-muted); font-size: .84rem; line-height: 1.5; }
+.form-status:empty { min-height: 0; margin: 0; }
+.form-status.is-success { color: var(--success); font-weight: 600; }
+.form-status.is-error { color: var(--live); font-weight: 600; }
+.newsletter-form button:disabled, .contact-form button:disabled { opacity: .6; cursor: wait; }
