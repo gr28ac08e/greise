@@ -471,3 +471,162 @@ html[data-eco='on'] .lead-figure img, html[data-eco='on'] .card-cover img { tran
 .form-status.is-success { color: var(--success); font-weight: 600; }
 .form-status.is-error { color: var(--live); font-weight: 600; }
 .newsletter-form button:disabled, .contact-form button:disabled { opacity: .6; cursor: wait; }
+
+
+/* ============================================================
+   GREISE — Nouvelle identité internationale : noir & cyan
+   Couche de refonte additive pour préserver les composants.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+  --bg-primary: #050607;
+  --bg-card: #0b0e12;
+  --bg-elevated: #10151b;
+  --bg-deep: #030405;
+  --text-primary: #f7f9fc;
+  --text-secondary: #c7d0da;
+  --text-muted: #8b98a7;
+  --border: #202a34;
+  --border-strong: #344353;
+  --accent: #08b8f4;
+  --accent-hover: #0399d1;
+  --accent-soft: rgb(8 184 244 / 13%);
+  --accent-contrast: #001018;
+  --success: #29c6a0;
+  --live: #08b8f4;
+  --shadow: 0 8px 28px rgb(0 0 0 / 30%);
+  --shadow-hover: 0 16px 40px rgb(0 0 0 / 45%);
+  --radius-card: 10px;
+  --radius-button: 8px;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-primary: #050607;
+  --bg-card: #0b0e12;
+  --bg-elevated: #10151b;
+  --bg-deep: #030405;
+  --text-primary: #f7f9fc;
+  --text-secondary: #c7d0da;
+  --text-muted: #8b98a7;
+  --border: #202a34;
+  --border-strong: #344353;
+  --accent: #08b8f4;
+  --accent-hover: #0399d1;
+  --accent-soft: rgb(8 184 244 / 13%);
+  --accent-contrast: #001018;
+  --success: #29c6a0;
+  --live: #08b8f4;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-primary: #f4f7fa;
+  --bg-card: #fff;
+  --bg-elevated: #eaf0f5;
+  --bg-deep: #e3eaf0;
+  --text-primary: #101820;
+  --text-secondary: #344454;
+  --text-muted: #647487;
+  --border: #d8e1e9;
+  --border-strong: #bdcbd8;
+  --accent: #008fc7;
+  --accent-hover: #0075a5;
+  --accent-soft: rgb(0 143 199 / 10%);
+  --accent-contrast: #fff;
+}
+body { background: var(--bg-primary); }
+.greise-header { position: relative; z-index: 40; background: #030405; color: #f7f9fc; }
+.greise-masthead { display: flex; min-height: 78px; align-items: center; gap: clamp(1rem, 3vw, 2.5rem); padding-block: .65rem; }
+.greise-brand { display: flex; flex: 0 0 auto; flex-direction: column; gap: -.1rem; color: #fff; text-decoration: none; }
+.greise-brand img { display: block; width: clamp(150px, 19vw, 245px); height: auto; }
+.greise-brand-caption { margin: -.2rem 0 0 3.3rem; color: #d5e0e8; font: 700 .58rem/1.2 var(--font-sans); letter-spacing: .08em; }
+.greise-promise { display: flex; flex: 1; align-items: center; gap: .8rem; min-width: 0; padding-left: clamp(1rem, 2.5vw, 2rem); border-left: 1px solid #66717b; color: #e6edf3; font-size: .82rem; line-height: 1.35; }
+.greise-promise em { color: #aab8c5; }
+.promise-globe { color: var(--accent); font-size: 2rem; line-height: 1; }
+.greise-tools { display: flex; align-items: center; gap: .75rem; }
+.greise-social .social-links { gap: .1rem; }
+.greise-social .social-links a { width: 34px; min-height: 34px; color: #f5f7fa; }
+.greise-tool-divider { height: 30px; border-left: 1px solid #59636d; }
+.greise-tools .font-controls { display: none; }
+.greise-tools .icon-button { color: #fff; }
+.greise-subscribe { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: .45rem .8rem; border-radius: 8px; background: var(--accent); color: #001018; font-size: .76rem; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.greise-subscribe:hover { background: #39caff; color: #001018; }
+.edition-nav { position: sticky; top: 0; border-block: 1px solid #1b232b; background: rgb(3 4 5 / 96%); backdrop-filter: blur(14px); }
+.edition-inner { min-height: 48px; padding-block: .25rem; }
+.edition-links { gap: .25rem; }
+.edition-links a { padding: .55rem .95rem; border-radius: 7px; color: #e4eaf0; font-size: .84rem; font-weight: 650; }
+.edition-links a[aria-current='page'] { background: var(--accent); color: #001018; }
+.edition-links a:hover { background: #151d25; color: #fff; }
+.edition-side { display: none; }
+.edition-side a { color: #c4ced8; }
+.edition-side .subscribe { color: var(--accent); }
+.greise-header .eco-toggle { display: none; }
+.hero-grid { gap: .8rem; padding-block: .8rem .5rem; }
+.lead-card { position: relative; min-height: 430px; border-color: #27323d; border-radius: 8px; background: #03070b; box-shadow: none; }
+.lead-figure { position: absolute; inset: 0; aspect-ratio: auto; }
+.lead-figure::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(0 4 9 / 94%) 0%, rgb(0 4 9 / 78%) 38%, rgb(0 4 9 / 22%) 72%, rgb(0 4 9 / 8%) 100%), linear-gradient(0deg, rgb(0 0 0 / 55%), transparent 40%); content: ''; }
+.lead-figure img { object-position: center; }
+.lead-pill { top: 1.4rem; left: 1.6rem; z-index: 1; border-radius: 4px; background: var(--accent); color: #001018; }
+.lead-source-badge { display: none; }
+.lead-body { position: relative; z-index: 2; max-width: min(590px, 75%); justify-content: flex-end; gap: .65rem; padding: 5.5rem 1.8rem 1.5rem; background: transparent; }
+.lead-meta { color: #c7d0da; font-size: .72rem; }
+.lead-meta strong { color: #fff; }
+.lead-title { max-width: 570px; color: #fff; font-family: var(--font-sans); font-size: clamp(1.8rem, 3.2vw, 2.65rem); font-weight: 800; line-height: 1.08; letter-spacing: -.045em; }
+.lead-title a { color: inherit; text-decoration: none; }
+.lead-title a:hover { color: #55d2ff; }
+.lead-deck { color: #e2eaf1; font-size: .96rem; line-height: 1.55; }
+.lead-why { display: none; }
+.lead-actions { border: 0; padding-top: .2rem; }
+.lead-actions .audio-button, .lead-actions .button { border-color: var(--accent); background: var(--accent); color: #001018; }
+.home-side { gap: .65rem; }
+.live-panel { padding: .5rem 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.live-panel-head { border-bottom-color: #26313b; }
+.live-panel-head h2 { font-family: var(--font-sans); font-size: 1rem; }
+.live-item { padding: .6rem .2rem .65rem .8rem; border-left-color: var(--accent); border-bottom: 1px solid #202a34; }
+.live-item-top { justify-content: flex-start; }
+.live-time { color: var(--accent); }
+.live-title { color: #f0f4f8; font-size: .9rem; font-weight: 650; }
+.live-more { border-color: #273440; color: #cbd5df; }
+.side-banner { border: 1px solid #253440; border-radius: 8px; background: #0b151e; box-shadow: none; }
+.side-banner a { color: #001018; }
+.section { padding-block: 1.8rem; }
+.section-heading { align-items: center; margin-bottom: 1rem; border-bottom-color: #26313b; }
+.section-heading h2 { font-family: var(--font-sans); font-size: 1.55rem; font-weight: 800; }
+.section-heading h2::before { display: inline-block; width: 5px; height: 1.2em; margin-right: .65rem; background: var(--accent); border-radius: 3px; vertical-align: -.15em; content: ''; }
+.section-heading h2 em { color: var(--accent); }
+.article-card { border-color: #202a34; border-radius: 8px; background: #0b0e12; box-shadow: none; }
+.card-cover { border-radius: 6px; }
+.article-title { font-family: var(--font-sans); font-weight: 750; }
+.category-pill { border-radius: 4px; background: var(--accent-soft); color: #48caff; }
+:root[data-theme='dark'] .category-pill { color: #48caff; }
+.category-bar a[aria-current='page'] { border-color: var(--accent); background: var(--accent); color: #001018; }
+.button-primary, .button { border-radius: 7px; }
+.site-footer { border-top-color: #202a34; }
+@media (min-width: 1024px) {
+  .greise-masthead { min-height: 78px; }
+  .greise-tools .font-controls { display: none; }
+  .hero-grid { grid-template-columns: minmax(0, 2.1fr) minmax(300px, 1fr); }
+  .lead-card { min-height: 438px; }
+  .lead-body { padding-inline: 1.7rem; }
+  .edition-side { display: inline-flex; }
+}
+@media (max-width: 760px) {
+  .greise-masthead { flex-wrap: wrap; gap: .5rem .9rem; }
+  .greise-brand img { width: 155px; }
+  .greise-brand-caption { margin-left: 2.2rem; }
+  .greise-promise { display: none; }
+  .greise-tools { margin-left: auto; gap: .35rem; }
+  .greise-social { display: none; }
+  .greise-tool-divider { display: none; }
+  .greise-subscribe { min-height: 34px; padding-inline: .6rem; }
+  .edition-links a { padding: .48rem .7rem; font-size: .75rem; }
+  .lead-card { min-height: 390px; }
+  .lead-body { max-width: 88%; padding: 5rem 1rem 1.1rem; }
+  .lead-title { font-size: clamp(1.55rem, 6vw, 2.15rem); }
+  .lead-deck { font-size: .85rem; }
+}
+@media (max-width: 420px) {
+  .greise-brand img { width: 130px; }
+  .greise-subscribe { font-size: .68rem; }
+  .lead-card { min-height: 360px; }
+  .lead-body { max-width: 100%; }
+}
