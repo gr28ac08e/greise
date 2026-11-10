@@ -1005,3 +1005,24 @@ body { background: var(--bg-primary); }
 .related-list .card-social-actions{flex-wrap:wrap;gap:.4rem}
 .comments-section .comments-note{color:var(--text-secondary);line-height:1.65}
 @media(max-width:760px){.article-page{width:min(100% - 1.1rem,1040px)}.article-head{padding:1.3rem;border-radius:15px}.article-head h1{font-size:clamp(2rem,9vw,3rem)}.article-deck{font-size:1.02rem}.article-hero-image{aspect-ratio:4/3;border-radius:12px}.article-tools-row{margin-top:1rem;font-size:.62rem}.article-body{padding-inline:.25rem;font-size:1.08rem;line-height:1.85}.article-importance{padding:1.1rem}.related-list{grid-template-columns:1fr}.related-list .article-card{display:grid;grid-template-columns:38% minmax(0,1fr);align-items:start}.related-list .card-figure{min-width:0}.related-list .card-cover{aspect-ratio:1/1;margin:.55rem}.related-list .card-content{padding:.65rem}.related-list .card-topline,.related-list .card-footer{font-size:.65rem}.related-list .article-title{font-size:1rem}.related-list .card-summary{font-size:.78rem}.related-list .card-social-actions{display:none}.share-row .button{font-size:.78rem;padding:.6rem .7rem}}
+
+
+/* Communauté Greise : réactions partagées et recommandations */
+.reaction-options{display:inline-flex;align-items:center;gap:.3rem;flex-wrap:wrap}
+.reaction-options .reaction-button{display:inline-flex;align-items:center;gap:.2rem;min-height:34px;padding:.3rem .45rem;border:1px solid var(--border);border-radius:999px;background:var(--bg-elevated);font-size:.78rem;cursor:pointer}
+.reaction-options .reaction-button[aria-pressed="true"]{border-color:#08b8e9;background:color-mix(in srgb,#08b8e9 15%,var(--bg-card))}
+.reaction-options .reaction-button:disabled{opacity:.55;cursor:wait}
+.reaction-status{min-height:1.1rem;margin:.2rem 0 0;color:var(--text-muted);font-size:.72rem}
+.card-topline{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.follow-category{margin-left:auto;padding:.28rem .55rem;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--text-muted);font-size:.68rem;cursor:pointer}
+.follow-category[aria-pressed="true"]{border-color:#08b8e9;color:#08b8e9;background:color-mix(in srgb,#08b8e9 10%,transparent)}
+.recommended-section[hidden]{display:none}
+.recommended-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.recommended-card{display:grid;grid-template-columns:34% minmax(0,1fr);overflow:hidden;border:1px solid var(--border);border-radius:15px;background:var(--bg-card);text-decoration:none}
+.recommended-card img{width:100%;height:100%;min-height:125px;object-fit:cover}
+.recommended-copy{display:grid;align-content:center;gap:.35rem;padding:.8rem}
+.recommended-copy small{color:#08b8e9;font-size:.68rem;text-transform:uppercase;font-weight:700}
+.recommended-copy strong{font-family:var(--font-serif);font-size:1rem;line-height:1.25}
+.recommended-copy>span{display:-webkit-box;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;color:var(--text-muted);font-size:.78rem;line-height:1.45}
+.recommended-empty{color:var(--text-muted);font-size:.85rem}
+@media(max-width:640px){.recommended-list{grid-template-columns:1fr}.card-social-actions{flex-wrap:wrap}.reaction-options{gap:.15rem}.reaction-options .reaction-button{font-size:.7rem;padding:.25rem .35rem}}
