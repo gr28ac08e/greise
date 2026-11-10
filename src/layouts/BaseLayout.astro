@@ -13,7 +13,7 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#fdfbf7" />
+    <meta name="theme-color" content="#050607" />
     <meta name="description" content={description} />
     {noIndex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="keywords" content="actualité internationale, décryptage, économie, technologie, culture, sport" />
@@ -38,7 +38,7 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
       try {
         const saved = localStorage.getItem('greise-theme');
         const systemDark = matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.dataset.theme = saved || (systemDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = saved || 'dark';
         const savedFont = localStorage.getItem('greise-fontsize');
         if (savedFont) document.documentElement.dataset.fontsize = savedFont;
         const savedEco = localStorage.getItem('greise-eco');
