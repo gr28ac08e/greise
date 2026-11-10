@@ -59,3 +59,7 @@ Les contenus des flux sont des résumés/contextualisations, non les articles or
 - TikTok : https://tiktok.com/@gresie13
 - Facebook : https://www.facebook.com/profile.php?id=61590273613236
 - Contact : [greise013@gmail.com](mailto:greise013@gmail.com)
+
+## Accueil de type magazine
+
+La page d’accueil reprend une structure de journal numérique : date et menu, mot-symbole Greise centré, recherche et bouton « Suivre Greise », puis navigation horizontale des cinq rubriques. La une illustrée est sélectionnable par pagination, les autres récits apparaissent dans un rail latéral, puis dans un fil filtrable. Le thème sombre cyan est affiché par défaut; le lecteur peut basculer vers le thème clair. La recherche s’effectue sans service externe et le menu fonctionne au clavier.

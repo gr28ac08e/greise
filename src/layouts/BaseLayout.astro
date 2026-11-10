@@ -13,7 +13,7 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#fafaf7" />
+    <meta name="theme-color" content="#17191c" />
     <meta name="description" content={description} />
     {noIndex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="keywords" content="actualité internationale, décryptage, économie, technologie, culture, sport" />
@@ -37,8 +37,7 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
     <script is:inline>
       try {
         const saved = localStorage.getItem('greise-theme');
-        const systemDark = matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.dataset.theme = saved || (systemDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = saved || 'dark';
       } catch {}
     </script>
   </head>
@@ -51,10 +50,17 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
       import { initAudioPlayers } from '../lib/audio';
       initAudioPlayers();
       const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
+      const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+      const syncTheme = () => {
+        const dark = document.documentElement.dataset.theme === 'dark';
+        toggle?.setAttribute('aria-label', dark ? 'Activer le thème clair' : 'Activer le thème sombre');
+        themeMeta?.setAttribute('content', dark ? '#17191c' : '#f2f3f4');
+      };
+      syncTheme();
       toggle?.addEventListener('click', () => {
         const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
         document.documentElement.dataset.theme = next;
-        toggle.setAttribute('aria-label', next === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre');
+        syncTheme();
         try { localStorage.setItem('greise-theme', next); } catch {}
       });
     </script>
