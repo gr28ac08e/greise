@@ -13,7 +13,7 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#fafaf7" />
+    <meta name="theme-color" content="#fdfbf7" />
     <meta name="description" content={description} />
     {noIndex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="keywords" content="actualité internationale, décryptage, économie, technologie, culture, sport" />
@@ -22,7 +22,7 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
     <link rel="canonical" href={canonical} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
     <meta property="og:type" content={type} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -39,6 +39,10 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
         const saved = localStorage.getItem('greise-theme');
         const systemDark = matchMedia('(prefers-color-scheme: dark)').matches;
         document.documentElement.dataset.theme = saved || (systemDark ? 'dark' : 'light');
+        const savedFont = localStorage.getItem('greise-fontsize');
+        if (savedFont) document.documentElement.dataset.fontsize = savedFont;
+        const savedEco = localStorage.getItem('greise-eco');
+        if (savedEco) document.documentElement.dataset.eco = savedEco;
       } catch {}
     </script>
   </head>
@@ -57,6 +61,25 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
         toggle.setAttribute('aria-label', next === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre');
         try { localStorage.setItem('greise-theme', next); } catch {}
       });
+
+      const fontButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-fontsize]'));
+      const applyFont = (size: string) => {
+        document.documentElement.dataset.fontsize = size;
+        fontButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fontsize === size)));
+        try { localStorage.setItem('greise-fontsize', size); } catch {}
+      };
+      const initialFont = document.documentElement.dataset.fontsize;
+      if (initialFont) applyFont(initialFont);
+      fontButtons.forEach((b) => b.addEventListener('click', () => applyFont(b.dataset.fontsize || 'normal')));
+
+      const ecoToggle = document.querySelector<HTMLButtonElement>('#eco-toggle');
+      const applyEco = (on: boolean) => {
+        document.documentElement.dataset.eco = on ? 'on' : 'off';
+        ecoToggle?.setAttribute('aria-pressed', String(on));
+        try { localStorage.setItem('greise-eco', on ? 'on' : 'off'); } catch {}
+      };
+      if (document.documentElement.dataset.eco === 'on') ecoToggle?.setAttribute('aria-pressed', 'true');
+      ecoToggle?.addEventListener('click', () => applyEco(document.documentElement.dataset.eco !== 'on'));
     </script>
   </body>
 </html>

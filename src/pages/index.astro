@@ -2,33 +2,134 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
-import { categories, pathFor } from '../lib/utils';
+import AudioPlayer from '../components/AudioPlayer.astro';
+import { categories, categoryLabel, pathFor, readingTime } from '../lib/utils';
 const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
 const articles = [...editorial, ...rss].sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const recentNews = articles.filter((article) => article.data.generatedBy === 'rss').slice(0, 3);
-const top = recentNews.length >= 3 ? recentNews : articles.filter((article) => article.data.featured).slice(0, 3);
-const shown = articles.filter((article) => !top.some((featured) => featured.id === article.id)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const lead = articles[0];
+const shown = articles.slice(1);
+const leadBody = lead ? `${lead.data.title}. ${lead.data.summary} ${lead.data.whyItMatters} ${lead.body || ''}` : '';
+const leadImage = lead ? (lead.data.imageUrl || pathFor(lead.data.image || '/images/une-monde.svg')) : '';
+const leadHref = lead ? pathFor(`/article/${lead.id}/`) : '';
+const leadDate = lead ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(lead.data.pubDate) : '';
+const timeFmt = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' });
+const feed = [...rss].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 5)
+  .map((article) => ({ time: timeFmt.format(article.data.pubDate), category: categoryLabel(article.data.category), title: article.data.title, href: pathFor(`/article/${article.id}/`) }));
 ---
-<BaseLayout title="Greise | L’actualité mondiale, lisible et écoutable" description="L’actualité internationale en français, contextualisée et écoutable. Des résumés sourcés, des repères et une lecture claire, gratuitement.">
-  <section class="container hero" aria-labelledby="hero-title">
-    <div class="hero-copy">
-      <p class="eyebrow">Le monde, en clair</p>
-      <h1 id="hero-title">L’actualité mondiale, lisible et écoutable.</h1>
-      <p class="hero-lede">Des histoires venues d’ailleurs, remises en contexte et racontées en français. Pour comprendre ce qui se passe, et pourquoi cela compte.</p>
-      <span class="hero-note">Indépendant · gratuit · sans inscription</span>
-    </div>
-    <div class="hero-art"><img src={pathFor('/images/une-monde.svg')} alt="Illustration du monde relié par des lignes d’information" width="520" height="420" fetchpriority="high" /></div>
-  </section>
-  <section class="container section" aria-labelledby="top-title">
-    <div class="section-heading"><div><p class="eyebrow">À la une</p><h2 id="top-title">Les dernières actualités</h2></div><p>Les sujets récents, leurs photos et les liens vers les médias sources.</p></div>
-    {top.length ? <div class="top-grid">{top.map((article) => <ArticleCard article={article} />)}</div> : <div class="empty-state">Les prochains articles arriveront bientôt. Revenez nous lire.</div>}
-  </section>
+
+<BaseLayout title="Greise | L'actualité mondiale, lisible et écoutable" description="L'actualité internationale en français, contextualisée et écoutable. Des résumés sourcés, des repères et une lecture claire, gratuitement.">
+  {lead ? (
+    <section class="container hero-grid" aria-label="À la une">
+      <article class="lead-card">
+        <a class="lead-figure" href={leadHref} tabindex="-1" aria-hidden="true">
+          <img src={leadImage} alt="" width="1200" height="675" fetchpriority="high" />
+          <span class="lead-pill">{categoryLabel(lead.data.category)}</span>
+          <span class="lead-source-badge">
+            <svg class="icon" style="width:.8rem;height:.8rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            {lead.data.source}
+          </span>
+        </a>
+        <div class="lead-body">
+          <div class="lead-meta">
+            <span>Par <strong>{lead.data.source}</strong></span>
+            <span><time datetime={lead.data.pubDate.toISOString()}>{leadDate}</time> · {readingTime(leadBody)} min de lecture</span>
+          </div>
+          <h2 class="lead-title"><a href={leadHref}>{lead.data.title}</a></h2>
+          <p class="lead-deck">{lead.data.summary}</p>
+          <p class="lead-why"><strong>Pourquoi c'est important</strong>{lead.data.whyItMatters}</p>
+          <div class="lead-actions">
+            <AudioPlayer text={leadBody} slug={lead.id} label="Écouter l'article" />
+            <button class="button" type="button" data-sources-open>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              Transparence &amp; sources
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <aside class="home-side">
+        <div class="live-panel">
+          <div class="live-panel-head">
+            <h2><span class="live-dot-big" aria-hidden="true"></span>Fil direct</h2>
+            <span>En continu</span>
+          </div>
+          <div class="live-items">
+            {feed.length ? feed.map((item) => (
+              <div class="live-item">
+                <div class="live-item-top">
+                  <span class="live-time">{item.time}</span>
+                  <span class="live-chip">{item.category}</span>
+                </div>
+                <a class="live-title" href={item.href}>{item.title}</a>
+              </div>
+            )) : <p class="live-title">Le fil direct s'alimentera dès les prochaines publications.</p>}
+          </div>
+          <a class="live-more" href="#tous-les-articles">
+            Voir toute l'actualité
+            <svg class="icon" style="width:.85rem;height:.85rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+        </div>
+
+        <div class="side-banner">
+          <span class="side-banner-badge">
+            <svg class="icon" style="width:.75rem;height:.75rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+            Repères
+          </span>
+          <h3>Comprendre l'actualité, pas seulement la suivre</h3>
+          <p>Des dossiers de repères préparés par la rédaction pour remettre chaque sujet en contexte, à lire et à écouter.</p>
+          <a href={pathFor('/a-propos/')}>Découvrir notre démarche
+            <svg class="icon" style="width:.85rem;height:.85rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+        </div>
+      </aside>
+    </section>
+
+    <dialog class="sources-modal" id="sources-modal" aria-labelledby="sources-title">
+      <div class="sources-head">
+        <h2 id="sources-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+          Transparence &amp; sources
+        </h2>
+        <button class="icon-button" type="button" data-sources-close aria-label="Fermer la fiche">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <p class="sources-article">Article : {lead.data.title}</p>
+      <div class="sources-method">
+        <strong>Méthodologie de vérification</strong>
+        <p>Les actualités de Greise sont des résumés et contextualisations produits à partir des titres et extraits fournis par les flux RSS des médias sources. Chaque article renvoie à sa publication d'origine ; les dossiers de repères sont préparés et identifiés par la rédaction.</p>
+      </div>
+      <span class="sources-label">Sources primaires référencées</span>
+      <div class="source-item">
+        <span>{lead.data.source}</span>
+        <span class="source-type">Média source</span>
+      </div>
+      {lead.data.sourceUrl && <a class="sources-link" href={lead.data.sourceUrl} target="_blank" rel="noopener noreferrer">Consulter l'article original publié par {lead.data.source} ↗</a>}
+      <button class="button button-primary sources-close" type="button" data-sources-close>Fermer la fiche</button>
+    </dialog>
+  ) : (
+    <section class="container section"><div class="empty-state">Les prochains articles arriveront bientôt. Revenez nous lire.</div></section>
+  )}
+
   <section class="container section" id="tous-les-articles" aria-labelledby="latest-title">
-    <div class="section-heading"><div><p class="eyebrow">Le fil de Greise</p><h2 id="latest-title">Explorer l’actualité</h2></div></div>
-    <nav class="category-bar" aria-label="Filtrer par catégorie"><a href={pathFor('/')} aria-current="page">Tout</a>{categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a>)}</nav>
-    {shown.length ? <div class="article-grid" id="article-grid">{shown.map((article, index) => <div class="article-grid-item" data-page-item data-index={index}><ArticleCard article={article} /></div>)}</div> : <div class="empty-state">Les nouvelles publications de Greise s’afficheront ici.</div>}
+    <div class="section-heading">
+      <h2 id="latest-title">À la une sur <em>Greise</em></h2>
+      <p>Mise à jour continue, toutes les trois heures.</p>
+    </div>
+    <nav class="category-bar" aria-label="Filtrer par catégorie">
+      <a href={pathFor('/')} aria-current="page">Tout</a>
+      {categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a>)}
+    </nav>
+    {shown.length ? (
+      <div class="article-grid" id="article-grid">
+        {shown.map((article, index) => (
+          <div class="article-grid-item" data-page-item data-index={index}><ArticleCard article={article} /></div>
+        ))}
+      </div>
+    ) : <div class="empty-state">Les nouvelles publications de Greise s'afficheront ici.</div>}
     {shown.length > 6 && <div class="load-more-wrap"><button class="button" type="button" id="load-more">Charger plus</button></div>}
   </section>
+
   <script>
     const items = Array.from(document.querySelectorAll<HTMLElement>('[data-page-item]'));
     const button = document.querySelector<HTMLButtonElement>('#load-more');
@@ -36,5 +137,14 @@ const shown = articles.filter((article) => !top.some((featured) => featured.id =
     const update = () => { items.forEach((item, index) => { item.hidden = index >= visible; }); if (button) button.hidden = visible >= items.length; };
     update();
     button?.addEventListener('click', () => { visible += 6; update(); });
+
+    const modal = document.querySelector<HTMLDialogElement>('#sources-modal');
+    document.querySelectorAll<HTMLButtonElement>('[data-sources-open]').forEach((openButton) => {
+      openButton.addEventListener('click', () => modal?.showModal());
+    });
+    modal?.querySelectorAll<HTMLButtonElement>('[data-sources-close]').forEach((closeButton) => {
+      closeButton.addEventListener('click', () => modal?.close());
+    });
+    modal?.addEventListener('click', (event) => { if (event.target === modal) modal?.close(); });
   </script>
 </BaseLayout>
