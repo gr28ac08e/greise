@@ -1,5 +1,6 @@
 ---
 import AudioPlayer from './AudioPlayer.astro';
+import { BACKEND, backendConfigured } from '../lib/backend';
 import { categoryLabel, pathFor, readingTime } from '../lib/utils';
 const { article } = Astro.props;
 const data = article.data;
@@ -8,7 +9,7 @@ const href = pathFor(`/article/${article.id}/`);
 const image = data.imageUrl || pathFor(data.image || '/images/repere.svg');
 const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(data.pubDate);
 ---
-<article class="article-card">
+<article class="article-card" data-article-card data-slug={article.id} data-category={data.category} data-title={data.title} data-summary={data.summary} data-image={image} data-href={href} data-backend-url={BACKEND.url} data-backend-key={backendConfigured() ? BACKEND.anonKey : ''}>
   <figure class="card-figure">
     <a class="card-cover" href={href} tabindex="-1" aria-hidden="true">
       <img src={image} alt="" width="1200" height="675" loading="lazy" decoding="async" />
@@ -19,14 +20,124 @@ const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', 
     <div class="card-topline">
       <a class="category-pill" href={pathFor(`/categorie/${data.category}/`)}>{categoryLabel(data.category)}</a>
       {data.kind === 'repère' && <span class="meta article-kind">Dossier</span>}
+      <button class="follow-category" type="button" data-follow-category aria-pressed="false">＋ Suivre</button>
     </div>
     <h3 class="article-title"><a href={href}>{data.title}</a></h3>
     <p class="card-summary">{data.summary}</p>
     <div class="why"><strong>Pourquoi c’est important</strong>{data.whyItMatters}</div>
+    <p class="card-context">{data.whyItMatters}</p>
     <div class="card-footer">
       <span class="card-source">{data.source} · <time datetime={data.pubDate.toISOString()}>{date}</time></span>
       <span class="card-meta">{readingTime(bodyText)} min</span>
-      <AudioPlayer text={bodyText} slug={article.id} />
     </div>
+    <div class="card-social-actions" data-reactions data-ready="false">
+      <span class="reaction-options" aria-label="Réactions à cet article">
+        <button class="reaction-button" type="button" data-reaction="love" aria-pressed="false" title="J’aime">❤️ <span data-count="love">0</span></button>
+        <button class="reaction-button" type="button" data-reaction="approve" aria-pressed="false" title="J’approuve">👍 <span data-count="approve">0</span></button>
+        <button class="reaction-button" type="button" data-reaction="surprise" aria-pressed="false" title="Surprenant">😮 <span data-count="surprise">0</span></button>
+        <button class="reaction-button" type="button" data-reaction="sad" aria-pressed="false" title="Triste">😢 <span data-count="sad">0</span></button>
+      </span>
+      <a class="comment-link" href={href} aria-label="Commenter cet article">💬 <span data-comment-count data-slug={article.id}>Commentaires</span></a>
+      <AudioPlayer text={bodyText} slug={article.id} label="Écouter" />
+    </div>
+    <p class="reaction-status" data-reaction-status aria-live="polite"></p>
   </div>
 </article>
+
+<script>
+  const REACTION_LABELS = { love: 'J’aime', approve: 'J’approuve', surprise: 'Surprenant', sad: 'Triste' };
+  document.querySelectorAll<HTMLElement>('[data-article-card]').forEach((card) => {
+    if (card.dataset.initialized === 'true') return;
+    card.dataset.initialized = 'true';
+    const slug = card.dataset.slug || '';
+    const backendUrl = card.dataset.backendUrl || '';
+    const backendKey = card.dataset.backendKey || '';
+    const status = card.querySelector<HTMLElement>('[data-reaction-status]');
+    const reactionWrap = card.querySelector<HTMLElement>('[data-reactions]');
+    const follow = card.querySelector<HTMLButtonElement>('[data-follow-category]');
+    const category = card.dataset.category || '';
+    const preferenceKey = 'greise-followed-categories';
+    const getFollowed = () => {
+      try { return JSON.parse(localStorage.getItem(preferenceKey) || '[]') as string[]; }
+      catch { return []; }
+    };
+    const syncFollow = () => {
+      const active = getFollowed().includes(category);
+      follow?.setAttribute('aria-pressed', String(active));
+      if (follow) follow.textContent = active ? '✓ Suivie' : '＋ Suivre';
+    };
+    syncFollow();
+    follow?.addEventListener('click', () => {
+      const values = getFollowed();
+      const next = values.includes(category) ? values.filter((value) => value !== category) : [...values, category];
+      localStorage.setItem(preferenceKey, JSON.stringify(next));
+      syncFollow();
+      window.dispatchEvent(new CustomEvent('greise:preferences-changed'));
+    });
+
+    const count = card.querySelector<HTMLElement>('[data-comment-count]');
+    if (count && backendUrl && backendKey) {
+      fetch(backendUrl + '/rest/v1/comments?article_slug=eq.' + encodeURIComponent(slug) + '&select=id', {
+        method: 'HEAD',
+        headers: { apikey: backendKey, Authorization: 'Bearer ' + backendKey, Prefer: 'count=exact' }
+      }).then((response) => {
+        const range = response.headers.get('content-range');
+        if (range) {
+          const total = Number(range.split('/').pop());
+          if (Number.isFinite(total)) count.textContent = total + ' commentaire' + (total > 1 ? 's' : '');
+        }
+      }).catch(() => {});
+    }
+
+    if (!backendUrl || !backendKey || !reactionWrap) {
+      if (reactionWrap) reactionWrap.dataset.ready = 'true';
+      return;
+    }
+    import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').then(async ({ createClient }) => {
+      const client = createClient(backendUrl, backendKey);
+      const sessionResult = await client.auth.getSession();
+      const user = sessionResult.data.session?.user || null;
+      const load = async () => {
+        const { data, error } = await client.from('article_reactions').select('reaction_type,user_id').eq('article_slug', slug);
+        if (error) throw error;
+        const counts: Record<string, number> = { love: 0, approve: 0, surprise: 0, sad: 0 };
+        let mine = '';
+        (data || []).forEach((row: { reaction_type: string; user_id: string }) => {
+          counts[row.reaction_type] = (counts[row.reaction_type] || 0) + 1;
+          if (user && row.user_id === user.id) mine = row.reaction_type;
+        });
+        reactionWrap.querySelectorAll<HTMLButtonElement>('[data-reaction]').forEach((button) => {
+          const type = button.dataset.reaction || '';
+          button.setAttribute('aria-pressed', String(type === mine));
+          const number = button.querySelector<HTMLElement>('[data-count]');
+          if (number) number.textContent = String(counts[type] || 0);
+        });
+        reactionWrap.dataset.ready = 'true';
+      };
+      await load();
+      reactionWrap.addEventListener('click', async (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-reaction]');
+        if (!button) return;
+        const type = button.dataset.reaction || '';
+        if (!user) {
+          if (status) status.textContent = 'Connectez-vous dans l’espace commentaires pour réagir.';
+          return;
+        }
+        button.disabled = true;
+        try {
+          const active = button.getAttribute('aria-pressed') === 'true';
+          const result = active
+            ? await client.from('article_reactions').delete().eq('article_slug', slug).eq('user_id', user.id)
+            : await client.from('article_reactions').upsert({ article_slug: slug, user_id: user.id, reaction_type: type }, { onConflict: 'article_slug,user_id' });
+          if (result.error) throw result.error;
+          if (status) status.textContent = active ? 'Réaction retirée.' : 'Votre réaction a été publiée.';
+          await load();
+        } catch (error) {
+          if (status) status.textContent = 'Réaction indisponible. Vérifiez que la migration Supabase a été exécutée.';
+        } finally { button.disabled = false; }
+      });
+    }).catch(() => {
+      if (status) status.textContent = 'Les réactions partagées sont momentanément indisponibles.';
+    });
+  });
+</script>

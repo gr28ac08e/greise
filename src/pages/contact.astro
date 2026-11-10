@@ -1,11 +1,140 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { pathFor } from '../lib/utils';
 ---
-<BaseLayout title="Contact | Greise" description="Contacter la rédaction de Greise, média indépendant d’actualité internationale.">
-  <section class="container prose">
-    <p class="eyebrow">Écrire à Greise</p><h1>Contact</h1>
-    <p>Pour une question, un signalement, une correction ou une demande concernant une source, vous pouvez joindre la rédaction par courriel.</p>
-    <p><a class="button button-primary" href="mailto:greise013@gmail.com">greise013@gmail.com</a></p>
-    <p>Pour une demande de correction, indiquez l’article concerné, la source et les éléments permettant de vérifier l’information.</p>
-  </section>
+
+<BaseLayout title="Contact | Greise" description="Une question, une correction, une suggestion ? Écrivez à la rédaction de Greise via notre formulaire de contact." canonicalPath="/contact/">
+  <div class="container contact-page">
+    <header class="page-head">
+      <p class="eyebrow">Écrivez-nous</p>
+      <h1>Contactez la rédaction</h1>
+      <p class="page-intro">
+        Une question sur un article, une correction à signaler, une suggestion de sujet ou une demande de partenariat ? Nous lisons tout et répondons sous 48 heures ouvrées. Vous pouvez aussi nous écrire directement à <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>.
+      </p>
+    </header>
+
+    <div class="contact-grid">
+      <section class="contact-card" aria-labelledby="form-title">
+        <h2 id="form-title">Votre message</h2>
+        <form
+          class="contact-form"
+          data-contact-form
+          action="https://formsubmit.co/greise013@gmail.com"
+          method="POST"
+        >
+          <input type="hidden" name="_subject" value="Nouveau message depuis le site Greise" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_captcha" value="false" />
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
+          <input type="hidden" name="_next" value="https://gr28ac08e.github.io/greise/contact/?envoye=1" />
+
+          <div class="form-row-2">
+            <div class="form-field">
+              <label for="contact-name">Votre nom</label>
+              <input type="text" id="contact-name" name="name" required placeholder="Ex. : Amina K." autocomplete="name" />
+            </div>
+            <div class="form-field">
+              <label for="contact-email">Votre adresse email</label>
+              <input type="email" id="contact-email" name="email" required placeholder="vous@exemple.com" autocomplete="email" />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="contact-subject">Sujet</label>
+            <select id="contact-subject" name="sujet">
+              <option value="Question sur un article">Question sur un article</option>
+              <option value="Correction à signaler">Correction à signaler</option>
+              <option value="Suggestion de sujet">Suggestion de sujet</option>
+              <option value="Partenariat / publicité">Partenariat / publicité</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="contact-message">Votre message</label>
+            <textarea id="contact-message" name="message" rows="8" required placeholder="Écrivez votre message ici…"></textarea>
+          </div>
+
+          <button class="button button-primary" type="submit">Envoyer le message</button>
+          <p class="form-status" data-contact-status aria-live="polite"></p>
+          <p class="meta">En envoyant ce formulaire, vous acceptez que votre message et votre adresse email soient transmis à la rédaction de Greise pour vous répondre.</p>
+        </form>
+      </section>
+
+      <aside class="contact-side">
+        <div class="contact-info-card">
+          <h2>Autres moyens de nous joindre</h2>
+          <ul class="contact-list">
+            <li>
+              <span class="contact-label">Email</span>
+              <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>
+            </li>
+            <li>
+              <span class="contact-label">TikTok</span>
+              <a href="https://www.tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">@gresie13</a>
+            </li>
+            <li>
+              <span class="contact-label">Facebook</span>
+              <a href="https://www.facebook.com/profile.php?id=61590273613236" target="_blank" rel="noopener noreferrer">Greise, page officielle</a>
+            </li>
+          </ul>
+        </div>
+        <div class="contact-info-card">
+          <h2>Avant d'écrire</h2>
+          <p>La réponse à votre question se trouve peut-être déjà sur le site :</p>
+          <ul class="contact-list">
+            <li><a href={pathFor('/a-propos/')}>Notre démarche et notre méthode de vérification</a></li>
+            <li><a href={pathFor('/politique-editoriale/')}>Notre politique éditoriale</a></li>
+            <li><a href={pathFor('/abonnement/')}>S'abonner à la lettre quotidienne</a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var form = document.querySelector('[data-contact-form]');
+      if (!form) return;
+      var status = document.querySelector('[data-contact-status]');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (form._honey && form._honey.value) return; // anti-spam : champ caché rempli
+        var btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        if (status) { status.textContent = 'Envoi en cours…'; status.classList.remove('is-success', 'is-error'); }
+        fetch('https://formsubmit.co/ajax/greise013@gmail.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            name: form.name.value.trim(),
+            email: form.email.value.trim(),
+            sujet: form.sujet.value,
+            message: form.message.value.trim(),
+            _subject: 'Nouveau message depuis le site Greise',
+            _template: 'table',
+            _captcha: 'false',
+          }),
+        })
+          .then(function (res) { return res.json().catch(function () { return {}; }); })
+          .then(function (data) {
+            var ok = data && (data.success === 'true' || data.success === true);
+            if (ok) {
+              if (status) status.textContent = 'Merci, votre message est bien parti ! Nous vous répondrons sous 48 heures ouvrées.';
+              if (status) status.classList.add('is-success');
+              form.reset();
+            } else if (data && typeof data.message === 'string' && /review|activ/i.test(data.message)) {
+              if (status) status.textContent = "Votre message est presque parti : le service d'envoi s'active une première fois. Réessayez dans quelques minutes.";
+            } else {
+              if (status) status.textContent = "L'envoi n'a pas pu aboutir. Réessayez ou écrivez directement à greise013@gmail.com.";
+              if (status) status.classList.add('is-error');
+            }
+          })
+          .catch(function () {
+            if (status) { status.textContent = 'Connexion impossible. Vérifiez votre réseau et réessayez.'; status.classList.add('is-error'); }
+          })
+          .finally(function () { btn.disabled = false; });
+      });
+    })();
+  </script>
 </BaseLayout>

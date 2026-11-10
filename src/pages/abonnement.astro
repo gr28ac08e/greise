@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { pathFor } from '../lib/utils';
+---
+<BaseLayout title="S'abonner & créer votre compte lecteur | Greise" description="Abonnez-vous à la lettre de Greise et créez votre compte lecteur avec votre simple adresse email pour commenter et réagir aux articles." canonicalPath="/abonnement/">
+  <div class="container subscribe-page">
+    <header class="page-head">
+      <p class="eyebrow">Espace lecteurs</p>
+      <h1>Rejoignez la communauté Greise</h1>
+      <p class="page-intro">
+        Deux façons de participer : recevoir l'essentiel de l'actualité chaque matin par email, ou créer votre compte lecteur pour commenter les articles et réagir à ceux des autres lecteurs. Tout se fait avec une simple adresse email, sans compte GitHub ni réseau social.
+      </p>
+    </header>
+
+    <div class="subscribe-grid">
+      <section class="subscribe-card" aria-labelledby="abonnement-title">
+        <h2 id="abonnement-title">📬 La lettre quotidienne</h2>
+        <p>
+          Chaque matin, recevez gratuitement la sélection Greise : les faits vérifiés, le contexte qui compte et les repères pour comprendre l'actualité internationale, économique, technologique, culturelle et sportive.
+        </p>
+        <ul class="subscribe-benefits">
+          <li>Une synthèse claire, lisible en 5 minutes</li>
+          <li>Les sources de chaque information, en toute transparence</li>
+          <li>Zéro publicité, désinscription en un clic</li>
+        </ul>
+        <form
+          class="newsletter-form"
+          data-abo-newsletter
+          action="https://formsubmit.co/ajax/greise013@gmail.com"
+          method="POST"
+        >
+          <input type="hidden" name="_subject" value="Nouvelle inscription à la lettre Greise" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_captcha" value="false" />
+          <label class="sr-only" for="subscribe-email">Votre adresse email</label>
+          <div class="newsletter-row">
+            <input id="subscribe-email" type="email" name="email" required placeholder="Votre adresse email" autocomplete="email" />
+            <button class="button button-primary" type="submit">Je m'abonne</button>
+          </div>
+        </form>
+        <p class="form-status" data-abo-status aria-live="polite"></p>
+        <p class="meta">En vous abonnant, vous acceptez de recevoir la lettre de Greise. Désinscription possible à tout moment.</p>
+      </section>
+
+      <section class="subscribe-card" aria-labelledby="compte-title">
+        <h2 id="compte-title">💬 Votre compte lecteur</h2>
+        <p>
+          Créez votre compte gratuitement avec votre adresse email pour publier des commentaires sous les articles, réagir aux contributions des autres lecteurs et supprimer vos propres messages à tout moment.
+        </p>
+        <ul class="subscribe-benefits">
+          <li>Connexion par email et mot de passe, en toute autonomie</li>
+          <li>Commentaires affichés directement sous chaque article</li>
+          <li>Réactions « J'aime » sur les commentaires</li>
+          <li>Vos données servent uniquement à l'espace débat</li>
+        </ul>
+        <div class="subscribe-actions">
+          <a class="button button-primary" href={pathFor('/')}>Choisir un article à lire</a>
+          <p class="meta">
+            Le formulaire de connexion et de création de compte se trouve en bas de chaque article, dans l'espace débat.
+          </p>
+        </div>
+      </section>
+
+      <section class="subscribe-card" aria-labelledby="debat-title">
+        <h2 id="debat-title">🤝 Les règles de l'espace débat</h2>
+        <p>Greise cultive un débat constructif et respectueux :</p>
+        <ul class="subscribe-benefits">
+          <li>Argumentez avec courtoisie et appuyez-vous sur des faits sourcés</li>
+          <li>Respectez les autres lecteurs, même en cas de désaccord</li>
+          <li>Pas de propos haineux, diffamatoires ou spam</li>
+          <li>Les commentaires contraires à la charte sont modérés</li>
+        </ul>
+        <p class="meta">
+          Notre <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a> et notre <a href={pathFor('/a-propos/')}>démarche</a> détaillent nos engagements en matière de vérification et de transparence.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var form = document.querySelector('[data-abo-newsletter]');
+      if (!form) return;
+      var status = document.querySelector('[data-abo-status]');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var email = form.email.value.trim();
+        if (!email) return;
+        var btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        if (status) { status.textContent = 'Envoi en cours…'; status.classList.remove('is-success', 'is-error'); }
+        fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            _subject: 'Nouvelle inscription à la lettre Greise',
+            _template: 'table',
+            _captcha: 'false',
+          }),
+        })
+          .then(function (res) { return res.json().catch(function () { return {}; }); })
+          .then(function (data) {
+            var ok = data && (data.success === 'true' || data.success === true);
+            if (ok) {
+              if (status) status.textContent = 'Merci ! Votre inscription à la lettre Greise est enregistrée.';
+              if (status) status.classList.add('is-success');
+              form.reset();
+            } else if (data && typeof data.message === 'string' && /review|activ/i.test(data.message)) {
+              if (status) status.textContent = "Votre demande est presque partie : le service d'envoi s'active une première fois. Réessayez dans quelques minutes.";
+            } else {
+              if (status) status.textContent = "L'inscription n'a pas pu aboutir. Réessayez ou écrivez à greise013@gmail.com.";
+              if (status) status.classList.add('is-error');
+            }
+          })
+          .catch(function () {
+            if (status) { status.textContent = 'Connexion impossible. Vérifiez votre réseau et réessayez.'; status.classList.add('is-error'); }
+          })
+          .finally(function () { btn.disabled = false; });
+      });
+    })();
+  </script>
+</BaseLayout>

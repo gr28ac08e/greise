@@ -1,6 +1,10 @@
 # Greise
 
-**L’actualité internationale, sans frontières.** Greise est un site d’actualité français, statique et gratuit, construit avec Astro et publié sur GitHub Pages. Il n’y a ni inscription ni paywall. Les articles renvoient à leur média source; les dossiers de repères sont identifiés comme tels.
+**L’actualité internationale, sans frontières.** Greise est un site d’actualité français, statique et gratuit, construit avec Astro et publié sur GitHub Pages. Il n’y a pas de paywall. Un compte lecteur gratuit permet de commenter et réagir; la newsletter reste facultative. Les articles renvoient à leur média source; les dossiers de repères sont identifiés comme tels.
+
+## Structure de l’accueil
+
+L’accueil reprend l’esprit de la maquette fournie : masthead sombre avec date, logo Greise centré, recherche, abonnement et thème; barre horizontale des rubriques; grande une illustrée avec pagination; colonne latérale de trois articles; carte « À suivre »; fil complet en dessous. La mise en page s’adapte aux téléphones. La recherche passe les termes dans l’URL; le menu hamburger conserve l’accès aux pages éditoriales. La une utilise les photos de flux quand elles existent et crédite le média.
 
 ## Prérequis
 
