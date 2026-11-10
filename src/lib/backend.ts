@@ -1,14 +1,12 @@
 /**
- * Configuration du backend (base de données Supabase).
+ * Configuration du backend (base de données Supabase) — GREISE.
  *
- * 1. Créez un projet gratuit sur https://supabase.com
- * 2. Dans le SQL Editor de Supabase, exécutez le contenu de `supabase/schema.sql`
- * 3. Copiez l'URL du projet et la clé « anon public » ci-dessous
- *    (Settings → API dans le tableau de bord Supabase)
- * 4. Poussez ce fichier : les comptes lecteurs et les commentaires s'activent.
+ * Projet configuré : kjiqgrslnebqwbxiwers.supabase.co
+ * Clé « publishable » (équivalent de l'« anon public ») : sûre côté navigateur,
+ * la sécurité est assurée par les règles RLS de supabase/schema.sql.
  *
- * Tant que ces valeurs sont vides, le site reste 100 % fonctionnel :
- * l'espace débat affiche un message d'attente élégant.
+ * Pour changer de projet : remplacez les deux valeurs ci-dessous
+ * (Settings → API dans le tableau de bord Supabase).
  */
 export const BACKEND = {
   url: 'https://kjiqgrslnebqwbxiwers.supabase.co',
@@ -16,7 +14,7 @@ export const BACKEND = {
 };
 
 const looksLikeUrl = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i;
-const looksLikeKey = /^eyJ[A-Za-z0-9_-]{20,}$/;
+const looksLikeKey = /^(eyJ[A-Za-z0-9_-]{20,}|sb_publishable_[A-Za-z0-9_-]{20,})$/;
 
 export function backendConfigured(): boolean {
   return looksLikeUrl.test(BACKEND.url.trim()) && looksLikeKey.test(BACKEND.anonKey.trim());
