@@ -11,8 +11,8 @@
  * l'espace débat affiche un message d'attente élégant.
  */
 export const BACKEND = {
-  url: '',
-  anonKey: '',
+  url: 'https://kjiqgrslnebqwbxiwers.supabase.co',
+  anonKey: 'sb_publishable_G3r-TNJsLGwl5dfFu7BwKg_tJ38765Q',
 };
 
 const looksLikeUrl = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i;
