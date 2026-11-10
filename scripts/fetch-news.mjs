@@ -58,4 +58,9 @@ async function main() {
   console.log(`✓ ${unique.length} articles RSS récents collectés`);
 }
 
-main().catch((error) => { console.error(error); process.exitCode = 1; });
+main().then(() => {
+  process.stdout.write('', () => process.exit(0));
+}).catch((error) => {
+  console.error(error);
+  process.stdout.write('', () => process.exit(1));
+});

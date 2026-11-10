@@ -36,6 +36,7 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
       - name: Collecter les flux RSS
+        timeout-minutes: 4
         run: npm run fetch
         continue-on-error: true
       - name: Générer les résumés en français
