@@ -112,6 +112,15 @@ const feed = [...rss].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.v
     <section class="container section"><div class="empty-state">Les prochains articles arriveront bientôt. Revenez nous lire.</div></section>
   )}
 
+  <section class="container section recommended-section" aria-labelledby="recommended-title" data-recommended-section hidden>
+    <div class="section-heading">
+      <h2 id="recommended-title">Pour vous</h2>
+      <p>Une sélection construite à partir des rubriques que vous suivez.</p>
+    </div>
+    <div class="recommended-list" data-recommended-list></div>
+    <p class="recommended-empty" data-recommended-empty>Suivez une rubrique depuis une carte d’actualité pour personnaliser votre fil.</p>
+  </section>
+
   <section class="container section" id="tous-les-articles" aria-labelledby="latest-title">
     <div class="section-heading">
       <h2 id="latest-title">Dernières actualités</h2>
@@ -164,6 +173,43 @@ const feed = [...rss].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.v
     const update = () => { items.forEach((item, index) => { item.hidden = index >= visible; }); if (button) button.hidden = visible >= items.length; };
     update();
     button?.addEventListener('click', () => { visible += 6; update(); });
+
+    const recommendationSection = document.querySelector<HTMLElement>('[data-recommended-section]');
+    const recommendationList = document.querySelector<HTMLElement>('[data-recommended-list]');
+    const recommendationEmpty = document.querySelector<HTMLElement>('[data-recommended-empty]');
+    const renderRecommendations = () => {
+      if (!recommendationSection || !recommendationList) return;
+      let followed: string[] = [];
+      try { followed = JSON.parse(localStorage.getItem('greise-followed-categories') || '[]'); } catch {}
+      recommendationSection.hidden = false;
+      recommendationList.replaceChildren();
+      const matches = Array.from(document.querySelectorAll<HTMLElement>('[data-article-card]'))
+        .filter((card) => followed.includes(card.dataset.category || ''))
+        .slice(0, 4);
+      if (recommendationEmpty) recommendationEmpty.hidden = matches.length > 0;
+      matches.forEach((card) => {
+        const link = document.createElement('a');
+        link.className = 'recommended-card';
+        link.href = card.dataset.href || '#';
+        const image = document.createElement('img');
+        image.src = card.dataset.image || '';
+        image.alt = '';
+        image.loading = 'lazy';
+        const copy = document.createElement('span');
+        copy.className = 'recommended-copy';
+        const category = document.createElement('small');
+        category.textContent = card.dataset.category || 'Actualité';
+        const title = document.createElement('strong');
+        title.textContent = card.dataset.title || '';
+        const summary = document.createElement('span');
+        summary.textContent = card.dataset.summary || '';
+        copy.append(category, title, summary);
+        link.append(image, copy);
+        recommendationList.append(link);
+      });
+    };
+    renderRecommendations();
+    window.addEventListener('greise:preferences-changed', renderRecommendations);
 
     const modal = document.querySelector<HTMLDialogElement>('#sources-modal');
     document.querySelectorAll<HTMLButtonElement>('[data-sources-open]').forEach((openButton) => {
