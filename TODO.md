@@ -8,7 +8,7 @@
 - [x] Accueil, catégories, pages d’articles, contact, mentions légales, politique éditoriale et 404 non indexable.
 - [x] Cinq flux thématiques franceinfo ajoutés : Monde, Économie, Sciences, Culture et Sports. Le collecteur traite désormais 15 flux configurés. Les sources Les Échos et L’Équipe, bloquées par HTTP 403, ont été retirées.
 - [x] Photos associées aux articles affichées depuis les URLs HTTPS fournies par les flux. Le média source est crédité, les images ne sont pas réhébergées et l’illustration locale sert de repli.
-- [x] Collecte en concurrence bornée, filtre sur 48 heures, dédoublonnage et cache GitHub Actions.
+- [x] Collecte en concurrence bornée, filtre sur 48 heures, dédoublonnage et cache GitHub Actions isolé dans `src/content/rss`, sans écrasement des articles fixes.
 - [x] Résumés prudents fondés sur les extraits RSS en mode gratuit; la génération IA et les MP3 restent des options non activées. L’audio du navigateur est gratuit.
 - [x] Titres et textes du site nettoyés des tirets cadratins et des tirets longs visibles; les titres RSS sont normalisés à chaque collecte.
 - [x] Thèmes clair/sombre, navigation clavier, lien de saut, focus visibles, préférences de mouvement et audio accessible.

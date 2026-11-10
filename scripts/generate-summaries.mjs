@@ -5,7 +5,7 @@ import OpenAI from 'openai';
 
 const IN = path.join(process.cwd(), 'scripts/.cache/raw-articles.json');
 const CACHE = path.join(process.cwd(), 'scripts/.cache/generated.json');
-const OUT_DIR = path.join(process.cwd(), 'src/content/articles');
+const OUT_DIR = path.join(process.cwd(), 'src/content/rss');
 const CATEGORY_IMAGE = { international: '/images/international.svg', economie: '/images/economie.svg', tech: '/images/tech.svg', culture: '/images/culture.svg', sport: '/images/sport.svg' };
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 let aiCount = 0;
@@ -40,21 +40,12 @@ async function summarize(article) {
   if (!openai) { fallbackCount++; return fallback; }
   const prompt = `Tu es journaliste francophone pour Greise. Résume avec prudence uniquement les informations présentes dans le titre et l’extrait fournis. N’invente ni détails, ni citations, ni faits manquants. Si l’extrait est insuffisant, dis-le clairement et renvoie à la source. Rédige en français neutre. Évite les tirets longs et préfère une ponctuation simple.\nRetourne un JSON strict : {"summary":"3 à 5 phrases, 90 mots maximum","whyItMatters":"2 phrases prudentes sur le contexte ou ce qu’il faut vérifier","report":"6 à 10 phrases, 220 mots maximum, ne déduis pas des détails absents"}.\nTitre : ${article.title}\nSource : ${article.source}\nExtrait RSS : ${safeExcerpt(article.rawDescription) || '[aucun extrait fourni]'}\nLien d’origine : ${article.link}`;
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      response_format: { type: 'json_object' },
-      temperature: 0.2,
-    });
+    const response = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, temperature: 0.2 });
     const content = response.choices?.[0]?.message?.content;
     if (!content) throw new Error('réponse OpenAI vide ou au format inattendu');
     const parsed = JSON.parse(content);
     aiCount++;
-    return {
-      summary: cleanCopy(parsed.summary || fallback.summary),
-      whyItMatters: cleanCopy(parsed.whyItMatters || fallback.whyItMatters),
-      report: cleanCopy(parsed.report || fallback.report),
-    };
+    return { summary: cleanCopy(parsed.summary || fallback.summary), whyItMatters: cleanCopy(parsed.whyItMatters || fallback.whyItMatters), report: cleanCopy(parsed.report || fallback.report) };
   } catch (error) {
     fallbackCount++;
     console.warn(`[repli RSS] ${article.title}: ${error.message}`);
@@ -77,8 +68,7 @@ function normalizeMarkdown(markdown, article = null) {
     if (/^imageUrl:/m.test(frontmatter)) frontmatter = frontmatter.replace(/^imageUrl:.*$/m, imageLine);
     else frontmatter = frontmatter.replace(/^(image:.*)$/m, `$1\n${imageLine}`);
   }
-  const body = cleanCopy(match[2]);
-  return `---\n${frontmatter}\n---\n\n${body}\n`;
+  return `---\n${frontmatter}\n---\n\n${cleanCopy(match[2])}\n`;
 }
 function sourceUrlFromMarkdown(markdown) {
   const value = markdown.match(/^sourceUrl: ("(?:\\\\.|[^"\\\\])*")$/m)?.[1];

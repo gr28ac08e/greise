@@ -9,13 +9,15 @@ Créer un média d’actualité internationale en français, responsive, gratuit
 - Astro génère les pages françaises, les Content Collections Markdown validées, le sitemap et des liens compatibles avec le sous-chemin `/greise`.
 - Le CSS vanilla utilise des variables de thème, une préférence clair/sombre persistée, un rendu accessible et une mise en page mobile-first.
 - La collecte RSS dédoublonne les entrées récentes. Elle lit les enclosures et autres champs d’image, conserve uniquement les URLs HTTPS et garde une illustration locale comme solution de repli.
+- Les articles éditoriaux fixes et les articles RSS générés résident dans des dossiers distincts, `src/content/articles` et `src/content/rss`, avec deux collections Astro partageant le même schéma.
+- Le cache GitHub Actions ne restaure que les articles RSS et les MP3 sous une nouvelle clé, afin qu’il ne puisse pas remplacer les dossiers éditoriaux suivis par Git.
 - Les résumés et MP3 peuvent être enrichis par OpenAI si le propriétaire active un secret. Sans clé, les extraits RSS et la synthèse vocale du navigateur maintiennent le fonctionnement gratuit.
 - GitHub Actions publie sur Pages à chaque push sur `main` et lance la collecte toutes les trois heures.
 - Les dossiers de repères sont identifiés séparément; aucun fait absent de l’extrait RSS ne doit être inventé.
 
 ## Structure
 
-`src/components` contient l’en-tête, le pied de page, les liens sociaux, les cartes et les contrôles audio. `src/layouts` contient les gabarits généraux et d’article. `src/pages` contient l’accueil, les pages statiques, les catégories et les articles. `src/content/articles` contient les articles Markdown validés. `src/styles` contient les tokens et styles globaux. `src/lib` contient les catégories, URLs et aides audio. `scripts` contient la collecte RSS, les résumés, l’audio et la liste des sources. `.github/workflows` contient les flux de collecte et de déploiement. `public` contient les SVG de marque, les couvertures locales, `robots.txt` et les assets statiques.
+`src/components` contient l’en-tête, le pied de page, les liens sociaux, les cartes et les contrôles audio. `src/layouts` contient les gabarits généraux et d’article. `src/pages` contient l’accueil, les pages statiques, les catégories et les articles. `src/content/articles` contient les articles éditoriaux Markdown et `src/content/rss` les articles générés et mis en cache. `src/styles` contient les tokens et styles globaux. `src/lib` contient les catégories, URLs et aides audio. `scripts` contient la collecte RSS, les résumés, l’audio et la liste des sources. `.github/workflows` contient les flux de collecte et de déploiement. `public` contient les SVG de marque, les couvertures locales, `robots.txt` et les assets statiques.
 
 ## Direction artistique
 

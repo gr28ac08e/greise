@@ -34,6 +34,8 @@ Quinze flux sont configurés dans `scripts/sources.config.mjs`, dont cinq nouvel
 
 La collecte lit les 48 dernières heures, dédoublonne les entrées et plafonne à 40 les articles générés par exécution. Les flux sont lus avec une concurrence bornée afin de rester rapides. Les scripts peuvent ignorer un flux momentanément inaccessible sans bloquer les autres. Les workflows mettent en cache les Markdown et MP3 pour réutiliser les contenus existants; les sorties vieillissantes sont supprimées. Les fichiers bruts restent dans `scripts/.cache` et ne sont pas versionnés.
 
+Les dossiers éditoriaux fixes vivent dans `src/content/articles`. Les articles RSS générés sont stockés séparément dans `src/content/rss`, via la collection Astro `rssArticles`. Le cache GitHub Actions ne restaure que ce dossier RSS et les MP3; il ne peut donc pas écraser les textes statiques corrigés du dépôt.
+
 Quand un flux fournit une photo, le site affiche son URL HTTPS, crédite le média source sur la carte et sur l’article, et renvoie au contenu d’origine. Les photos ne sont pas téléchargées ni réhébergées par Greise. Si le flux ne fournit pas d’image, la couverture SVG locale de la rubrique est utilisée. Aucun service payant n’est requis pour cette fonction.
 
 ## Déploiement GitHub Pages

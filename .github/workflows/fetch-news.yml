@@ -20,14 +20,14 @@ jobs:
     steps:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
-      - name: Restaurer le cache des articles et MP3
+      - name: Restaurer le cache des articles RSS et MP3
         uses: actions/cache@v4
         with:
           path: |
-            src/content/articles
+            src/content/rss
             public/audio
-          key: greise-content-${{ github.run_id }}
-          restore-keys: greise-content-
+          key: greise-rss-v2-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: greise-rss-v2-${{ runner.os }}-
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:

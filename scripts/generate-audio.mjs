@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 
 const IN = path.join(process.cwd(), 'scripts/.cache/generated.json');
 const OUT = path.join(process.cwd(), 'public/audio');
+const ARTICLE_DIR = path.join(process.cwd(), 'src/content/rss');
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 async function main() {
@@ -20,7 +21,7 @@ async function main() {
     const file = path.join(OUT, `${article.slug}.mp3`);
     try { await fs.access(file); continue; } catch {}
     try {
-      const markdown = await fs.readFile(path.join(process.cwd(), 'src/content/articles', `${article.slug}.md`), 'utf8');
+      const markdown = await fs.readFile(path.join(ARTICLE_DIR, `${article.slug}.md`), 'utf8');
       const body = markdown.replace(/^---[\s\S]*?---\s*/, '').replace(/[#*_`\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
       const input = `Article de Greise. ${article.title}. ${body}`.slice(0, 4000);
       const speech = await openai.audio.speech.create({ model: 'tts-1', voice: 'nova', input, speed: 0.98 });
