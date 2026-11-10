@@ -55,7 +55,7 @@ const feed = [...rss].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.v
           </div>
           <div class="live-items">
             {feed.length ? feed.map((item) => (
-              <article class="live-item">
+              <article class:list={['live-item', index === 0 ? 'live-featured' : 'live-compact']}>
                 <a class="live-thumb" href={item.href} aria-label={item.title}><img src={item.image} alt="" loading="lazy" /></a>
                 <div class="live-copy">
                   <div class="live-item-top"><span class="live-time">{item.time}</span><span class="live-chip">{item.category}</span></div>
@@ -114,15 +114,15 @@ const feed = [...rss].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.v
 
   <section class="container section" id="tous-les-articles" aria-labelledby="latest-title">
     <div class="section-heading">
-      <h2 id="latest-title">À la une sur <em>Greise</em></h2>
-      <p>Mise à jour continue, toutes les trois heures.</p>
+      <h2 id="latest-title">Dernières actualités</h2>
+      <p>Le monde en contexte, une publication après l’autre.</p>
     </div>
     <nav class="category-bar" aria-label="Filtrer par catégorie">
       <a href={pathFor('/')} aria-current="page">Tout</a>
       {categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a>)}
     </nav>
     {shown.length ? (
-      <div class="article-grid article-rail" id="article-grid">
+      <div class="article-list" id="article-grid">
         {shown.map((article, index) => (
           <div class="article-grid-item" data-page-item data-index={index}><ArticleCard article={article} /></div>
         ))}
