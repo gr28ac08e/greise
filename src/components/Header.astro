@@ -1,6 +1,6 @@
 ---
 import { categories, pathFor } from '../lib/utils';
-const norm = (p: string) => p.replace(/\\/+$/, '');
+const norm = (p: string) => p.endsWith('/') ? p.slice(0, -1) : p;
 const here = norm(Astro.url.pathname);
 const base = norm(import.meta.env.BASE_URL);
 const isHome = here === base || here === '';
