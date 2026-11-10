@@ -955,3 +955,53 @@ body { background: var(--bg-primary); }
 .footer-bottom{border-top:1px solid #333;color:#888}
 .empty-state{padding:2rem;border:1px dashed #4a4a4a;border-radius:16px;color:#bbb;text-align:center}
 @media(max-width:760px){.page-intro,.page-head,.article-head,.prose{padding:1.35rem;border-radius:15px}.subscribe-grid,.contact-grid{grid-template-columns:1fr}.form-row-2{grid-template-columns:1fr}.article-body{padding-inline:.25rem;font-size:1.04rem}.article-head h1{font-size:2.35rem}.article-deck{font-size:1.02rem}.article-hero-image{border-radius:13px}.container.section[aria-label^="Articles"] .card-content{padding:1rem}.share-row{gap:.45rem}}
+
+
+/* GREISE — expérience immersive de lecture des articles */
+.reading-progress{position:fixed;z-index:60;top:0;left:0;width:100%;height:3px;background:transparent;pointer-events:none}
+.reading-progress span{display:block;width:100%;height:100%;background:#12bce9;transform:scaleX(0);transform-origin:left center;will-change:transform}
+.article-page{max-width:1040px;padding-bottom:5rem}
+.article-tools-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;max-width:900px;margin:1.5rem auto .7rem;color:var(--text-muted);font-size:.7rem;letter-spacing:.1em}
+.article-kicker{color:#08b8e9;font-weight:800}
+.article-reading-time{font-variant-numeric:tabular-nums}
+.article-head{position:relative;overflow:hidden;max-width:1000px;margin:1rem auto 1.2rem;padding:clamp(1.4rem,4vw,3.2rem);border:1px solid var(--border);border-radius:22px;background:radial-gradient(ellipse at 90% 0%,color-mix(in srgb,#08b8e9 13%,transparent),transparent 48%),linear-gradient(145deg,var(--bg-elevated),var(--bg-card))}
+.article-head .eyebrow{color:#08b8e9}
+.article-head h1{max-width:900px;margin:.4rem 0 1.15rem;font-family:var(--font-serif);font-size:clamp(2.25rem,5.5vw,4.6rem);font-weight:650;line-height:1.06;letter-spacing:-.045em}
+.article-deck{max-width:820px;margin:0 0 1.3rem;color:var(--text-secondary);font-family:var(--font-serif);font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.65}
+.article-byline{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;padding-top:1rem;border-top:1px solid var(--border)}
+.article-photo{max-width:1000px;margin:0 auto 1.1rem}
+.article-hero-image{width:100%;max-height:650px;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--border);border-radius:18px;background:var(--bg-elevated)}
+.article-photo .image-credit{padding:.55rem .2rem;color:var(--text-muted);font-size:.72rem}
+.article-sticky-audio{position:sticky;top:12px;z-index:20;display:flex;justify-content:flex-end;max-width:1000px;margin:.8rem auto 1.4rem;pointer-events:none}
+.article-sticky-audio .audio-control{pointer-events:auto}
+.article-sticky-audio .audio-button{box-shadow:0 5px 22px rgb(0 0 0 / 20%)}
+.article-importance{max-width:820px;margin:1.5rem auto 2rem;padding:1.4rem 1.6rem;border:1px solid color-mix(in srgb,#08b8e9 28%,var(--border));border-left:4px solid #08b8e9;border-radius:0 16px 16px 0;background:color-mix(in srgb,#08b8e9 7%,var(--bg-card))}
+.article-importance h2{margin:0 0 .5rem;font-size:1.45rem}
+.article-importance p{margin:0;color:var(--text-secondary);font-family:var(--font-serif);font-size:1.02rem;line-height:1.75}
+.article-body{max-width:780px;margin:2rem auto 3rem;color:var(--text-primary);font-family:var(--font-serif);font-size:clamp(1.08rem,1.5vw,1.22rem);line-height:1.95}
+.article-body p{margin:0 0 1.5rem}
+.article-body h2{margin:2.7rem 0 .8rem;font-size:clamp(1.65rem,3vw,2.2rem);line-height:1.2}
+.article-body h3{margin:2rem 0 .65rem;font-size:1.45rem}
+.article-body blockquote{margin:2rem 0;padding:1rem 1.4rem;border-left:3px solid #08b8e9;background:var(--bg-elevated);font-style:italic}
+.article-body img{max-width:100%;height:auto;border-radius:14px}
+.article-end-note{display:flex;max-width:780px;align-items:center;gap:1rem;margin:2.5rem auto;padding:1.1rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.article-end-note p{margin:0;color:var(--text-muted);font-family:var(--font-serif);font-style:italic}
+.article-end-note strong{color:var(--text-primary)}
+.article-end-rule{width:5px;height:36px;flex:0 0 5px;border-radius:4px;background:#08b8e9}
+.source-box,.comments-section{max-width:900px;margin:2rem auto;padding:clamp(1rem,3vw,1.7rem);border:1px solid var(--border);border-radius:18px;background:var(--bg-card)}
+.source-box h2,.comments-section h2{margin:0 0 .75rem;font-size:1.55rem}
+.source-box p{color:var(--text-secondary);line-height:1.7}
+.source-box a,.comments-note a{color:#08aeda;text-decoration:underline;text-underline-offset:3px}
+.share-row{max-width:900px;margin:1.5rem auto;display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
+.related-section{max-width:1000px;margin:3.5rem auto 2rem}
+.related-heading{margin-bottom:1.2rem}
+.related-heading .eyebrow{margin-bottom:.3rem}
+.related-heading h2{margin:0;font-size:clamp(1.8rem,3vw,2.5rem)}
+.related-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;align-items:stretch}
+.related-list .article-card{height:100%}
+.related-list .card-cover{aspect-ratio:16/10}
+.related-list .article-title{font-size:1.15rem}
+.related-list .card-summary{font-size:.86rem;line-height:1.55}
+.related-list .card-social-actions{flex-wrap:wrap;gap:.4rem}
+.comments-section .comments-note{color:var(--text-secondary);line-height:1.65}
+@media(max-width:760px){.article-page{width:min(100% - 1.1rem,1040px)}.article-head{padding:1.3rem;border-radius:15px}.article-head h1{font-size:clamp(2rem,9vw,3rem)}.article-deck{font-size:1.02rem}.article-hero-image{aspect-ratio:4/3;border-radius:12px}.article-tools-row{margin-top:1rem;font-size:.62rem}.article-body{padding-inline:.25rem;font-size:1.08rem;line-height:1.85}.article-importance{padding:1.1rem}.related-list{grid-template-columns:1fr}.related-list .article-card{display:grid;grid-template-columns:38% minmax(0,1fr);align-items:start}.related-list .card-figure{min-width:0}.related-list .card-cover{aspect-ratio:1/1;margin:.55rem}.related-list .card-content{padding:.65rem}.related-list .card-topline,.related-list .card-footer{font-size:.65rem}.related-list .article-title{font-size:1rem}.related-list .card-summary{font-size:.78rem}.related-list .card-social-actions{display:none}.share-row .button{font-size:.78rem;padding:.6rem .7rem}}
