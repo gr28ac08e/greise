@@ -1,11 +1,22 @@
-# Greise — suivi des résultats
+# Greise — état de livraison
 
-- [ ] **Dépôt et publication Pages** — créer le dépôt GitHub `greise`, branche `main`; configurer Astro avec `site: 'https://gr28ac08e.github.io/greise'` et `base: '/greise'`; produire le site accessible sur `https://gr28ac08e.github.io/greise`; fournir un README avec installation (`npm install`), configuration `.env`, développement (`npm run dev`), collecte (`npm run fetch`), résumés (`npm run summarize`), audio (`npm run audio`) et build (`npm run build`).
-- [ ] **Identité et liens** — nom Greise; site et interface en français; logo textuel GREISE avec point rouge, favicon et marque SVG; liens TikTok `https://tiktok.com/@gresie13`, Facebook `https://www.facebook.com/profile.php?id=61590273613236` et email `greise013@gmail.com` présents dans l’en-tête et le pied de page; mention « L’actualité internationale, sans frontières » et « © 2025 Greise — Média indépendant »; l’avatar de profil fourni ne sera revendiqué comme tel que si la photo publique de source est accessible.
-- [ ] **Design et accessibilité** — palette claire `#fafaf7`, `#ffffff`, `#f3f2ee`, `#1a1a1a`, `#555555`, `#888888`, `#e8e6e0`, accent `#c8342a`, accent hover `#a82820`, accent doux `#fdf0ee`, succès `#2d7a4f`; thème sombre avec les tokens prescrits; Fraunces et Inter via Google Fonts, mono pour métadonnées; grille mobile-first; cartes arrondies, focus visibles, navigation clavier, WCAG AA, `prefers-reduced-motion`, lazy-loading et dimensions explicites des images; cible Lighthouse ≥95 performance/accessibilité/SEO sans prétendre à un score avant mesure.
-- [ ] **Accueil Discover** — manifeste « L’actualité mondiale, lisible et écoutable »; trois sujets en avant; filtres Tout, International, Économie, Tech & Science, Culture, Sport; grille responsive, résumés, bloc « Pourquoi c’est important », source, temps de lecture mots/220, audio, tri date décroissante avec mise en avant des articles `featured`, chargement supplémentaire/pagination.
-- [ ] **Contenu et collecte** — flux France 24, RFI, Le Monde, BBC Afrique, Courrier international, Les Échos, La Tribune, Numerama, Futura Sciences, Télérama, Beaux Arts, L’Équipe; mapping `international`, `economie`, `tech`, `culture`, `sport`; collecte des 48 dernières heures, dédoublonnage et cache brut; résumés français de 3 à 5 phrases (90 mots max), « Pourquoi c’est important » en deux phrases, reportage de 6 à 10 phrases (220 mots max); les articles de démonstration doivent être identifiés et sourcés, et les traitements RSS doivent fonctionner sans fabriquer d’actualité.
-- [ ] **Articles et audio** — pages article centrées max 720px, métadonnées, lecteur sticky, encadré d’importance, sources externes, partage/copier; lecteur Web Speech API en français avec états idle/loading/playing/paused, contrôle accessible, bouton écouter sur les cartes; génération MP3 OpenAI `tts-1` voix `nova` lorsque le secret est configuré, fallback vocal navigateur sinon.
-- [ ] **Pages d’information** — routes accueil, catégorie, article, À propos, Contact; À propos présente le média indépendant et les mentions utiles; contact email cliquable; 404 correcte et liens internes.
-- [ ] **Automatisations et sécurité** — collecte planifiée toutes les 3 heures et manuelle; workflows GitHub Actions pour collecte/résumés/audio facultatifs/build/Pages et déploiement sur `main`; `.env.example` avec `OPENAI_API_KEY`, `GITHUB_TOKEN`, `SITE_URL`; aucune clé dans le dépôt; secret `OPENAI_API_KEY` à configurer dans GitHub Actions.
-- [ ] **SEO et performances** — HTML statique lisible sans JS, titres et descriptions descriptifs, Open Graph/Twitter, canonical, sitemap, robots, images locales/propres, balises alt pertinentes; cible Lighthouse ≥95, à vérifier sur la publication avant de la revendiquer.
+## Livré
+
+- [x] Dépôt public [`gr28ac08e/greise`](https://github.com/gr28ac08e/greise), branche `main`, et site GitHub Pages : <https://gr28ac08e.github.io/greise/>.
+- [x] Site Astro statique en français, adapté au sous-chemin `/greise`, avec `npm ci`, build reproductible et sitemap.
+- [x] Identité Greise, photo publique de `@gresie13` intégrée au logo d’interface, favicon PNG, SVG de marque et visuels éditoriaux locaux.
+- [x] TikTok, Facebook et email; pied de page, slogan et mention © 2025.
+- [x] Accueil, filtres et catégories (International, Économie, Tech & Science, Culture, Sport), cartes responsives, temps de lecture et liens de sources.
+- [x] Pages d’articles, de catégories, À propos, Contact, Mentions légales, Politique éditoriale et 404 non indexable.
+- [x] Thèmes clair/sombre, navigation clavier, lien de saut, focus visibles, préférences de mouvement, images dimensionnées et audio accessible avec synthèse française du navigateur.
+- [x] Collecte RSS des dernières 48 h, dédoublonnage, limite de génération et cache GitHub Actions; résumés prudents avec repli sur l’extrait RSS lorsque l’IA est indisponible.
+- [x] Workflow de publication Pages sur `main` et collecte RSS planifiée toutes les trois heures, avec génération MP3 facultative si la clé est fournie.
+- [x] SEO statique : description, canonical, Open Graph, Twitter Cards, `robots.txt` et sitemap.
+- [x] Build et audit npm vérifiés sans vulnérabilité de sévérité élevée.
+
+## À compléter par le propriétaire ou à mesurer
+
+- [ ] Ajouter `OPENAI_API_KEY` dans les secrets GitHub Actions pour activer les résumés IA et la génération de MP3; sans cette clé, le site fonctionne avec les extraits RSS et la synthèse vocale du navigateur.
+- [ ] Fournir les informations légales exactes de l’éditeur et du directeur de publication avant toute exploitation professionnelle.
+- [ ] Réévaluer les flux Les Échos et L’Équipe si leurs réponses HTTP 403 persistent; la collecte continue pour les autres sources.
+- [ ] Mesurer Lighthouse sur la version publiée avant de revendiquer un score de 95+.
