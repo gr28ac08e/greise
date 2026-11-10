@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
+import Comments from '../components/Comments.astro';
 import { categoryLabel, pathFor, readingTime } from '../lib/utils';
 const { article } = Astro.props;
 const { Content } = await render(article);
@@ -39,6 +40,11 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 
       <button class="button" type="button" data-copy-link={href}>Copier le lien</button>
       <span class="copy-status" aria-live="polite"></span>
     </div>
+    <section class="comments-section" aria-labelledby="comments-title">
+      <h2 id="comments-title">Espace débat — réagissez à cet article</h2>
+      <p class="comments-note">Connectez-vous avec votre compte GitHub pour publier un commentaire public. Les échanges sont modérés dans le respect de notre <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a>.</p>
+      <Comments />
+    </section>
     <script>
       document.querySelectorAll<HTMLButtonElement>('[data-copy-link]').forEach((button) => {
         button.addEventListener('click', async () => {

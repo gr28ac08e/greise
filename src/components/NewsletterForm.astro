@@ -1,0 +1,13 @@
+---
+// Abonnement infolettre via FormSubmit (gratuit, sans inscription).
+// Premier envoi : un email d'activation est envoyé à greise013@gmail.com.
+---
+<form class="newsletter-form" action="https://formsubmit.co/greise013@gmail.com" method="POST">
+  <input type="hidden" name="_subject" value="Nouvel abonnement à l'infolettre Greise" />
+  <input type="hidden" name="_template" value="table" />
+  <input type="hidden" name="_captcha" value="false" />
+  <label class="sr-only" for="newsletter-email">Votre adresse email</label>
+  <input id="newsletter-email" type="email" name="email" required placeholder="Votre adresse email" autocomplete="email" />
+  <button type="submit">OK</button>
+</form>
+<p class="newsletter-note">L'essentiel de l'actualité internationale chaque semaine dans votre boîte mail. Gratuit, sans inscription au site, désinscription en un clic.</p>

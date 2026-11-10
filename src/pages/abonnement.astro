@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NewsletterForm from '../components/NewsletterForm.astro';
+import { pathFor } from '../lib/utils';
+---
+<BaseLayout title="S'abonner et participer | Greise" description="Abonnez-vous à l'infolettre de Greise avec votre email, connectez-vous avec GitHub pour commenter les articles et participer au débat.">
+  <section class="container page-intro">
+    <p class="eyebrow">Espace lecteurs</p>
+    <h1>S'abonner, se connecter, débattre.</h1>
+    <p>Greise est gratuit et sans inscription obligatoire. Abonnez-vous à l'infolettre avec votre email, et connectez-vous avec votre compte GitHub pour commenter publiquement les articles.</p>
+  </section>
+
+  <section class="container section">
+    <div class="account-card" id="newsletter">
+      <h2>Infolettre hebdomadaire</h2>
+      <p>Recevez l'essentiel de l'actualité internationale, contextualisée et sourcée, chaque semaine. Votre adresse n'est utilisée que pour l'envoi de la lettre.</p>
+      <NewsletterForm />
+    </div>
+
+    <div class="account-card" id="connexion">
+      <h2>Se connecter pour commenter</h2>
+      <p>Le site est statique et ne stocke aucun mot de passe : la connexion se fait via votre compte GitHub au moment de commenter un article. Votre nom d'utilisateur public apparaît sur votre message. C'est gratuit et immédiat.</p>
+      <a class="button button-primary" href={pathFor('/')}>Choisir un article à commenter</a>
+    </div>
+
+    <div class="account-card" id="debat">
+      <h2>Les règles de l'espace débat</h2>
+      <p>Les échanges sont modérés dans le respect de notre <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a> : pas d'insultes, pas de désinformation, des arguments sourcés. Les contributions constructives sont mises en avant.</p>
+      <a class="button" href={pathFor('/contact/')}>Signaler un commentaire</a>
+    </div>
+  </section>
+</BaseLayout>

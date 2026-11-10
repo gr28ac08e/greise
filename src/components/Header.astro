@@ -59,7 +59,9 @@ const dateLabel = today.charAt(0).toUpperCase() + today.slice(1);
     <div class="edition-side">
       <a href={pathFor('/a-propos/')}>Notre démarche</a>
       <span class="edition-sep" aria-hidden="true">|</span>
-      <a class="subscribe" href={pathFor('/contact/')}>Nous écrire</a>
+      <a class="subscribe" href={pathFor('/abonnement/#connexion')}>Se connecter</a>
+      <span class="edition-sep" aria-hidden="true">|</span>
+      <a class="subscribe" href={pathFor('/abonnement/#newsletter')}>S'abonner</a>
       <span class="edition-sep" aria-hidden="true">|</span>
       <div class="header-social"><SocialLinks compact={true} /></div>
     </div>
