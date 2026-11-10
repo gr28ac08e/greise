@@ -438,3 +438,28 @@ html[data-eco='on'] .lead-figure img, html[data-eco='on'] .card-cover img { tran
   .debate-panel { padding: 1.2rem 1.1rem; }
   .debate-cta { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---------- Page contact ---------- */
+.contact-page { max-width: 980px; margin-inline: auto; padding-block: 2.5rem 5rem; }
+.contact-grid { display: grid; grid-template-columns: 1fr; gap: 1.3rem; }
+.contact-card { padding: 1.5rem 1.6rem; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg-card); box-shadow: var(--shadow); }
+.contact-card h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+.contact-form { display: grid; gap: 1rem; }
+.form-row-2 { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.form-field { display: grid; gap: .35rem; }
+.form-field label { color: var(--text-secondary); font: 600 .78rem/1.4 var(--font-mono); letter-spacing: .05em; text-transform: uppercase; }
+.form-field input, .form-field select, .form-field textarea { width: 100%; padding: .7rem .85rem; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); font: inherit; font-size: .95rem; }
+.form-field textarea { resize: vertical; min-height: 140px; }
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: 3px solid var(--accent); outline-offset: -2px; }
+.contact-form .button { width: fit-content; }
+.contact-success { margin-bottom: 1.3rem; padding: 1.1rem 1.3rem; border: 1px solid color-mix(in srgb, var(--success) 40%, var(--border)); border-radius: var(--radius-card); background: color-mix(in srgb, var(--success) 8%, var(--bg-card)); color: var(--success); }
+.contact-success p { margin: .3rem 0 0; color: var(--text-secondary); font-size: .92rem; }
+.contact-side { display: grid; gap: 1.3rem; align-content: start; }
+.contact-info-card { padding: 1.3rem 1.4rem; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg-elevated); }
+.contact-info-card h2 { margin: 0 0 .8rem; color: var(--text-muted); font: 700 .78rem/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.contact-list { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; }
+.contact-list .contact-label { display: block; color: var(--text-muted); font: 600 .68rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+.contact-list a { color: var(--accent); font-weight: 600; font-size: .92rem; }
+.contact-list a:hover { text-decoration: underline; }
+@media (min-width: 900px) { .contact-grid { grid-template-columns: minmax(0, 3fr) minmax(260px, 2fr); } .form-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 680px) { .contact-card { padding: 1.2rem 1.1rem; } }
