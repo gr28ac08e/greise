@@ -1,21 +1,69 @@
 ---
 import { categories, pathFor } from '../lib/utils';
 import SocialLinks from './SocialLinks.astro';
+const norm = (p: string) => p.replace(/\/+$/, '');
+const here = norm(Astro.url.pathname);
+const base = norm(import.meta.env.BASE_URL);
+const isHome = here === base || here === '';
 const current = Astro.url.pathname.replace(import.meta.env.BASE_URL, '/');
+const today = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+const dateLabel = today.charAt(0).toUpperCase() + today.slice(1);
 ---
-<header class="site-header">
-  <div class="container header-inner">
-    <a class="brand" href={pathFor('/')} aria-label="Greise, accueil"><img class="brand-avatar" src={pathFor('/avatar.jpg')} alt="" width="36" height="36" />GREISE<span class="brand-dot">.</span></a>
-    <nav class="header-nav" aria-label="Navigation principale">
-      {categories.map((category) => (
-        <a href={pathFor(`/categorie/${category.slug}/`)} aria-current={current.includes(`/categorie/${category.slug}`) ? 'page' : undefined}>{category.label}</a>
-      ))}
-    </nav>
-    <div class="header-actions">
-      <div class="header-social"><SocialLinks compact={true} /></div>
+
+<header class="utility-bar">
+  <div class="container utility-inner">
+    <div class="utility-left">
+      <span class="utility-date">{dateLabel}</span>
+      <span class="utility-sep" aria-hidden="true">•</span>
+      <span class="utility-live"><span class="live-dot" aria-hidden="true"></span>Rédaction en continu</span>
+    </div>
+    <div class="utility-actions">
+      <div class="font-controls" role="group" aria-label="Taille du texte">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+        <button type="button" data-fontsize="normal" aria-pressed="true" aria-label="Taille de texte normale">A</button>
+        <button type="button" data-fontsize="large" aria-pressed="false" aria-label="Texte agrandi">A+</button>
+        <button type="button" data-fontsize="xl" aria-pressed="false" aria-label="Texte très agrandi">A++</button>
+      </div>
+      <button class="eco-toggle" id="eco-toggle" type="button" aria-pressed="false" title="Optimise le site pour les connexions lentes : images masquées, effets suspendus">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="2" y1="2" x2="22" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 13a10 10 0 0 1 5.24-2.76"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        <span>Éco-Mode</span>
+      </button>
       <button class="icon-button" id="theme-toggle" type="button" aria-label="Activer le thème sombre" title="Changer le thème">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
       </button>
     </div>
   </div>
 </header>
+
+<div class="masthead">
+  <div class="container masthead-inner">
+    <p class="masthead-eyebrow">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+      Média d'actualité internationale
+    </p>
+    <a class="masthead-title" href={pathFor('/')} aria-label="Greise, retour à l'accueil">
+      <img class="brand-avatar" src={pathFor('/avatar.jpg')} alt="" width="48" height="48" />GREISE<span class="brand-dot">.</span>
+    </a>
+    <p class="masthead-tagline">« L'actualité internationale, sans frontières — lisible et écoutable »</p>
+  </div>
+</div>
+
+<nav class="edition-nav" aria-label="Navigation principale">
+  <div class="container edition-inner">
+    <div class="edition-links">
+      <a href={pathFor('/')} aria-current={isHome ? 'page' : undefined}>Une mondiale</a>
+      {categories.map((category) => (
+        <a href={pathFor(`/categorie/${category.slug}/`)} aria-current={current.includes(`/categorie/${category.slug}`) ? 'page' : undefined}>{category.label}</a>
+      ))}
+    </div>
+    <div class="edition-side">
+      <a href={pathFor('/a-propos/')}>Notre démarche</a>
+      <span class="edition-sep" aria-hidden="true">|</span>
+      <a class="subscribe" href={pathFor('/abonnement/#connexion')}>Se connecter</a>
+      <span class="edition-sep" aria-hidden="true">|</span>
+      <a class="subscribe" href={pathFor('/abonnement/#newsletter')}>S'abonner</a>
+      <span class="edition-sep" aria-hidden="true">|</span>
+      <div class="header-social"><SocialLinks compact={true} /></div>
+    </div>
+  </div>
+</nav>
