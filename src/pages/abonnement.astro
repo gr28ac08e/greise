@@ -1,32 +1,77 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import NewsletterForm from '../components/NewsletterForm.astro';
 import { pathFor } from '../lib/utils';
 ---
-<BaseLayout title="S'abonner et participer | Greise" description="Abonnez-vous à l'infolettre de Greise avec votre email, connectez-vous avec GitHub pour commenter les articles et participer au débat.">
-  <section class="container page-intro">
-    <p class="eyebrow">Espace lecteurs</p>
-    <h1>S'abonner, se connecter, débattre.</h1>
-    <p>Greise est gratuit et sans inscription obligatoire. Abonnez-vous à l'infolettre avec votre email, et connectez-vous avec votre compte GitHub pour commenter publiquement les articles.</p>
-  </section>
+<BaseLayout title="S'abonner & créer votre compte lecteur | Greise" description="Abonnez-vous à la lettre de Greise et créez votre compte lecteur avec votre simple adresse email pour commenter et réagir aux articles." canonicalPath="/abonnement/">
+  <div class="container subscribe-page">
+    <header class="page-head">
+      <p class="eyebrow">Espace lecteurs</p>
+      <h1>Rejoignez la communauté Greise</h1>
+      <p class="page-intro">
+        Deux façons de participer : recevoir l'essentiel de l'actualité chaque matin par email, ou créer votre compte lecteur pour commenter les articles et réagir à ceux des autres lecteurs. Tout se fait avec une simple adresse email — aucun compte GitHub, aucun réseau social requis.
+      </p>
+    </header>
 
-  <section class="container section">
-    <div class="account-card" id="newsletter">
-      <h2>Infolettre hebdomadaire</h2>
-      <p>Recevez l'essentiel de l'actualité internationale, contextualisée et sourcée, chaque semaine. Votre adresse n'est utilisée que pour l'envoi de la lettre.</p>
-      <NewsletterForm />
-    </div>
+    <div class="subscribe-grid">
+      <section class="subscribe-card" aria-labelledby="abonnement-title">
+        <h2 id="abonnement-title">📬 La lettre quotidienne</h2>
+        <p>
+          Chaque matin, recevez gratuitement la sélection Greise : les faits vérifiés, le contexte qui compte et les repères pour comprendre l'actualité internationale, économique, technologique, culturelle et sportive.
+        </p>
+        <ul class="subscribe-benefits">
+          <li>Une synthèse claire, lisible en 5 minutes</li>
+          <li>Les sources de chaque information, en toute transparence</li>
+          <li>Zéro publicité, désinscription en un clic</li>
+        </ul>
+        <form
+          class="newsletter-form"
+          action="https://formsubmit.co/greise013@gmail.com"
+          method="POST"
+        >
+          <input type="hidden" name="_subject" value="Nouvelle inscription à la lettre Greise" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_captcha" value="false" />
+          <label class="visually-hidden" for="subscribe-email">Votre adresse email</label>
+          <div class="newsletter-row">
+            <input id="subscribe-email" type="email" name="email" required placeholder="Votre adresse email" autocomplete="email" />
+            <button class="button button-primary" type="submit">Je m'abonne</button>
+          </div>
+          <p class="meta">En vous abonnant, vous acceptez de recevoir la lettre de Greise. Désinscription possible à tout moment.</p>
+        </form>
+      </section>
 
-    <div class="account-card" id="connexion">
-      <h2>Se connecter pour commenter</h2>
-      <p>Le site est statique et ne stocke aucun mot de passe : la connexion se fait via votre compte GitHub au moment de commenter un article. Votre nom d'utilisateur public apparaît sur votre message. C'est gratuit et immédiat.</p>
-      <a class="button button-primary" href={pathFor('/')}>Choisir un article à commenter</a>
-    </div>
+      <section class="subscribe-card" aria-labelledby="compte-title">
+        <h2 id="compte-title">💬 Votre compte lecteur</h2>
+        <p>
+          Créez votre compte gratuitement avec votre adresse email pour publier des commentaires sous les articles, réagir aux contributions des autres lecteurs et supprimer vos propres messages à tout moment.
+        </p>
+        <ul class="subscribe-benefits">
+          <li>Connexion par email et mot de passe, en toute autonomie</li>
+          <li>Commentaires affichés directement sous chaque article</li>
+          <li>Réactions « J'aime » sur les commentaires</li>
+          <li>Vos données servent uniquement à l'espace débat</li>
+        </ul>
+        <div class="subscribe-actions">
+          <a class="button button-primary" href={pathFor('/')}>Choisir un article à lire</a>
+          <p class="meta">
+            Le formulaire de connexion et de création de compte se trouve en bas de chaque article, dans l'espace débat.
+          </p>
+        </div>
+      </section>
 
-    <div class="account-card" id="debat">
-      <h2>Les règles de l'espace débat</h2>
-      <p>Les échanges sont modérés dans le respect de notre <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a> : pas d'insultes, pas de désinformation, des arguments sourcés. Les contributions constructives sont mises en avant.</p>
-      <a class="button" href={pathFor('/contact/')}>Signaler un commentaire</a>
+      <section class="subscribe-card" aria-labelledby="debat-title">
+        <h2 id="debat-title">🤝 Les règles de l'espace débat</h2>
+        <p>Greise cultive un débat constructif et respectueux :</p>
+        <ul class="subscribe-benefits">
+          <li>Argumentez avec courtoisie et appuyez-vous sur des faits sourcés</li>
+          <li>Respectez les autres lecteurs, même en cas de désaccord</li>
+          <li>Pas de propos haineux, diffamatoires ou spam</li>
+          <li>Les commentaires contraires à la charte sont modérés</li>
+        </ul>
+        <p class="meta">
+          Notre <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a> et notre <a href={pathFor('/a-propos/')}>démarche</a> détaillent nos engagements en matière de vérification et de transparence.
+        </p>
+      </section>
     </div>
-  </section>
+  </div>
 </BaseLayout>

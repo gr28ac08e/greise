@@ -1,8 +1,287 @@
 ---
-// Commentaires publics via utterances (connexion GitHub, sans serveur).
-// Une seule configuration requise : installer l'app utterances sur le dépôt.
+import { BACKEND, backendConfigured } from '../lib/backend';
+interface Props { slug: string }
+const { slug } = Astro.props;
+const configured = backendConfigured();
 ---
-<div class="utterances-wrap">
-  <script is:inline src="https://utteranc.es/client.js" repo="gr28ac08e/greise" issue-term="pathname" theme="preferred-color-scheme" crossorigin="anonymous" async></script>
-  <noscript><p class="comments-note">Les commentaires nécessitent JavaScript et une connexion GitHub.</p></noscript>
+<div
+  class="comments-app"
+  data-comments
+  data-slug={slug}
+  data-configured={String(configured)}
+  data-url={BACKEND.url}
+  data-key={BACKEND.anonKey}
+>
+  <div data-auth></div>
+  <p class="comments-note" data-global-status aria-live="polite"></p>
+  <div class="comments-list" data-list>
+    <p class="comments-note">Chargement des commentaires…</p>
+  </div>
+  <form class="comments-form" data-form hidden>
+    <label class="comments-label" for="comment-input">Votre commentaire</label>
+    <textarea
+      id="comment-input"
+      data-input
+      rows="3"
+      maxlength="2000"
+      required
+      placeholder="Réagissez avec courtoisie et des arguments sourcés…"></textarea>
+    <div class="comments-form-actions">
+      <button class="button button-primary" type="submit">Publier</button>
+      <span class="comments-note" data-status aria-live="polite"></span>
+    </div>
+  </form>
+  <noscript>
+    <p class="comments-note">Les commentaires nécessitent JavaScript.</p>
+  </noscript>
 </div>
+
+<script is:inline>
+  (function () {
+    var root = document.querySelector('[data-comments]');
+    if (!root) return;
+    var slug = root.getAttribute('data-slug');
+    var configured = root.getAttribute('data-configured') === 'true';
+    var authArea = root.querySelector('[data-auth]');
+    var globalStatus = root.querySelector('[data-global-status]');
+    var list = root.querySelector('[data-list]');
+    var form = root.querySelector('[data-form]');
+    var input = root.querySelector('[data-input]');
+    var status = root.querySelector('[data-status]');
+    var supabase = null;
+    var user = null;
+
+    var LIKE_SVG =
+      '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>';
+
+    function esc(s) {
+      var d = document.createElement('div');
+      d.textContent = s == null ? '' : String(s);
+      return d.innerHTML;
+    }
+
+    function timeAgo(iso) {
+      var s = (Date.now() - new Date(iso).getTime()) / 1000;
+      if (s < 60) return "à l'instant";
+      if (s < 3600) return 'il y a ' + Math.floor(s / 60) + ' min';
+      if (s < 86400) return 'il y a ' + Math.floor(s / 3600) + ' h';
+      if (s < 2592000) return 'il y a ' + Math.floor(s / 86400) + ' j';
+      return new Date(iso).toLocaleDateString('fr-FR');
+    }
+
+    function setNote(msg, isError) {
+      status.textContent = msg || '';
+      status.style.color = isError ? 'var(--live)' : '';
+    }
+    function setGlobal(msg) {
+      globalStatus.textContent = msg || '';
+    }
+
+    function displayName() {
+      if (user && user.email) return user.email.split('@')[0];
+      return 'Lecteur';
+    }
+
+    if (!configured) {
+      list.innerHTML =
+        '<div class="comments-offline"><strong>L\'espace débat arrive très bientôt.</strong>' +
+        '<p>Les comptes lecteurs et les commentaires seront ouverts dès la mise en service de la base de données. En attendant, écrivez-nous : <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>.</p></div>';
+      return;
+    }
+
+    import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
+      .then(function (mod) {
+        supabase = mod.createClient(root.getAttribute('data-url'), root.getAttribute('data-key'));
+        init();
+      })
+      .catch(function () {
+        list.innerHTML =
+          '<div class="comments-offline">Les commentaires sont momentanément indisponibles. Réessayez dans un instant.</div>';
+      });
+
+    function init() {
+      supabase.auth.onAuthStateChange(function (_event, session) {
+        user = session ? session.user : null;
+        renderAuth();
+        loadComments();
+      });
+      supabase.auth.getSession().then(function (res) {
+        user = res.data && res.data.session ? res.data.session.user : null;
+        renderAuth();
+        loadComments();
+      });
+      bindForm();
+      bindList();
+    }
+
+    function renderAuth() {
+      if (user) {
+        var name = displayName();
+        authArea.innerHTML =
+          '<div class="auth-box auth-signed">' +
+          '<span class="comment-avatar" aria-hidden="true">' + esc(name.charAt(0).toUpperCase()) + '</span>' +
+          '<span>Connecté en tant que <strong>' + esc(name) + '</strong></span>' +
+          '<button type="button" class="button auth-logout">Se déconnecter</button>' +
+          '</div>';
+        form.hidden = false;
+        authArea.querySelector('.auth-logout').addEventListener('click', function () {
+          supabase.auth.signOut().then(function () {
+            user = null;
+            renderAuth();
+            loadComments();
+          });
+        });
+      } else {
+        form.hidden = true;
+        authArea.innerHTML =
+          '<form class="auth-box" data-authform>' +
+          '<strong class="auth-title">Rejoindre le débat</strong>' +
+          '<input type="email" name="email" required placeholder="Votre adresse email" autocomplete="email" />' +
+          '<input type="password" name="password" required minlength="8" placeholder="Mot de passe (8 caractères min.)" autocomplete="current-password" />' +
+          '<button type="submit" class="button">Se connecter</button>' +
+          '<button type="button" class="button button-primary" data-signup>Créer un compte</button>' +
+          '</form>' +
+          '<p class="auth-note">Compte gratuit créé avec votre simple adresse email — aucun compte GitHub requis. Vos données ne servent qu\'à l\'espace débat.</p>';
+        var authForm = authArea.querySelector('[data-authform]');
+        authForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          doAuth('login', authForm);
+        });
+        authForm.querySelector('[data-signup]').addEventListener('click', function (e) {
+          e.preventDefault();
+          doAuth('signup', authForm);
+        });
+      }
+    }
+
+    async function doAuth(mode, authForm) {
+      var email = authForm.email.value.trim();
+      var password = authForm.password.value;
+      if (!email || !password) return;
+      setGlobal(mode === 'login' ? 'Connexion…' : 'Création de votre compte…');
+      try {
+        if (mode === 'signup') {
+          var res = await supabase.auth.signUp({ email: email, password: password });
+          if (res.error) throw res.error;
+          if (!res.data.session) {
+            setGlobal("Compte créé ! Ouvrez l'email de confirmation qui vient de partir, puis connectez-vous.");
+            return;
+          }
+        } else {
+          var res2 = await supabase.auth.signInWithPassword({ email: email, password: password });
+          if (res2.error) throw res2.error;
+        }
+        setGlobal('');
+        var me = await supabase.auth.getUser();
+        user = me.data ? me.data.user : null;
+        renderAuth();
+        loadComments();
+      } catch (err) {
+        setGlobal(err && err.message ? err.message : 'Une erreur est survenue.');
+      }
+    }
+
+    async function loadComments() {
+      list.innerHTML = '<p class="comments-note">Chargement des commentaires…</p>';
+      var res = await supabase
+        .from('comments')
+        .select('id, user_id, author_name, content, created_at')
+        .eq('article_slug', slug)
+        .order('created_at', { ascending: false });
+      if (res.error) {
+        list.innerHTML =
+          '<div class="comments-offline">Les commentaires sont momentanément indisponibles. Réessayez dans un instant.</div>';
+        return;
+      }
+      var rows = res.data || [];
+      if (!rows.length) {
+        list.innerHTML =
+          '<div class="comments-offline">Soyez le premier à réagir : les commentaires des lecteurs s\'afficheront ici.</div>';
+        return;
+      }
+      var ids = rows.map(function (r) { return r.id; });
+      var rx = await supabase.from('comment_reactions').select('comment_id, user_id').in('comment_id', ids);
+      var counts = {};
+      var mine = {};
+      (rx.data || []).forEach(function (r) {
+        counts[r.comment_id] = (counts[r.comment_id] || 0) + 1;
+        if (user && r.user_id === user.id) mine[r.comment_id] = true;
+      });
+      list.innerHTML = rows
+        .map(function (row) {
+          var name = row.author_name || 'Lecteur';
+          var isMine = user && row.user_id === user.id;
+          return (
+            '<article class="comment-card" data-comment-id="' + esc(row.id) + '">' +
+            '<span class="comment-avatar" aria-hidden="true">' + esc(name.charAt(0).toUpperCase()) + '</span>' +
+            '<div class="comment-main">' +
+            '<div class="comment-head"><span class="comment-author">' + esc(name) +
+            (isMine ? ' <span class="comment-you">(vous)</span>' : '') + '</span>' +
+            '<span class="comment-time">' + timeAgo(row.created_at) + '</span></div>' +
+            '<p class="comment-content">' + esc(row.content) + '</p>' +
+            '<div class="comment-actions">' +
+            '<button type="button" class="comment-like" data-like aria-pressed="' + (mine[row.id] ? 'true' : 'false') + '">' +
+            LIKE_SVG + "<span>J'aime</span> <span>" + (counts[row.id] || 0) + '</span></button>' +
+            (isMine ? '<button type="button" class="comment-delete" data-delete>Supprimer</button>' : '') +
+            '</div></div></article>'
+          );
+        })
+        .join('');
+    }
+
+    function requireAuth(message) {
+      if (user) return true;
+      setGlobal(message);
+      renderAuth();
+      return false;
+    }
+
+    function bindList() {
+      list.addEventListener('click', async function (e) {
+        var likeBtn = e.target.closest('[data-like]');
+        if (likeBtn) {
+          if (!requireAuth('Connectez-vous pour réagir aux commentaires.')) return;
+          var card = likeBtn.closest('[data-comment-id]');
+          var id = card.getAttribute('data-comment-id');
+          var pressed = likeBtn.getAttribute('aria-pressed') === 'true';
+          if (pressed) {
+            await supabase.from('comment_reactions').delete().eq('comment_id', id).eq('user_id', user.id);
+          } else {
+            await supabase.from('comment_reactions').insert({ comment_id: id, user_id: user.id, type: 'like' });
+          }
+          loadComments();
+          return;
+        }
+        var delBtn = e.target.closest('[data-delete]');
+        if (delBtn) {
+          var delCard = delBtn.closest('[data-comment-id]');
+          await supabase.from('comments').delete().eq('id', delCard.getAttribute('data-comment-id')).eq('user_id', user.id);
+          loadComments();
+        }
+      });
+    }
+
+    function bindForm() {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (!requireAuth('Connectez-vous (ou créez votre compte lecteur) pour commenter.')) return;
+        var content = input.value.trim();
+        if (!content) return;
+        setNote('Publication…');
+        var ins = await supabase.from('comments').insert({
+          article_slug: slug,
+          user_id: user.id,
+          author_name: displayName(),
+          content: content,
+        });
+        if (ins.error) {
+          setNote('Publication impossible : ' + ins.error.message, true);
+          return;
+        }
+        input.value = '';
+        setNote('Commentaire publié. Merci pour votre contribution !');
+        loadComments();
+      });
+    }
+  })();
+</script>
