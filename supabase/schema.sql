@@ -37,31 +37,31 @@ alter table public.comments enable row level security;
 alter table public.comment_reactions enable row level security;
 
 -- Commentaires : lecture publique, écriture et suppression par l'auteur
-drop policy if exists 'commentaires lecture publique' on public.comments;
-create policy 'commentaires lecture publique'
+drop policy if exists "commentaires lecture publique" on public.comments;
+create policy "commentaires lecture publique"
   on public.comments for select using (true);
 
-drop policy if exists 'commentaires publication connecte' on public.comments;
-create policy 'commentaires publication connecte'
+drop policy if exists "commentaires publication connecte" on public.comments;
+create policy "commentaires publication connecte"
   on public.comments for insert
   with check (auth.uid() = user_id);
 
-drop policy if exists 'commentaires suppression par auteur' on public.comments;
-create policy 'commentaires suppression par auteur'
+drop policy if exists "commentaires suppression par auteur" on public.comments;
+create policy "commentaires suppression par auteur"
   on public.comments for delete
   using (auth.uid() = user_id);
 
 -- Réactions : lecture publique, ajout et retrait par l'auteur
-drop policy if exists 'reactions lecture publique' on public.comment_reactions;
-create policy 'reactions lecture publique'
+drop policy if exists "reactions lecture publique" on public.comment_reactions;
+create policy "reactions lecture publique"
   on public.comment_reactions for select using (true);
 
-drop policy if exists 'reactions ajout connecte' on public.comment_reactions;
-create policy 'reactions ajout connecte'
+drop policy if exists "reactions ajout connecte" on public.comment_reactions;
+create policy "reactions ajout connecte"
   on public.comment_reactions for insert
   with check (auth.uid() = user_id);
 
-drop policy if exists 'reactions retrait par auteur' on public.comment_reactions;
-create policy 'reactions retrait par auteur'
+drop policy if exists "reactions retrait par auteur" on public.comment_reactions;
+create policy "reactions retrait par auteur"
   on public.comment_reactions for delete
   using (auth.uid() = user_id);
