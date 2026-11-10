@@ -3,10 +3,14 @@ import { render } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
 import Comments from '../components/Comments.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { getCollection } from 'astro:content';
 import { categoryLabel, pathFor, readingTime } from '../lib/utils';
 const { article } = Astro.props;
 const { Content } = await render(article);
 const data = article.data;
+const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
+const related = [...editorial, ...rss].filter((item) => item.id !== article.id && item.data.category === data.category).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
 const spoken = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.body || ''}`;
 const href = new URL(pathFor(`/article/${article.id}/`), Astro.site).toString();
 const image = data.imageUrl || data.image;
@@ -17,6 +21,7 @@ const imageAlt = isRssPhoto
 const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.pubDate);
 ---
 <BaseLayout title={`${data.title} | Greise`} description={data.summary} image={image} type="article" canonicalPath={`/article/${article.id}/`}>
+  <div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
   <article class="container article-page">
     <nav class="breadcrumb" aria-label="Fil d'Ariane">
       <a href={pathFor('/')}>Accueil</a>
@@ -35,6 +40,7 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 
       </div>
     </header>
 
+    <div class="article-tools-row"><span class="article-kicker">GREISE · ACTUALITÉS &amp; ANALYSES</span><span class="article-reading-time">{readingTime(spoken)} min de lecture</span></div>
     <figure class="article-photo">
       <img class="article-hero-image" src={image} alt={imageAlt} width="1200" height="675" fetchpriority="high" />
       <figcaption class="image-credit">
@@ -53,6 +59,8 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 
 
     <div class="article-body"><Content /></div>
 
+    <section class="article-end-note"><span class="article-end-rule"></span><p>Vous venez de lire une publication de <strong>Greise</strong>. Comprendre le monde, au-delà des titres.</p></section>
+
     <section class="source-box" aria-labelledby="source-title">
       <h2 id="source-title">Sources &amp; transparence</h2>
       <p>
@@ -70,6 +78,8 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 
       <span class="copy-status" aria-live="polite"></span>
     </div>
 
+    {related.length > 0 && <section class="related-section" aria-labelledby="related-title"><div class="related-heading"><p class="eyebrow">Pour approfondir</p><h2 id="related-title">À lire aussi</h2></div><div class="related-list">{related.map((item) => <ArticleCard article={item} />)}</div></section>}
+
     <section class="comments-section" aria-labelledby="comments-title">
       <h2 id="comments-title">Espace débat — réagissez à cet article</h2>
       <p class="comments-note">
@@ -79,6 +89,10 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 
     </section>
 
     <script>
+      const progressBar = document.querySelector<HTMLElement>('#reading-progress-bar');
+      const updateReadingProgress = () => { const article = document.querySelector<HTMLElement>('.article-page'); if (!article || !progressBar) return; const rect = article.getBoundingClientRect(); const total = article.offsetHeight - window.innerHeight; const passed = Math.min(1, Math.max(0, -rect.top / Math.max(1, total))); progressBar.style.transform = `scaleX(${passed})`; };
+      window.addEventListener('scroll', updateReadingProgress, { passive: true });
+      updateReadingProgress();
       document.querySelectorAll<HTMLButtonElement>('[data-copy-link]').forEach((button) => {
         button.addEventListener('click', async () => {
           const status = button.parentElement?.querySelector<HTMLElement>('.copy-status');
