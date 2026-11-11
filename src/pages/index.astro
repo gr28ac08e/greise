@@ -5,7 +5,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
-import { categories, categoryLabel, pathFor, readingTime } from '../lib/utils';
+import { categories, categoryLabel, emphasizeParts, pathFor, readingTime } from '../lib/utils';
 
 const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
 const newest = [...editorial, ...rss].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
@@ -19,6 +19,7 @@ const spokenFor = (article: (typeof newest)[number]) => `${article.data.title}. 
 const audioFor = (article: (typeof newest)[number]) => existsSync(resolve(process.cwd(), 'public', 'audio', `${article.id}.mp3`)) ? pathFor(`/audio/${article.id}.mp3`) : '';
 const readMinutesFor = (article: (typeof newest)[number]) => readingTime(spokenFor(article));
 const leadImage = lead ? imageFor(lead) : '';
+const leadParts = lead ? emphasizeParts(lead.data.title) : { before: '', word: '', after: '' };
 const leadHref = lead ? pathFor(`/article/${lead.id}/`) : '';
 const leadDate = lead ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(lead.data.pubDate) : '';
 const leadAlt = lead ? (lead.data.imageUrl ? `Photo liée à l'article : ${lead.data.title}` : `Illustration de la rubrique ${categoryLabel(lead.data.category)}`) : '';
@@ -37,33 +38,22 @@ const feed = leadStories.slice(1, 4).map((article) => ({
 
 <BaseLayout title="Greise | L'actualité mondiale, lisible et écoutable" description="L'actualité internationale en français, contextualisée et écoutable. Des résumés sourcés, des repères et une lecture claire, gratuitement." image={leadImage || '/avatar.jpg'}>
   {lead ? (
-    <section class="container hero-grid" aria-label="À la une">
+    <section class="container hero-grid hero-stage" aria-label="À la une">
+      <a class="lead-figure" id="lead-image-link" href={leadHref} aria-label={`Ouvrir l'article : ${lead.data.title}`} tabindex="-1">
+        <img id="lead-image" src={leadImage} alt={leadAlt} width="1200" height="675" fetchpriority="high" />
+        {lead.data.imageUrl && <span class="lead-credit" id="lead-credit">Photo : {lead.data.source}, via son flux RSS</span>}
+      </a>
+
       <div class="lead-column">
         <article class="lead-card" aria-labelledby="lead-title">
-          <a class="lead-figure" id="lead-image-link" href={leadHref} aria-label={`Ouvrir l'article : ${lead.data.title}`}>
-            <img id="lead-image" src={leadImage} alt={leadAlt} width="1200" height="675" fetchpriority="high" />
-            <span class="lead-pill" id="lead-category">{categoryLabel(lead.data.category)}</span>
-            <span class="lead-source-badge">
-              <svg class="icon" style="width:.8rem;height:.8rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span id="lead-source-badge-text">{lead.data.source}</span>
-            </span>
-            {lead.data.imageUrl && <span class="lead-credit" id="lead-credit">Photo : {lead.data.source}, via son flux RSS</span>}
-          </a>
           <div class="lead-body">
-            <div class="lead-meta">
-              <span>Par <strong id="lead-source">{lead.data.source}</strong></span>
-              <span><time id="lead-date" datetime={lead.data.pubDate.toISOString()}>{leadDate}</time> · <span id="lead-reading-time">{readMinutesFor(lead)}</span> min de lecture</span>
-            </div>
-            <h1 class="lead-title" id="lead-title"><a id="lead-title-link" href={leadHref}>{lead.data.title}</a></h1>
-            <p class="lead-deck" id="lead-summary">{lead.data.summary}</p>
-            <p class="lead-why" id="lead-why"><strong>Pourquoi c'est important</strong>{lead.data.whyItMatters}</p>
-            <div class="lead-actions">
-              <div id="lead-audio-wrapper"><AudioPlayer text={spokenFor(lead)} slug={lead.id} label="Écouter l'article" /></div>
-              <button class="button" type="button" data-sources-open>
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
-                Transparence &amp; sources
-              </button>
-            </div>
+            <p class="lead-kicker" id="lead-category">{categoryLabel(lead.data.category)}</p>
+            <h1 class="lead-title" id="lead-title"><a id="lead-title-link" href={leadHref}>{leadParts.before}{leadParts.word && <em>{leadParts.word}</em>}{leadParts.after}</a></h1>
+            <p class="lead-readtime"><span id="lead-reading-time">{readMinutesFor(lead)}</span> min de lecture</p>
+            <p class="lead-byline">
+              <span class="lead-avatar" id="lead-avatar" aria-hidden="true">{lead.data.source.trim().charAt(0).toUpperCase()}</span>
+              <span>Par <strong id="lead-source">{lead.data.source}</strong> · <time id="lead-date" datetime={lead.data.pubDate.toISOString()}>{leadDate}</time></span>
+            </p>
             {leadStories.length > 1 && (
               <div class="lead-pagination" role="group" aria-label="Choisir l'article à la une">
                 {leadStories.map((story, index) => (
@@ -92,6 +82,13 @@ const feed = leadStories.slice(1, 4).map((article) => ({
                 ))}
               </div>
             )}
+            <div class="lead-actions">
+              <div id="lead-audio-wrapper"><AudioPlayer text={spokenFor(lead)} slug={lead.id} label="Écouter l'article" /></div>
+              <button class="button" type="button" data-sources-open>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+                Transparence &amp; sources
+              </button>
+            </div>
           </div>
         </article>
 
@@ -101,9 +98,8 @@ const feed = leadStories.slice(1, 4).map((article) => ({
             <a class="next-story-card" href={pathFor(`/article/${nextStory.id}/`)}>
               <span class="next-story-photo"><img src={imageFor(nextStory)} alt="" width="240" height="150" loading="lazy" /></span>
               <span class="next-story-copy">
-                <span class="next-story-category">{categoryLabel(nextStory.data.category)}</span>
                 <strong id="next-story-title">{nextStory.data.title}</strong>
-                <span class="next-story-meta">{readMinutesFor(nextStory)} min de lecture · {nextStory.data.source}</span>
+                <span class="next-story-meta">{readMinutesFor(nextStory)} min de lecture</span>
                 {nextStory.data.imageUrl && <span class="next-story-credit">Photo : {nextStory.data.source}</span>}
               </span>
             </a>
@@ -111,31 +107,21 @@ const feed = leadStories.slice(1, 4).map((article) => ({
         )}
       </div>
 
-      <aside class="home-side">
-        <div class="live-panel">
-          <div class="live-panel-head">
-            <h2><span class="live-dot-big" aria-hidden="true"></span>À la une aussi</h2>
-            <span>Greise</span>
-          </div>
-          <div class="live-items">
-            {feed.length ? feed.map((item, index) => (
-              <article class:list={['live-item', index === 0 ? 'live-featured' : 'live-compact']}>
-                <a class="live-thumb" href={item.href} aria-label={item.title}><img src={item.image} alt="" width="640" height="360" loading="lazy" decoding="async" /></a>
-                <div class="live-copy">
-                  <div class="live-item-top"><span class="live-time">{item.time}</span><span class="live-chip">{item.category}</span></div>
-                  <a class="live-title" href={item.href}>{item.title}</a>
-                  <p class="live-context">{item.summary}</p>
-                  {item.credit && <span class="live-credit">{item.credit}</span>}
-                </div>
-              </article>
-            )) : <p class="live-title">Les prochains articles arriveront bientôt.</p>}
-          </div>
-          <a class="live-more" href="#tous-les-articles">
-            Voir toute l'actualité
-            <svg class="icon" style="width:.85rem;height:.85rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
-        </div>
-      </aside>
+      {feed.length > 0 && (
+        <aside class="home-side" aria-label="Autres articles à la une">
+          {feed.map((item, index) => (
+            <article class:list={['side-card', index === 0 ? 'side-card-featured' : 'side-card-compact']}>
+              <a class="side-thumb" href={item.href} tabindex="-1" aria-hidden="true"><img src={item.image} alt="" width="640" height="400" loading="lazy" decoding="async" /></a>
+              <div class="side-copy">
+                <h2 class="side-title"><a href={item.href}>{item.title}</a></h2>
+                {index === 0 && <p class="side-summary">{item.summary}</p>}
+                <p class="side-meta">{item.time}</p>
+                {item.credit && <p class="side-credit">{item.credit}</p>}
+              </div>
+            </article>
+          ))}
+        </aside>
+      )}
     </section>
 
     <dialog class="sources-modal" id="sources-modal" aria-labelledby="sources-title">
@@ -194,6 +180,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
   </section>
 
   <script>
+    import { emphasizeParts } from '../lib/utils';
     const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-page-item]'));
     const loadMore = document.querySelector<HTMLButtonElement>('#load-more');
     const searchInput = document.querySelector<HTMLInputElement>('#greise-search');
@@ -238,7 +225,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     const leadWhy = document.querySelector<HTMLElement>('#lead-why');
     const leadCategory = document.querySelector<HTMLElement>('#lead-category');
     const leadSource = document.querySelector<HTMLElement>('#lead-source');
-    const leadSourceBadge = document.querySelector<HTMLElement>('#lead-source-badge-text');
+    const leadAvatar = document.querySelector<HTMLElement>('#lead-avatar');
     const leadDate = document.querySelector<HTMLTimeElement>('#lead-date');
     const leadReadingTime = document.querySelector<HTMLElement>('#lead-reading-time');
     const leadCredit = document.querySelector<HTMLElement>('#lead-credit');
@@ -251,12 +238,19 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       if (!data.title || !data.href || !data.image) return;
       if (leadImageElement) { leadImageElement.src = data.image; leadImageElement.alt = data.alt || ''; }
       if (leadImageLink) { leadImageLink.href = data.href; leadImageLink.setAttribute('aria-label', `Ouvrir l'article : ${data.title}`); }
-      if (leadTitleLink) { leadTitleLink.href = data.href; leadTitleLink.textContent = data.title; }
+      if (leadTitleLink) {
+        leadTitleLink.href = data.href;
+        const parts = emphasizeParts(data.title);
+        const nodes: Node[] = [document.createTextNode(parts.before)];
+        if (parts.word) { const em = document.createElement('em'); em.textContent = parts.word; nodes.push(em); }
+        nodes.push(document.createTextNode(parts.after));
+        leadTitleLink.replaceChildren(...nodes);
+      }
       if (leadSummary) leadSummary.textContent = data.summary || '';
       if (leadWhy) { const strong = leadWhy.querySelector('strong'); leadWhy.replaceChildren(); if (strong) leadWhy.append(strong); leadWhy.append(document.createTextNode(data.why || '')); }
       if (leadCategory) leadCategory.textContent = data.category || '';
       if (leadSource) leadSource.textContent = data.source || '';
-      if (leadSourceBadge) leadSourceBadge.textContent = data.source || '';
+      if (leadAvatar) leadAvatar.textContent = (data.source || '').trim().charAt(0).toUpperCase();
       if (leadDate) { leadDate.textContent = data.dateLabel || ''; leadDate.dateTime = data.date || ''; }
       if (leadReadingTime) leadReadingTime.textContent = data.readingTime || '';
       if (leadCredit) { leadCredit.textContent = data.credit || ''; leadCredit.hidden = !data.credit; }
