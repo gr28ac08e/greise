@@ -7,7 +7,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { cleanCopy, shorten, slugify } from './lib/text.mjs';
+import { cleanCopy, cleanTitle, shorten, slugify } from './lib/text.mjs';
 import { clusterArticles, dedupeByOutlet } from './lib/cluster.mjs';
 
 const ROOT = process.cwd();
@@ -81,7 +81,7 @@ async function loadExisting() {
 const refFromRaw = (article) => ({
   name: article.outlet || article.source,
   url: article.link,
-  title: article.title,
+  title: cleanTitle(article.title),
   pubDate: article.pubDate,
   excerpt: shorten(article.rawDescription || '', 280),
 });

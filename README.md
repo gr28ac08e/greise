@@ -51,13 +51,13 @@ Les sujets de plus de 72 heures sans nouvelle source sont supprimés ; 40 sujets
 
 ## Déploiement GitHub Pages
 
-Le site vise `https://gr28ac08e.github.io/greise` (sous-chemin `/greise`). Dans **Settings → Pages**, choisissez **GitHub Actions**. Les pushes sur `main` lancent `deploy.yml`. `fetch-news.yml` s’exécute toutes les trois heures (UTC), lance d’abord les tests puis la collecte, et peut être déclenché à la main depuis l’onglet Actions.
+Le site vise `https://gr28ac08e.github.io/greise` (sous-chemin `/greise`). Dans **Settings → Pages**, choisissez **GitHub Actions**. Les pushes sur `main` lancent `deploy.yml`. `fetch-news.yml` s’exécute toutes les heures (à la minute 7), lance d’abord les tests puis la collecte, et peut être déclenché à la main depuis l’onglet Actions.
 
 Pour les synthèses IA et l’audio uniquement, ajoutez `OPENAI_API_KEY` dans **Settings → Secrets and variables → Actions**. La clé ne doit jamais être commitée. La variable locale facultative `SITE_URL` définit une autre URL canonique.
 
 ## Accueil
 
-L’accueil reprend la maquette « Buenos Aires Daily » : masthead (date, logo centré, recherche, abonnement), barre de rubriques en pastille, scène unique avec la photo de la une en fond, titre serif en dégradé cyan avec un mot en italique, durée de lecture, mention de recoupement, pagination 1 à 4, carte « À suivre » et trois cartes vitrées à droite. La une privilégie les sujets recoupés par le plus de médias. Le thème est sombre uniquement. Sur téléphone, tout passe en une colonne.
+L’accueil reprend la maquette « Buenos Aires Daily » : masthead (date, logo centré, recherche, abonnement), barre de rubriques en pastille, scène unique avec la photo de la une en fond, titre serif en dégradé cyan avec un mot en italique, durée de lecture, mention de recoupement, pagination 1 à 4, carte « À suivre » et trois cartes vitrées à droite. La une privilégie les sujets recoupés par le plus de médias. Deux thèmes : sombre (par défaut) et « Coucher de soleil » (clair, tons chauds), choisis depuis le bouton du bandeau ou le menu latéral (le bouton trois barres), mémorisés sur l’appareil. Sur téléphone, tout passe en une colonne.
 
 ## Accessibilité, données et droits
 
@@ -72,3 +72,11 @@ La photo `public/avatar.jpg` provient du profil public [@gresie13 sur TikTok](ht
 - TikTok : https://tiktok.com/@gresie13
 - Facebook : https://www.facebook.com/profile.php?id=61590273613236
 - Contact : [greise013@gmail.com](mailto:greise013@gmail.com)
+
+## Fonctions propres à Greise
+
+- **En bref** (`/en-bref/`) : les sept sujets les plus recoupés du moment.
+- **Menu latéral** : rubriques, pages du site, thème, taille du texte (A, A+, A++).
+- **Partage natif** (bouton « Partager… » quand le navigateur le permet) et copie du lien.
+- **Application installable** (manifeste + service worker) : les pages déjà vues restent lisibles sans réseau.
+- **Flux RSS** de Greise, par rubrique.

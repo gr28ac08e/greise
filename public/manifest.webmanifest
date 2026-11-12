@@ -1,0 +1,16 @@
+{
+  "name": "Greise, l'actualité recoupée",
+  "short_name": "Greise",
+  "description": "Ce que plusieurs médias publient sur un même sujet, avec les liens vers chaque source.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050607",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "favicon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

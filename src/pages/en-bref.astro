@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { categoryLabel, coverageLabel, outletCount, outletNames, pathFor } from '../lib/utils';
+const rss = await getCollection('rssArticles');
+const stories = rss
+  .filter((a) => a.data.kind !== 'repère')
+  .sort((a, b) => outletCount(b.data) - outletCount(a.data) || (b.data.updatedDate || b.data.pubDate).valueOf() - (a.data.updatedDate || a.data.pubDate).valueOf())
+  .slice(0, 7);
+const built = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date());
+---
+<BaseLayout title="En bref : l'essentiel du jour | Greise" description="Les sujets les plus recoupés du moment, en une minute, avec les médias qui les rapportent." canonicalPath="/en-bref/">
+  <section class="container page-intro">
+    <p class="eyebrow">En bref</p>
+    <h1>L'essentiel du jour, en une minute</h1>
+    <p>Les sujets traités par le plus grand nombre de médias, classés par recoupement. Chaque ligne renvoie vers le détail des sources.</p>
+    <p class="freshness">Mis à jour le {built} (heure de Paris)</p>
+  </section>
+  <section class="container section" aria-label="Sujets du moment">
+    {stories.length ? (
+      <ol class="briefing-list">
+        {stories.map((story) => (
+          <li>
+            <a href={pathFor(`/article/${story.id}/`)}>{story.data.title}</a>
+            <p class="meta">{categoryLabel(story.data.category)} · {coverageLabel(story.data)} · {outletNames(story.data)}</p>
+          </li>
+        ))}
+      </ol>
+    ) : <div class="empty-state">Aucun sujet pour le moment. La prochaine collecte a lieu dans l'heure.</div>}
+  </section>
+</BaseLayout>

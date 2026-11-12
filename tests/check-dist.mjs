@@ -32,4 +32,23 @@ assert.match(home, /Recoupé par 3 médias/, 'l’accueil doit afficher le recou
 assert.match(home, /rel="alternate" type="application\/rss\+xml"/, 'l’accueil doit déclarer le flux RSS');
 assert.match(await read('flux-rss/index.html'), /rss\.xml/, 'la page Flux RSS doit citer les flux');
 
-console.log('✓ pages, flux RSS et recoupement vérifiés');
+// Aucun tiret long ni entité HTML brute dans le texte visible d'aucune page, ni dans les flux.
+const LONG = /[\u2012-\u2015\u2212\u2E3A\u2E3B\uFE58\uFE63\uFF0D]/;
+async function* walk(dir) {
+  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) yield* walk(full);
+    else yield full;
+  }
+}
+let scanned = 0;
+for await (const file of walk(dist)) {
+  if (!/\.(html|xml)$/.test(file)) continue;
+  const text = (await fs.readFile(file, 'utf8')).replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]*>/g, ' ');
+  assert.doesNotMatch(text, LONG, `tiret long dans ${file}`);
+  assert.doesNotMatch(text, /&amp;#\d+;|&#\d+;|&mdash;|&ndash;/, `entité HTML brute dans ${file}`);
+  scanned++;
+}
+assert.ok(scanned > 10, 'des pages doivent avoir été analysées');
+
+console.log(`✓ pages, flux RSS et recoupement vérifiés (${scanned} fichiers sans tiret long)`);

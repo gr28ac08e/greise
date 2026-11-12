@@ -1,26 +1,30 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { noDashesText, noDashesTitle } from './lib/dashes';
+
+const title = z.string().transform(noDashesTitle);
+const text = z.string().transform(noDashesText);
 
 const sourceRef = z.object({
-  name: z.string(),
+  name: text,
   url: z.string().url(),
-  title: z.string(),
+  title,
   pubDate: z.coerce.date(),
-  excerpt: z.string().optional(),
+  excerpt: text.optional(),
 });
 
 const articleSchema = z.object({
-  title: z.string(),
-  source: z.string().default('Greise'),
+  title,
+  source: text.default('Greise'),
   sourceUrl: z.string().url().optional(),
   category: z.enum(['international', 'economie', 'tech', 'culture', 'sport']),
   pubDate: z.coerce.date(),
-  summary: z.string(),
-  whyItMatters: z.string().default(''),
+  summary: text,
+  whyItMatters: text.default(''),
   updatedDate: z.coerce.date().optional(),
   // Médias dont les articles ont été recoupés pour ce sujet (un lien par média).
   sources: z.array(sourceRef).default([]),
-  imageCredit: z.string().optional(),
+  imageCredit: text.optional(),
   image: z.string().default('/images/repere.svg'),
   imageUrl: z.string().url().optional(),
   audioFile: z.string().optional(),
