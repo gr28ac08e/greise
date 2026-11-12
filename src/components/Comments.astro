@@ -180,7 +180,7 @@ const configured = backendConfigured();
       list.innerHTML = '<p class="comments-note">Chargement des commentaires…</p>';
       var res = await supabase
         .from('comments')
-        .select('id, user_id, author_name, content, created_at')
+        .select('*')
         .eq('article_slug', slug)
         .order('created_at', { ascending: false });
       if (res.error) {
@@ -202,24 +202,35 @@ const configured = backendConfigured();
         counts[r.comment_id] = (counts[r.comment_id] || 0) + 1;
         if (user && r.user_id === user.id) mine[r.comment_id] = true;
       });
-      list.innerHTML = rows
+      var children = {};
+      var roots = [];
+      rows.forEach(function (row) {
+        if (row.parent_id) { (children[row.parent_id] = children[row.parent_id] || []).push(row); } else { roots.push(row); }
+      });
+      Object.keys(children).forEach(function (k) { children[k].reverse(); });
+      function card(row, isReply) {
+        var name = row.author_name || 'Lecteur';
+        var isMine = user && row.user_id === user.id;
+        return (
+          '<article class="comment-card' + (isReply ? ' is-reply' : '') + '" data-comment-id="' + esc(row.id) + '">' +
+          '<span class="comment-avatar" aria-hidden="true">' + esc(name.charAt(0).toUpperCase()) + '</span>' +
+          '<div class="comment-main">' +
+          '<div class="comment-head"><span class="comment-author">' + esc(name) +
+          (isMine ? ' <span class="comment-you">(vous)</span>' : '') + '</span>' +
+          '<span class="comment-time">' + timeAgo(row.created_at) + '</span></div>' +
+          '<p class="comment-content">' + esc(row.content) + '</p>' +
+          '<div class="comment-actions">' +
+          '<button type="button" class="comment-like" data-like aria-pressed="' + (mine[row.id] ? 'true' : 'false') + '">' +
+          LIKE_SVG + "<span>J'aime</span> <span>" + (counts[row.id] || 0) + '</span></button>' +
+          (isReply ? '' : '<button type="button" class="comment-reply" data-reply>Répondre</button>') +
+          (isMine ? '<button type="button" class="comment-delete" data-delete>Supprimer</button>' : '') +
+          '</div><div data-reply-slot></div></div></article>'
+        );
+      }
+      list.innerHTML = roots
         .map(function (row) {
-          var name = row.author_name || 'Lecteur';
-          var isMine = user && row.user_id === user.id;
-          return (
-            '<article class="comment-card" data-comment-id="' + esc(row.id) + '">' +
-            '<span class="comment-avatar" aria-hidden="true">' + esc(name.charAt(0).toUpperCase()) + '</span>' +
-            '<div class="comment-main">' +
-            '<div class="comment-head"><span class="comment-author">' + esc(name) +
-            (isMine ? ' <span class="comment-you">(vous)</span>' : '') + '</span>' +
-            '<span class="comment-time">' + timeAgo(row.created_at) + '</span></div>' +
-            '<p class="comment-content">' + esc(row.content) + '</p>' +
-            '<div class="comment-actions">' +
-            '<button type="button" class="comment-like" data-like aria-pressed="' + (mine[row.id] ? 'true' : 'false') + '">' +
-            LIKE_SVG + "<span>J'aime</span> <span>" + (counts[row.id] || 0) + '</span></button>' +
-            (isMine ? '<button type="button" class="comment-delete" data-delete>Supprimer</button>' : '') +
-            '</div></div></article>'
-          );
+          var kids = (children[row.id] || []).map(function (k) { return card(k, true); }).join('');
+          return card(row, false) + (kids ? '<div class="comment-replies">' + kids + '</div>' : '');
         })
         .join('');
     }
@@ -245,6 +256,25 @@ const configured = backendConfigured();
             await supabase.from('comment_reactions').insert({ comment_id: id, user_id: user.id, type: 'like' });
           }
           loadComments();
+          return;
+        }
+        var replyBtn = e.target.closest('[data-reply]');
+        if (replyBtn) {
+          var rCard = replyBtn.closest('[data-comment-id]');
+          var slot = rCard.querySelector('[data-reply-slot]');
+          if (slot.firstChild) { slot.innerHTML = ''; return; }
+          if (!requireAuth('Indiquez votre adresse email ci-dessus pour répondre.')) return;
+          slot.innerHTML = '<form class="reply-form"><textarea rows="2" maxlength="2000" required placeholder="Votre réponse…"></textarea><button type="submit" class="button button-primary">Répondre</button></form>';
+          var rf = slot.querySelector('form');
+          rf.querySelector('textarea').focus();
+          rf.addEventListener('submit', async function (ev) {
+            ev.preventDefault();
+            var text = rf.querySelector('textarea').value.trim();
+            if (!text) return;
+            var r = await supabase.from('comments').insert({ article_slug: slug, user_id: user.id, author_name: displayName(), content: text, parent_id: rCard.getAttribute('data-comment-id') });
+            if (r.error) { setGlobal(r.error.message && /parent_id/.test(r.error.message) ? 'Les réponses seront bientôt disponibles.' : 'Publication impossible : ' + r.error.message); return; }
+            loadComments();
+          });
           return;
         }
         var delBtn = e.target.closest('[data-delete]');
