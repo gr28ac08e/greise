@@ -21,3 +21,9 @@ jobs:
         run: npm test
       - name: Construire le site
         run: npm run build
+      - name: Test de bout en bout (sujets factices, pages et flux RSS)
+        run: |
+          node tests/make-fixture.mjs
+          npm run summarize
+          npm run build
+          node tests/check-dist.mjs
