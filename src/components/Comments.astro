@@ -17,7 +17,7 @@ const configured = backendConfigured();
   <div class="comments-list" data-list>
     <p class="comments-note">Chargement des commentaires…</p>
   </div>
-  <form class="comments-form" data-form hidden>
+  <form class="comments-form" data-form>
     <label class="comments-label" for="comment-input">Votre commentaire</label>
     <textarea
       id="comment-input"
@@ -113,6 +113,8 @@ const configured = backendConfigured();
       });
       bindForm();
       bindList();
+      input.value = draftGet();
+      input.addEventListener('input', function () { if (!user) draftSet(input.value.trim()); });
     }
 
     function renderAuth() {
@@ -124,7 +126,6 @@ const configured = backendConfigured();
           '<span>Connecté en tant que <strong>' + esc(name) + '</strong></span>' +
           '<button type="button" class="button auth-logout">Se déconnecter</button>' +
           '</div>';
-        form.hidden = false;
         authArea.querySelector('.auth-logout').addEventListener('click', function () {
           supabase.auth.signOut().then(function () {
             user = null;
@@ -133,53 +134,43 @@ const configured = backendConfigured();
           });
         });
       } else {
-        form.hidden = true;
+        var pending = draftGet();
         authArea.innerHTML =
           '<form class="auth-box" data-authform>' +
-          '<strong class="auth-title">Rejoindre le débat</strong>' +
-          '<input type="text" name="display_name" maxlength="40" placeholder="Nom public (facultatif)" autocomplete="nickname" />' +
+          '<strong class="auth-title">Rejoindre la discussion en une étape</strong>' +
           '<input type="email" name="email" required placeholder="Votre adresse email" autocomplete="email" />' +
-          '<input type="password" name="password" required minlength="8" placeholder="Mot de passe (8 caractères min.)" autocomplete="current-password" />' +
-          '<button type="submit" class="button">Se connecter</button>' +
-          '<button type="button" class="button button-primary" data-signup>Créer un compte</button>' +
+          '<button type="submit" class="button button-primary">Recevoir mon lien</button>' +
+          '<label class="rules-check"><input type="checkbox" name="rules" required /> J\'ai lu et j\'accepte les règles de la discussion.</label>' +
+          '<details class="rules-box"><summary>Lire les règles</summary><ul>' +
+          '<li>Respectez les personnes : pas d\'insultes, de harcèlement ni de propos discriminatoires.</li>' +
+          '<li>Argumentez et, si possible, appuyez-vous sur une source.</li>' +
+          '<li>Pas de publicité, de spam ni d\'informations privées sur autrui.</li>' +
+          '<li>Greise peut retirer un commentaire contraire à ces règles ou à la loi.</li></ul></details>' +
           '</form>' +
-          '<p class="auth-note">Compte gratuit créé avec votre simple adresse email. Aucun compte GitHub requis. Vos données ne servent qu\'à l\'espace débat.</p>';
+          '<p class="auth-note">Pas de mot de passe : nous envoyons un lien de connexion à votre adresse. Elle sert uniquement à l\'espace de discussion, sans publicité.' + (pending ? ' Votre commentaire est gardé de côté.' : '') + '</p>';
         var authForm = authArea.querySelector('[data-authform]');
         authForm.addEventListener('submit', function (e) {
           e.preventDefault();
-          doAuth('login', authForm);
-        });
-        authForm.querySelector('[data-signup]').addEventListener('click', function (e) {
-          e.preventDefault();
-          doAuth('signup', authForm);
+          doAuth(authForm);
         });
       }
     }
 
-    async function doAuth(mode, authForm) {
+    function draftGet() { try { return localStorage.getItem('greise-draft:' + slug) || ''; } catch (e) { return ''; } }
+    function draftSet(v) { try { if (v) localStorage.setItem('greise-draft:' + slug, v); else localStorage.removeItem('greise-draft:' + slug); } catch (e) {} }
+
+    async function doAuth(authForm) {
       var email = authForm.email.value.trim();
-      var password = authForm.password.value;
-      if (!email || !password) return;
-      setGlobal(mode === 'login' ? 'Connexion…' : 'Création de votre compte…');
+      if (!email || !authForm.rules.checked) return;
+      draftSet(input.value.trim());
+      setGlobal('Envoi du lien…');
       try {
-        if (mode === 'signup') {
-          var displayNameInput = authForm.querySelector('[name="display_name"]');
-          var displayNameValue = displayNameInput ? displayNameInput.value.trim() : '';
-          var res = await supabase.auth.signUp({ email: email, password: password, options: { data: { display_name: displayNameValue || email.split('@')[0] } } });
-          if (res.error) throw res.error;
-          if (!res.data.session) {
-            setGlobal("Compte créé ! Ouvrez l'email de confirmation qui vient de partir, puis connectez-vous.");
-            return;
-          }
-        } else {
-          var res2 = await supabase.auth.signInWithPassword({ email: email, password: password });
-          if (res2.error) throw res2.error;
-        }
-        setGlobal('');
-        var me = await supabase.auth.getUser();
-        user = me.data ? me.data.user : null;
-        renderAuth();
-        loadComments();
+        var res = await supabase.auth.signInWithOtp({
+          email: email,
+          options: { emailRedirectTo: location.href.split('#')[0] + '#comments-title', data: { display_name: email.split('@')[0] } },
+        });
+        if (res.error) throw res.error;
+        setGlobal('Lien envoyé. Ouvrez votre boîte mail (pensez aux courriers indésirables) et cliquez dessus : vous reviendrez ici connecté.');
       } catch (err) {
         setGlobal(err && err.message ? err.message : 'Une erreur est survenue.');
       }
@@ -244,7 +235,7 @@ const configured = backendConfigured();
       list.addEventListener('click', async function (e) {
         var likeBtn = e.target.closest('[data-like]');
         if (likeBtn) {
-          if (!requireAuth('Connectez-vous pour réagir aux commentaires.')) return;
+          if (!requireAuth('Indiquez votre adresse email ci-dessus pour réagir aux commentaires.')) return;
           var card = likeBtn.closest('[data-comment-id]');
           var id = card.getAttribute('data-comment-id');
           var pressed = likeBtn.getAttribute('aria-pressed') === 'true';
@@ -268,7 +259,7 @@ const configured = backendConfigured();
     function bindForm() {
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
-        if (!requireAuth('Connectez-vous (ou créez votre compte lecteur) pour commenter.')) return;
+        if (!requireAuth('Indiquez votre adresse email ci-dessus pour recevoir votre lien, puis publiez votre commentaire.')) return;
         var content = input.value.trim();
         if (!content) return;
         setNote('Publication…');
@@ -283,6 +274,7 @@ const configured = backendConfigured();
           return;
         }
         input.value = '';
+        draftSet('');
         setNote('Commentaire publié. Merci pour votre contribution !');
         loadComments();
       });

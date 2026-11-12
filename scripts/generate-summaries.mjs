@@ -16,7 +16,7 @@ const CACHE = path.join(ROOT, 'scripts/.cache/generated.json');
 const OUT_DIR = path.join(ROOT, 'src/content/rss');
 const MAX_STORIES = 40;
 const KEEP_HOURS = 72;
-const CATEGORY_IMAGE = { international: '/images/international.svg', economie: '/images/economie.svg', tech: '/images/tech.svg', culture: '/images/culture.svg', sport: '/images/sport.svg' };
+const CATEGORY_IMAGE = { international: '/images/international.svg', economie: '/images/economie.svg', tech: '/images/tech.svg', culture: '/images/culture.svg', livres: '/images/livres.svg', sport: '/images/sport.svg' };
 
 const openai = process.env.OPENAI_API_KEY ? new (await import('openai')).default({ apiKey: process.env.OPENAI_API_KEY }) : null;
 let aiCount = 0;

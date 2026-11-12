@@ -3,6 +3,7 @@ export const categories = [
   { slug: 'economie', label: 'Économie', short: 'Les forces qui façonnent les échanges' },
   { slug: 'tech', label: 'Tech & Science', short: 'Idées, recherche et usages' },
   { slug: 'culture', label: 'Culture', short: 'Création, récits et patrimoine' },
+  { slug: 'livres', label: 'Livres', short: 'Lectures, parutions et auteurs' },
   { slug: 'sport', label: 'Sport', short: 'Jeux, performances et société' },
 ] as const;
 
