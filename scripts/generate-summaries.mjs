@@ -83,7 +83,7 @@ const refFromRaw = (article) => ({
   url: article.link,
   title: cleanTitle(article.title),
   pubDate: article.pubDate,
-  excerpt: shorten(article.rawDescription || '', 280),
+  excerpt: shorten(cleanCopy(article.rawDescription || ''), 280),
 });
 
 function majority(values, fallback) {
@@ -170,7 +170,7 @@ async function main() {
 
   const items = [
     ...existing.map((story) => ({ kind: 'file', story, title: story.title, rawDescription: story.sources.map((ref) => ref.excerpt).join(' '), pubDate: story.pubDate })),
-    ...fresh.map((article) => ({ kind: 'raw', article, title: article.title, rawDescription: article.rawDescription, pubDate: article.pubDate })),
+    ...fresh.map((article) => ({ kind: 'raw', article, title: cleanTitle(article.title), rawDescription: cleanCopy(article.rawDescription || ''), pubDate: article.pubDate })),
   ];
   const groups = clusterArticles(items);
 
