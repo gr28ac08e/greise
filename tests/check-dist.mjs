@@ -10,7 +10,7 @@ const feed = await read('rss.xml');
 assert.match(feed, /<rss version="2\.0"/, 'rss.xml doit être un flux RSS 2.0');
 assert.match(feed, /<guid isPermaLink="true">https:\/\/[^<]+\/article\/guinee-/, 'le sujet Guinée doit figurer dans le flux');
 assert.match(feed, /Recoupé par 3 médias/, 'le flux doit indiquer le recoupement par 3 médias');
-assert.match(feed, /<title>Greise \| International<\/title>|<title>Greise : l.actualité recoupée<\/title>/, 'titre du flux attendu');
+assert.match(feed, /<title>Greise : l(&apos;|')actualité recoupée<\/title>/, 'titre du flux attendu');
 assert.doesNotMatch(feed, /images\.example/, 'le flux ne doit pas reprendre les photos des médias');
 
 const categoryFeed = await read('rss/economie.xml');
