@@ -13,6 +13,7 @@ assert.match(feed, /Recoupé par 3 médias/, 'le flux doit indiquer le recoupeme
 assert.match(feed, /<title>Greise : l(&apos;|')actualité recoupée<\/title>/, 'titre du flux attendu');
 assert.doesNotMatch(feed, /images\.example/, 'le flux ne doit pas reprendre les photos des médias');
 
+await read('rss/livres.xml');
 const categoryFeed = await read('rss/economie.xml');
 assert.match(categoryFeed, /banque-centrale|Banque centrale/i, 'le flux Économie doit contenir le sujet BCE');
 assert.doesNotMatch(categoryFeed, /Guinée/, 'le flux Économie ne doit pas contenir le sujet Guinée');

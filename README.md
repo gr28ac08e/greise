@@ -20,7 +20,7 @@ Recouper n’est pas vérifier : plusieurs médias peuvent reprendre la même d�
 | Flux | Adresse |
 | --- | --- |
 | Tous les sujets | `/rss.xml` |
-| Par rubrique | `/rss/international.xml`, `/rss/economie.xml`, `/rss/tech.xml`, `/rss/culture.xml`, `/rss/sport.xml` |
+| Par rubrique | `/rss/international.xml`, `/rss/economie.xml`, `/rss/tech.xml`, `/rss/culture.xml`, `/rss/livres.xml`, `/rss/sport.xml` |
 
 Les flux sont du RSS 2.0, sans dépendance (`src/lib/feed.ts`). Chaque entrée contient le titre, la mention de recoupement, la liste des sources avec leurs liens et le lien vers la page du sujet. Les flux **ne contiennent ni photos ni extraits d’autres médias** (droits réservés à leurs éditeurs). Ils sont déclarés dans l’en-tête de chaque page (découverte automatique) et expliqués sur `/flux-rss/`.
 
@@ -45,7 +45,7 @@ npm run audio       # MP3 des synthèses IA, si OPENAI_API_KEY est configurée
 npm run build
 ```
 
-Quinze flux sont configurés. Les flux Les Échos et L’Équipe ont été retirés après des réponses HTTP 403, et ceux de Radio-Canada indiquent « usage personnel seulement » : ils ne sont pas utilisés. Avant d’ajouter un flux, vérifiez ses conditions d’utilisation : certains éditeurs interdisent la reprise publique ou commerciale. Un flux momentanément inaccessible est ignoré sans bloquer les autres.
+Seize flux sont configurés. Les flux Les Échos et L’Équipe ont été retirés après des réponses HTTP 403, et ceux de Radio-Canada indiquent « usage personnel seulement » : ils ne sont pas utilisés. Avant d’ajouter un flux, vérifiez ses conditions d’utilisation : certains éditeurs interdisent la reprise publique ou commerciale. Un flux momentanément inaccessible est ignoré sans bloquer les autres.
 
 Les sujets de plus de 72 heures sans nouvelle source sont supprimés ; 40 sujets au plus sont conservés. Les dossiers éditoriaux fixes vivent dans `src/content/articles`, les sujets générés dans `src/content/rss` (collection `rssArticles`). Le cache GitHub Actions ne restaure que ce dossier et les MP3 : il ne peut pas écraser les textes statiques.
 

@@ -3,35 +3,47 @@ import { categories, pathFor } from '../lib/utils';
 import SocialLinks from './SocialLinks.astro';
 import NewsletterForm from './NewsletterForm.astro';
 ---
-<footer class="site-footer">
+<footer class="site-footer footer-pro" style={`--footer-photo: url(${pathFor('/avatar.jpg')})`}>
+  <div class="footer-photo" aria-hidden="true"></div>
+  <div class="container footer-newsletter">
+    <div>
+      <p class="footer-kicker">La lettre Greise</p>
+      <h2>L'essentiel recoupé, dans votre boîte mail</h2>
+      <p>Gratuit, sans publicité, désinscription en un clic.</p>
+    </div>
+    <NewsletterForm />
+  </div>
   <div class="container footer-inner">
     <div class="footer-brand">
-      <a class="brand" href={pathFor('/')} aria-label="Greise, accueil"><img class="brand-avatar" src={pathFor('/avatar.jpg')} alt="" width="36" height="36" />GREISE<span class="brand-dot">.</span></a>
-      <p>Greise rapproche ce que disent plusieurs médias sur un même sujet et vous envoie vers chaque source. À lire, à écouter, à comprendre.</p>
-      <NewsletterForm />
+      <a class="brand" href={pathFor('/')} aria-label="Greise, accueil"><img class="brand-avatar" src={pathFor('/avatar.jpg')} alt="" width="44" height="44" />GREISE<span class="brand-dot">.</span></a>
+      <p>Média indépendant à but non lucratif, basé en France. Greise rapproche ce que disent plusieurs médias sur un même sujet et renvoie vers chaque source.</p>
+      <SocialLinks />
     </div>
-    <nav class="footer-column" aria-label="Catégories">
-      <h2>Catégories</h2>
-      <ul>{categories.map((category) => <li><a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a></li>)}</ul>
+    <nav class="footer-column" aria-label="Rubriques">
+      <h2>Rubriques</h2>
+      <ul>{categories.map((category) => <li><a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a></li>)}<li><a href={pathFor('/en-bref/')}>En bref</a></li></ul>
     </nav>
     <nav class="footer-column" aria-label="À propos de Greise">
-      <h2>À propos</h2>
+      <h2>Greise</h2>
       <ul>
         <li><a href={pathFor('/a-propos/')}>Notre démarche</a></li>
-        <li><a href={pathFor('/contact/')}>Contact</a></li>
-        <li><a href={pathFor('/mentions-legales/')}>Mentions légales</a></li>
         <li><a href={pathFor('/politique-editoriale/')}>Politique éditoriale</a></li>
         <li><a href={pathFor('/flux-rss/')}>Flux RSS</a></li>
+        <li><a href={pathFor('/abonnement/')}>Lettre d'information</a></li>
       </ul>
     </nav>
-    <div class="footer-column">
-      <h2>Suivre & contacter</h2>
-      <SocialLinks />
-      <p style="margin-top: .8rem"><a href="mailto:greise013@gmail.com">greise013@gmail.com</a></p>
-    </div>
+    <nav class="footer-column" aria-label="Informations légales et contact">
+      <h2>Contact et légal</h2>
+      <ul>
+        <li><a href={pathFor('/contact/')}>Nous écrire</a></li>
+        <li><a href="mailto:greise013@gmail.com">greise013@gmail.com</a></li>
+        <li><a href={pathFor('/mentions-legales/')}>Mentions légales</a></li>
+        <li><a href="https://tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">TikTok @gresie13</a></li>
+      </ul>
+    </nav>
   </div>
   <div class="container footer-bottom">
-    <span>© {new Date().getFullYear()} Greise | L'actualité recoupée, avec ses sources</span>
-    <span>Fait pour lire, écouter et comprendre.</span>
+    <span>© {new Date().getFullYear()} Greise · L'actualité recoupée, avec ses sources</span>
+    <span>Les titres et extraits appartiennent à leurs éditeurs.</span>
   </div>
 </footer>

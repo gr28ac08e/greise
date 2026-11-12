@@ -10,6 +10,7 @@ export const sources = [
   { name: 'Futura Sciences', url: 'https://www.futura-sciences.com/rss/actualites.xml', category: 'tech' },
   { name: 'Télérama', url: 'https://www.telerama.fr/rss/une.xml', category: 'culture' },
   { name: 'Beaux Arts', url: 'https://www.beauxarts.com/feed/', category: 'culture' },
+  { name: 'Le Monde, Livres', outlet: 'Le Monde', url: 'https://www.lemonde.fr/livres/rss_full.xml', category: 'livres' },
   { name: 'Franceinfo, Monde', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/monde.rss', category: 'international' },
   { name: 'Franceinfo, Économie', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/economie.rss', category: 'economie' },
   { name: 'Franceinfo, Sciences', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/sciences.rss', category: 'tech' },
