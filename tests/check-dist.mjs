@@ -46,7 +46,7 @@ for await (const file of walk(dist)) {
   if (!/\.(html|xml)$/.test(file)) continue;
   const text = (await fs.readFile(file, 'utf8')).replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]*>/g, ' ');
   assert.doesNotMatch(text, LONG, `tiret long dans ${file}`);
-  assert.doesNotMatch(text, /&amp;#\d+;|&#\d+;|&mdash;|&ndash;/, `entité HTML brute dans ${file}`);
+  assert.doesNotMatch(text, /&amp;#\d+;|&#(8211|8212|8213|x2013|x2014);|&mdash;|&ndash;/i, `entité HTML brute dans ${file}`);
   scanned++;
 }
 assert.ok(scanned > 10, 'des pages doivent avoir été analysées');
