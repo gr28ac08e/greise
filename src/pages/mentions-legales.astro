@@ -1,17 +1,28 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { pathFor } from '../lib/utils';
 ---
-<BaseLayout title="Mentions légales | Greise" description="Mentions légales et informations de contact du site Greise.">
+<BaseLayout title="Mentions légales | Greise" description="Mentions légales, hébergement, données personnelles et droits des contenus du site Greise.">
   <article class="container prose">
     <p class="eyebrow">Informations du site</p><h1>Mentions légales</h1>
-    <p>Greise est un projet de média indépendant consacré à l’actualité internationale. Le site est proposé gratuitement et sans compte utilisateur.</p>
+    <p>Greise est un site d’actualité gratuit qui rassemble et recoupe l’information publiée par d’autres médias.</p>
+
     <h2>Édition et contact</h2>
-    <p>Contact éditorial : <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>. L’identité civile de l’éditeur et du directeur de la publication n’ayant pas été communiquée, elle doit être complétée par le responsable avant toute exploitation publique à titre professionnel.</p>
+    <p>Contact : <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>. L’identité de l’éditeur et du directeur de la publication doit être renseignée ici par le responsable du site avant toute exploitation à titre professionnel : <strong>[Nom, prénom ou dénomination, adresse ou ville, à compléter]</strong>.</p>
+
     <h2>Hébergement</h2>
-    <p>Le site est destiné à être hébergé sur GitHub Pages. Les coordonnées légales de l’hébergeur sont disponibles dans les conditions du service GitHub.</p>
-    <h2>Contenus et sources</h2>
-    <p>Les informations issues des flux RSS sont attribuées à leurs éditeurs et renvoient, lorsque possible, aux contenus d’origine. Les photos attachées aux flux sont chargées depuis les serveurs des éditeurs et créditées sur la page; elles ne sont pas réhébergées par Greise. Les marques, textes et images externes restent la propriété de leurs ayants droit. Contactez Greise pour toute demande de correction ou de retrait.</p>
-    <h2>Données et cookies</h2>
-    <p>Greise ne propose ni compte ni espace utilisateur et ne dépose pas de cookie publicitaire. Le choix du thème clair ou sombre est mémorisé dans le stockage local du navigateur, à la demande de l’utilisateur.</p>
+    <p>Le site est hébergé par GitHub Pages (GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis).</p>
+
+    <h2>Contenus et droits</h2>
+    <p>Les titres, extraits et photos affichés appartiennent à leurs éditeurs et sont attribués avec un lien vers l’article d’origine. Les photos sont chargées depuis les serveurs des médias sources et ne sont pas réhébergées par Greise. Les dossiers de repères et le flux RSS de Greise sont la propriété de Greise ; leur reprise est possible en citant Greise et en conservant le lien vers la page du sujet. Pour toute demande de correction ou de retrait : <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>. Voir aussi la <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a>.</p>
+
+    <h2>Données personnelles</h2>
+    <p>La lecture du site ne demande aucun compte. Greise ne dépose pas de cookie publicitaire ni de traceur de mesure d’audience. Trois fonctions facultatives traitent des données personnelles :</p>
+    <ul>
+      <li><strong>Lettre d’information</strong> : votre adresse email est transmise au service FormSubmit puis à l’éditeur du site, uniquement pour vous écrire. Désinscription sur simple demande par email.</li>
+      <li><strong>Compte lecteur, commentaires et réactions</strong> : votre adresse email, un nom d’affichage et vos contributions sont enregistrés dans une base de données hébergée par Supabase. Ils servent uniquement à faire fonctionner ces fonctions. Les commentaires publiés sont visibles par les autres lecteurs.</li>
+      <li><strong>Stockage local du navigateur</strong> : vos rubriques suivies, vos réactions et votre session sont mémorisées dans le navigateur, sur votre appareil.</li>
+    </ul>
+    <p>Conformément au RGPD, vous pouvez demander l’accès, la rectification ou la suppression de vos données à <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>. Le site charge ses polices depuis Google Fonts, ce qui transmet votre adresse IP à Google.</p>
   </article>
 </BaseLayout>

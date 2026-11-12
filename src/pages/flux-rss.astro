@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { categories, pathFor } from '../lib/utils';
+const abs = (path: string) => new URL(pathFor(path), Astro.site).toString();
+const feeds = [
+  { label: "Tous les sujets", url: abs('/rss.xml') },
+  ...categories.map((category) => ({ label: category.label, url: abs(`/rss/${category.slug}.xml`) })),
+];
+---
+<BaseLayout title="Flux RSS | Greise" description="Le flux RSS de Greise : l'actualité recoupée entre plusieurs médias, avec les liens vers les sources. Global ou par rubrique." canonicalPath="/flux-rss/">
+  <article class="container prose">
+    <p class="eyebrow">Greise est aussi une source</p><h1>Flux RSS</h1>
+    <p>Suivez Greise dans votre lecteur RSS, ou reprenez nos sujets sur votre site. Chaque entrée indique si le sujet est <strong>recoupé par plusieurs médias</strong>, liste les sources avec leurs liens et renvoie vers la page du sujet sur Greise.</p>
+    <h2>Les flux</h2>
+    <ul class="feed-list">
+      {feeds.map((feed) => (
+        <li><strong>{feed.label}</strong><br /><a href={feed.url}>{feed.url}</a></li>
+      ))}
+    </ul>
+    <p>Copiez l'adresse dans votre lecteur (Feedly, Inoreader, NetNewsWire…). Les flux sont mis à jour toutes les trois heures environ.</p>
+    <h2>Reprendre le contenu de Greise</h2>
+    <ul>
+      <li>Vous pouvez reprendre les titres, mentions de recoupement et descriptions du flux, en <strong>citant Greise</strong> et en conservant le <strong>lien vers la page du sujet</strong>.</li>
+      <li>Le flux ne contient ni photos ni extraits d'autres médias : leurs droits restent à leurs éditeurs. Pour les reprendre, adressez-vous à eux.</li>
+      <li>Les sujets recoupés sont produits automatiquement et peuvent contenir des erreurs : voir la <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a>.</li>
+    </ul>
+    <p>Une question ou une demande de partenariat ? <a href={pathFor('/contact/')}>Écrivez-nous</a>.</p>
+  </article>
+</BaseLayout>

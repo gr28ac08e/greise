@@ -42,3 +42,36 @@ export function readingTime(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(words / 220));
 }
+
+export interface SourceRef { name: string; url: string; title?: string; pubDate?: Date; excerpt?: string }
+interface StoryLike { kind?: string; source?: string; sourceUrl?: string; sources?: SourceRef[]; title?: string; pubDate?: Date }
+
+/** Sources d'un sujet. Les anciens fichiers (une seule source) restent lisibles. */
+export function storySources(data: StoryLike): SourceRef[] {
+  if (data.sources && data.sources.length) return [...data.sources].sort((a, b) => (a.pubDate?.valueOf() ?? 0) - (b.pubDate?.valueOf() ?? 0));
+  if (data.sourceUrl) return [{ name: data.source || 'Source', url: data.sourceUrl, title: data.title, pubDate: data.pubDate }];
+  return [];
+}
+
+export function outletCount(data: StoryLike): number {
+  return new Set(storySources(data).map((ref) => ref.name.trim().toLocaleLowerCase('fr'))).size;
+}
+
+/** Libellé court de recoupement : « Recoupé par 3 médias », « Source unique », « Dossier Greise ». */
+export function coverageLabel(data: StoryLike): string {
+  if (data.kind === 'repère') return 'Dossier Greise';
+  const count = outletCount(data);
+  if (count > 1) return `Recoupé par ${count} médias`;
+  return 'Source unique';
+}
+
+/** « France 24, RFI et Le Monde » */
+export function outletNames(data: StoryLike, max = 4): string {
+  const names = [...new Set(storySources(data).map((ref) => ref.name))];
+  const shown = names.slice(0, max);
+  const rest = names.length - shown.length;
+  const joined = shown.length > 1 ? `${shown.slice(0, -1).join(', ')} et ${shown[shown.length - 1]}` : shown[0] || '';
+  return rest > 0 ? `${shown.join(', ')} et ${rest} autre${rest > 1 ? 's' : ''}` : joined;
+}
+
+export const SITE_NAME = 'Greise';

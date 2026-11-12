@@ -517,22 +517,6 @@ html[data-eco='on'] .lead-figure img, html[data-eco='on'] .card-cover img { tran
   --success: #29c6a0;
   --live: #08b8f4;
 }
-:root[data-theme='light'] {
-  color-scheme: light;
-  --bg-primary: #f4f7fa;
-  --bg-card: #fff;
-  --bg-elevated: #eaf0f5;
-  --bg-deep: #e3eaf0;
-  --text-primary: #101820;
-  --text-secondary: #344454;
-  --text-muted: #647487;
-  --border: #d8e1e9;
-  --border-strong: #bdcbd8;
-  --accent: #008fc7;
-  --accent-hover: #0075a5;
-  --accent-soft: rgb(0 143 199 / 10%);
-  --accent-contrast: #fff;
-}
 body { background: var(--bg-primary); }
 .greise-header { position: relative; z-index: 40; background: #030405; color: #f7f9fc; }
 .greise-masthead { display: flex; min-height: 78px; align-items: center; gap: clamp(1rem, 3vw, 2.5rem); padding-block: .65rem; }
@@ -1088,3 +1072,26 @@ body { background: var(--bg-primary); }
 .greise-header .edition-nav { width: min(100% - 2rem, 1240px); }
 @media (min-width: 640px) { .greise-header .edition-nav { width: min(100% - 3rem, 1240px); } }
 @media (min-width: 1024px) { .greise-header .edition-nav { width: min(100% - 4rem, 1240px); } }
+
+
+/* Recoupement des sources : badges, liste des sources, note d'origine du texte */
+.coverage-badge { display: inline-flex; align-items: center; width: fit-content; padding: .2rem .6rem; border: 1px solid rgb(255 255 255 / 14%); border-radius: 999px; color: #b5b5b5; font: 600 .66rem/1.3 var(--font-sans); letter-spacing: .04em; text-transform: uppercase; }
+.coverage-badge.is-multi { border-color: rgb(93 180 211 / 55%); background: rgb(93 180 211 / 12%); color: #8fd0e6; }
+.deck-origin { max-width: 720px; margin: -.4rem 0 1rem; color: #a9a9a9; font-size: .82rem; font-style: italic; line-height: 1.5; }
+.coverage-box .coverage-lead { margin-bottom: 1rem; }
+.source-list { display: grid; gap: .9rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.source-entry { display: grid; gap: .35rem; padding: .85rem 1rem; border: 1px solid rgb(255 255 255 / 10%); border-radius: 14px; background: rgb(255 255 255 / 3%); }
+.source-entry-head { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; color: #d9d9d9; font-size: .84rem; }
+.source-entry-head time { color: #9a9a9a; font-size: .76rem; }
+.source-first { padding: .1rem .5rem; border-radius: 999px; background: rgb(93 180 211 / 16%); color: #8fd0e6; font-size: .68rem; font-weight: 600; }
+.source-entry-title { color: #f0f0f0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.02rem; line-height: 1.35; text-decoration: none; }
+.source-entry-title:hover { color: #8fd0e6; text-decoration: underline; }
+.source-excerpt { margin: 0; padding-left: .8rem; border-left: 3px solid rgb(255 255 255 / 16%); color: #bdbdbd; font-size: .88rem; line-height: 1.55; }
+.sources-list { display: grid; gap: .5rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.sources-list .source-item a { color: #8fd0e6; text-decoration: none; }
+.sources-list .source-item a:hover { text-decoration: underline; }
+.feed-list { display: grid; gap: .9rem; padding-left: 1.1rem; }
+.feed-list a { overflow-wrap: anywhere; }
+.hero-stage .lead-avatar.is-multi { background: #2c7a96; }
+.coverage-box .meta { font-family: var(--font-sans); font-size: .8rem; letter-spacing: 0; text-transform: none; }
+.source-entry-title { font-weight: 400; }

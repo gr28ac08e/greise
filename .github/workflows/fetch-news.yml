@@ -26,8 +26,8 @@ jobs:
           path: |
             src/content/rss
             public/audio
-          key: greise-rss-v2-${{ runner.os }}-${{ github.run_id }}
-          restore-keys: greise-rss-v2-${{ runner.os }}-
+          key: greise-rss-v3-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: greise-rss-v3-${{ runner.os }}-
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
@@ -35,11 +35,13 @@ jobs:
           cache: npm
       - name: Installer les dépendances
         run: npm ci
+      - name: Tester le recoupement
+        run: npm test
       - name: Collecter les flux RSS
         timeout-minutes: 4
         run: npm run fetch
         continue-on-error: true
-      - name: Générer les résumés en français
+      - name: Recouper les sources et construire les sujets
         run: npm run summarize
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

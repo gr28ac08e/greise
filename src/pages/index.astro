@@ -5,12 +5,15 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
-import { categories, categoryLabel, emphasizeParts, pathFor, readingTime } from '../lib/utils';
+import { categories, categoryLabel, coverageLabel, emphasizeParts, outletCount, pathFor, readingTime, storySources } from '../lib/utils';
 
 const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
-const newest = [...editorial, ...rss].sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const withPhotos = newest.filter((article) => Boolean(article.data.imageUrl));
-const leadStories = Array.from(new Map([...withPhotos, ...newest].map((article) => [article.id, article])).values()).slice(0, 4);
+const dateOf = (article: { data: { pubDate: Date; updatedDate?: Date } }) => (article.data.updatedDate || article.data.pubDate).valueOf();
+const newest = [...editorial, ...rss].sort((a, b) => dateOf(b) - dateOf(a));
+// La une privilégie les sujets recoupés par plusieurs médias (puis les plus récents), avec photo si possible.
+const byCoverage = [...newest.slice(0, 16)].sort((a, b) => outletCount(b.data) - outletCount(a.data) || dateOf(b) - dateOf(a));
+const withPhotos = byCoverage.filter((article) => Boolean(article.data.imageUrl));
+const leadStories = Array.from(new Map([...withPhotos, ...byCoverage, ...newest].map((article) => [article.id, article])).values()).slice(0, 4);
 const lead = leadStories[0] || newest[0];
 const selectedIds = new Set(leadStories.map((article) => article.id));
 const shown = newest;
@@ -21,27 +24,28 @@ const readMinutesFor = (article: (typeof newest)[number]) => readingTime(spokenF
 const leadImage = lead ? imageFor(lead) : '';
 const leadParts = lead ? emphasizeParts(lead.data.title) : { before: '', word: '', after: '' };
 const leadHref = lead ? pathFor(`/article/${lead.id}/`) : '';
-const leadDate = lead ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(lead.data.pubDate) : '';
+const leadDate = lead ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(lead.data.updatedDate || lead.data.pubDate) : '';
+const creditFor = (article: (typeof newest)[number]) => (article.data.imageUrl ? `Photo : ${article.data.imageCredit || article.data.source}` : '');
+const sourcesJson = (article: (typeof newest)[number]) => JSON.stringify(storySources(article.data).map((ref) => ({ name: ref.name, url: ref.url, title: ref.title || article.data.title })));
 const leadAlt = lead ? (lead.data.imageUrl ? `Photo liée à l'article : ${lead.data.title}` : `Illustration de la rubrique ${categoryLabel(lead.data.category)}`) : '';
 const nextStory = newest.find((article) => !selectedIds.has(article.id));
 const feed = leadStories.slice(1, 4).map((article) => ({
-  time: `${readMinutesFor(article)} min de lecture`,
+  time: `${readMinutesFor(article)} min de lecture · ${coverageLabel(article.data)}`,
   category: categoryLabel(article.data.category),
   title: article.data.title,
   summary: article.data.summary,
-  source: article.data.source,
-  credit: article.data.imageUrl ? `Photo : ${article.data.source}, via son flux RSS` : '',
+  credit: creditFor(article),
   image: imageFor(article),
   href: pathFor(`/article/${article.id}/`),
 }));
 ---
 
-<BaseLayout title="Greise | L'actualité mondiale, lisible et écoutable" description="L'actualité internationale en français, contextualisée et écoutable. Des résumés sourcés, des repères et une lecture claire, gratuitement." image={leadImage || '/avatar.jpg'}>
+<BaseLayout title="Greise | L'actualité recoupée, avec ses sources" description="L'actualité du monde, recoupée entre plusieurs médias, avec un lien vers chaque source. En français, à lire ou à écouter, gratuitement." image={leadImage || '/avatar.jpg'}>
   {lead ? (
     <section class="container hero-grid hero-stage" aria-label="À la une">
       <a class="lead-figure" id="lead-image-link" href={leadHref} aria-label={`Ouvrir l'article : ${lead.data.title}`} tabindex="-1">
         <img id="lead-image" src={leadImage} alt={leadAlt} width="1200" height="675" fetchpriority="high" />
-        {lead.data.imageUrl && <span class="lead-credit" id="lead-credit">Photo : {lead.data.source}, via son flux RSS</span>}
+        {lead.data.imageUrl && <span class="lead-credit" id="lead-credit">{creditFor(lead)}</span>}
       </a>
 
       <div class="lead-column">
@@ -51,8 +55,8 @@ const feed = leadStories.slice(1, 4).map((article) => ({
             <h1 class="lead-title" id="lead-title"><a id="lead-title-link" href={leadHref}>{leadParts.before}{leadParts.word && <em>{leadParts.word}</em>}{leadParts.after}</a></h1>
             <p class="lead-readtime"><span id="lead-reading-time">{readMinutesFor(lead)}</span> min de lecture</p>
             <p class="lead-byline">
-              <span class="lead-avatar" id="lead-avatar" aria-hidden="true">{lead.data.source.trim().charAt(0).toUpperCase()}</span>
-              <span>Par <strong id="lead-source">{lead.data.source}</strong> · <time id="lead-date" datetime={lead.data.pubDate.toISOString()}>{leadDate}</time></span>
+              <span class="lead-avatar" id="lead-avatar" aria-hidden="true">{outletCount(lead.data) || 'G'}</span>
+              <span><strong id="lead-source">{coverageLabel(lead.data)}</strong> · <time id="lead-date" datetime={lead.data.pubDate.toISOString()}>{leadDate}</time></span>
             </p>
             {leadStories.length > 1 && (
               <div class="lead-pagination" role="group" aria-label="Choisir l'article à la une">
@@ -66,7 +70,9 @@ const feed = leadStories.slice(1, 4).map((article) => ({
                     data-title={story.data.title}
                     data-summary={story.data.summary}
                     data-why={story.data.whyItMatters}
-                    data-source={story.data.source}
+                    data-source={coverageLabel(story.data)}
+                    data-outlets={outletCount(story.data) || 'G'}
+                    data-sources={sourcesJson(story)}
                     data-category={categoryLabel(story.data.category)}
                     data-href={pathFor(`/article/${story.id}/`)}
                     data-image={imageFor(story)}
@@ -76,8 +82,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
                     data-reading-time={readMinutesFor(story)}
                     data-audio-text={spokenFor(story)}
                     data-audio-src={audioFor(story) || undefined}
-                    data-source-url={story.data.sourceUrl || ''}
-                    data-credit={story.data.imageUrl ? `Photo : ${story.data.source}, via son flux RSS` : ''}
+                    data-credit={creditFor(story)}
                   >{index + 1}</button>
                 ))}
               </div>
@@ -99,8 +104,8 @@ const feed = leadStories.slice(1, 4).map((article) => ({
               <span class="next-story-photo"><img src={imageFor(nextStory)} alt="" width="240" height="150" loading="lazy" /></span>
               <span class="next-story-copy">
                 <strong id="next-story-title">{nextStory.data.title}</strong>
-                <span class="next-story-meta">{readMinutesFor(nextStory)} min de lecture</span>
-                {nextStory.data.imageUrl && <span class="next-story-credit">Photo : {nextStory.data.source}</span>}
+                <span class="next-story-meta">{readMinutesFor(nextStory)} min de lecture · {coverageLabel(nextStory.data)}</span>
+                {nextStory.data.imageUrl && <span class="next-story-credit">{creditFor(nextStory)}</span>}
               </span>
             </a>
           </section>
@@ -132,11 +137,13 @@ const feed = leadStories.slice(1, 4).map((article) => ({
         </h2>
         <button class="icon-button" type="button" data-sources-close aria-label="Fermer la fiche"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
-      <p class="sources-article" id="sources-article">Article : {lead.data.title}</p>
-      <div class="sources-method"><strong>Méthodologie de vérification</strong><p>Les actualités de Greise sont des résumés et contextualisations produits à partir des titres et extraits fournis par les flux RSS des médias sources. Chaque article renvoie à sa publication d'origine ; les dossiers de repères sont préparés et identifiés par la rédaction.</p></div>
-      <span class="sources-label">Source primaire référencée</span>
-      <div class="source-item"><span id="sources-source">{lead.data.source}</span><span class="source-type">Média source</span></div>
-      <a class="sources-link" id="sources-original-link" href={lead.data.sourceUrl || '#'} target="_blank" rel="noopener noreferrer" hidden={!lead.data.sourceUrl}>Consulter l'article original publié par {lead.data.source} ↗</a>
+      <p class="sources-article" id="sources-article">Sujet : {lead.data.title}</p>
+      <div class="sources-method"><strong>Comment Greise recoupe</strong><p>Greise rapproche les articles de médias différents qui traitent du même événement, indique combien de médias le rapportent et renvoie vers chaque article. Les titres et extraits appartiennent à leurs éditeurs ; seuls les articles originaux font foi.</p></div>
+      <span class="sources-label">Médias qui rapportent ce sujet</span>
+      <ul class="sources-list" id="sources-list">
+        {storySources(lead.data).map((ref) => <li class="source-item"><a href={ref.url} target="_blank" rel="noopener noreferrer">{ref.name} : {ref.title || lead.data.title} ↗</a></li>)}
+        {storySources(lead.data).length === 0 && <li class="source-item"><span>Dossier rédigé par Greise.</span></li>}
+      </ul>
       <button class="button button-primary sources-close" type="button" data-sources-close>Fermer la fiche</button>
     </dialog>
   ) : (
@@ -169,10 +176,10 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     <div class="debate-panel">
       <div class="debate-head">
         <div class="debate-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <div><h2 id="debat-title">L'Espace Débat des Lecteurs</h2><p>Des échanges vérifiés et modérés pour encourager la nuance et le respect réciproque.</p></div>
+        <div><h2 id="debat-title">L'Espace Débat des Lecteurs</h2><p>Des échanges pour encourager la nuance et le respect réciproque. Un commentaire à signaler ? Écrivez-nous.</p></div>
       </div>
       <div class="debate-card">
-        <div class="debate-card-top"><div class="debate-author"><span class="debate-avatar" aria-hidden="true">G</span><div><strong>La rédaction Greise</strong><span class="debate-author-sub">greise013@gmail.com</span></div></div><span class="debate-badge">Contribution constructive</span></div>
+        <div class="debate-card-top"><div class="debate-author"><span class="debate-avatar" aria-hidden="true">G</span><div><strong>La rédaction Greise</strong><span class="debate-author-sub">Modération</span></div></div><span class="debate-badge">Contribution constructive</span></div>
         <p class="debate-quote">« Chaque article de Greise renvoie à sa source originale. Créez votre compte lecteur avec votre adresse email pour réagir, apporter un éclairage ou contester avec des arguments. Vos commentaires sont publics et modérés selon notre politique éditoriale. »</p>
       </div>
       <div class="debate-cta"><span>Ouvrez n'importe quel article pour commenter avec votre compte lecteur.</span><a class="button button-primary" href={pathFor('/abonnement/')}>Créer mon compte lecteur</a></div>
@@ -231,8 +238,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     const leadCredit = document.querySelector<HTMLElement>('#lead-credit');
     const leadAudio = document.querySelector<HTMLElement>('#lead-audio-wrapper');
     const sourceArticle = document.querySelector<HTMLElement>('#sources-article');
-    const sourceName = document.querySelector<HTMLElement>('#sources-source');
-    const sourceLink = document.querySelector<HTMLAnchorElement>('#sources-original-link');
+    const sourcesList = document.querySelector<HTMLElement>('#sources-list');
     const showLead = (button: HTMLButtonElement) => {
       const data = button.dataset;
       if (!data.title || !data.href || !data.image) return;
@@ -250,7 +256,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       if (leadWhy) { const strong = leadWhy.querySelector('strong'); leadWhy.replaceChildren(); if (strong) leadWhy.append(strong); leadWhy.append(document.createTextNode(data.why || '')); }
       if (leadCategory) leadCategory.textContent = data.category || '';
       if (leadSource) leadSource.textContent = data.source || '';
-      if (leadAvatar) leadAvatar.textContent = (data.source || '').trim().charAt(0).toUpperCase();
+      if (leadAvatar) leadAvatar.textContent = data.outlets || 'G';
       if (leadDate) { leadDate.textContent = data.dateLabel || ''; leadDate.dateTime = data.date || ''; }
       if (leadReadingTime) leadReadingTime.textContent = data.readingTime || '';
       if (leadCredit) { leadCredit.textContent = data.credit || ''; leadCredit.hidden = !data.credit; }
@@ -273,12 +279,20 @@ const feed = leadStories.slice(1, 4).map((article) => ({
           audioFile.load();
         }
       }
-      if (sourceArticle) sourceArticle.textContent = `Article : ${data.title}`;
-      if (sourceName) sourceName.textContent = data.source || '';
-      if (sourceLink) {
-        sourceLink.hidden = !data.sourceUrl;
-        sourceLink.href = data.sourceUrl || '#';
-        sourceLink.textContent = data.sourceUrl ? `Consulter l'article original publié par ${data.source} ↗` : '';
+      if (sourceArticle) sourceArticle.textContent = `Sujet : ${data.title}`;
+      if (sourcesList) {
+        let refs: Array<{ name: string; url: string; title: string }> = [];
+        try { refs = JSON.parse(data.sources || '[]'); } catch {}
+        const items = refs.map((ref) => {
+          const li = document.createElement('li');
+          li.className = 'source-item';
+          const link = document.createElement('a');
+          link.href = ref.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+          link.textContent = `${ref.name} : ${ref.title} ↗`;
+          li.append(link);
+          return li;
+        });
+        sourcesList.replaceChildren(...items);
       }
       slides.forEach((item) => { const selected = item === button; item.classList.toggle('is-active', selected); item.setAttribute('aria-pressed', String(selected)); });
     };

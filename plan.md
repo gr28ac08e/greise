@@ -2,14 +2,14 @@
 
 ## Objectif et contraintes
 
-Créer un média d’actualité internationale en français, responsive, gratuit et sans compte, livré en site statique Astro sur GitHub Pages. Les articles récents sont issus de flux RSS, avec sources et photos créditées. Les résumés OpenAI et les MP3 TTS restent facultatifs. Aucune clé n’est nécessaire pour publier le site ni lire les articles.
+Créer un agrégateur éditorialisé d’actualité en français (esprit Perplexity Discover), responsive et gratuit, livré en site statique Astro sur GitHub Pages. Les sujets récents sont issus de flux RSS de plusieurs médias, recoupés entre eux, avec un lien vers chaque source, et republiés dans le propre flux RSS de Greise. Comptes lecteurs et lettre restent facultatifs. Les résumés OpenAI et les MP3 TTS restent facultatifs. Aucune clé n’est nécessaire pour publier le site ni lire les articles.
 
 La page d’accueil doit reprendre la composition de la capture fournie : masthead en trois zones, navigation de catégories horizontale, grande une éditoriale à gauche, colonne de cartes à droite, pagination de la une et carte « À suivre » sous l’article principal. Le contenu reste propre à Greise : mot-symbole et portrait Greise, cinq catégories existantes, actualités et sources réelles. Ne pas copier le nom, la date ou les libellés de la maquette.
 
 ## Architecture et dépendances
 
 - Astro génère le HTML des pages, les deux Content Collections Markdown, le sitemap et les liens compatibles avec `/greise`.
-- CSS vanilla, variables de thème, mode sombre par défaut et bascule clair/sombre persistée. Aucun cadre visuel nouveau dépend d’une bibliothèque ou d’une API payante.
+- CSS vanilla, variables de thème, thème sombre unique. Aucun cadre visuel nouveau dépend d’une bibliothèque ou d’une API payante.
 - En-tête : date en français et menu hamburger à gauche, mot-symbole centré, recherche GET et bouton « Suivre Greise » à droite. Deuxième ligne horizontale avec Accueil et les cinq rubriques réelles. Menu hamburger accessible avec Contact, À propos et documents éditoriaux.
 - Accueil : quatre actualités RSS illustrées alimentent un carrousel accessible; première actualité en grand panneau image avec titre, catégorie, résumé, source et temps de lecture. Les autres actualités servent les cartes de la colonne droite et la carte suivante. Le fil complet reste sous la une avec filtre GET et chargement progressif.
 - Les composants réutilisent les photos HTTPS extraites des flux, leurs crédits et les couvertures SVG existantes en repli. Les sous-pages conservent leurs contenus et métadonnées SEO.

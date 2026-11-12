@@ -2,10 +2,13 @@ import Parser from 'rss-parser';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { sources } from './sources.config.mjs';
+import { stripHtml, cleanCopy, cleanTitle, validUrl } from './lib/text.mjs';
+
+const SITE_URL = process.env.SITE_URL || 'https://gr28ac08e.github.io/greise';
 
 const parser = new Parser({
   timeout: 15_000,
-  headers: { 'User-Agent': 'Greise/1.0 (+https://gr28ac08e.github.io/greise)' },
+  headers: { 'User-Agent': `Greise/1.0 (+${SITE_URL}; agrégateur avec liens vers les sources)` },
   customFields: {
     item: [
       ['media:content', 'mediaContent', { keepArray: true }],
@@ -16,43 +19,6 @@ const parser = new Parser({
 });
 const cacheDir = path.join(process.cwd(), 'scripts/.cache');
 const output = path.join(cacheDir, 'raw-articles.json');
-
-function stripHtml(value = '') {
-  return String(value)
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;|&#160;/gi, ' ')
-    .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'")
-    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
-    .replace(/\s+/g, ' ').trim();
-}
-
-function cleanCopy(value = '') {
-  return String(value)
-    .replace(/\s+[\u2014\u2013]\s+/g, ', ')
-    .replace(/[\u2014\u2013]/g, '-')
-    .replace(/\s+([,;:.!?])/g, '$1')
-    .replace(/([,;:.!?]){2,}/g, '$1')
-    .replace(/\s+/g, ' ').trim();
-}
-
-function cleanTitle(value = '') {
-  return String(value)
-    .replace(/\s+[\u2014\u2013]\s+/g, ': ')
-    .replace(/[\u2014\u2013]/g, '-')
-    .replace(/\s+([,;:.!?])/g, '$1')
-    .replace(/\s+/g, ' ').trim();
-}
-
-function validUrl(value) {
-  try {
-    const url = new URL(String(value));
-    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
-  } catch {
-    return '';
-  }
-}
 
 function secureImageUrl(value, allowUnknownExtension = false) {
   const safe = validUrl(value);
@@ -127,7 +93,7 @@ async function main() {
         if (Number.isNaN(pubDate.valueOf()) || pubDate.valueOf() < cutoff) continue;
         const description = cleanCopy(stripHtml(item.contentSnippet || item.summary || item.content || item.encodedContent || item['content:encoded'] || '').slice(0, 1200));
         const imageUrl = imageFromItem(item);
-        sourceArticles.push({ title, link, source: source.name, category: source.category, pubDate: pubDate.toISOString(), rawDescription: description, guid: String(item.guid || link), ...(imageUrl ? { imageUrl } : {}) });
+        sourceArticles.push({ title, link, source: source.name, outlet: source.outlet || source.name, category: source.category, pubDate: pubDate.toISOString(), rawDescription: description, guid: String(item.guid || link), ...(imageUrl ? { imageUrl } : {}) });
       }
       console.log(`[ok] ${source.name}`);
     } catch (error) {
@@ -136,17 +102,18 @@ async function main() {
     return sourceArticles;
   });
 
-  const seen = new Set();
+  // Seuls les doublons exacts (même lien) sont écartés : deux médias qui traitent le même sujet
+  // doivent rester visibles pour que le recoupement puisse les rapprocher.
+  const seenLinks = new Set();
   const unique = batches.flat()
     .sort((a, b) => b.pubDate.localeCompare(a.pubDate))
     .filter((article) => {
-      const key = article.title.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 72);
-      if (seen.has(key)) return false;
-      seen.add(key);
+      if (seenLinks.has(article.link)) return false;
+      seenLinks.add(article.link);
       return true;
     });
   await fs.writeFile(output, JSON.stringify(unique, null, 2));
-  console.log(`✓ ${unique.length} articles RSS récents collectés`);
+  console.log(`✓ ${unique.length} articles récents collectés auprès de ${new Set(unique.map((a) => a.outlet)).size} médias`);
 }
 
 main().then(() => {

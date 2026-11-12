@@ -5,7 +5,7 @@ import AudioPlayer from '../components/AudioPlayer.astro';
 import Comments from '../components/Comments.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { getCollection } from 'astro:content';
-import { categoryLabel, pathFor, readingTime } from '../lib/utils';
+import { categoryLabel, coverageLabel, outletCount, outletNames, pathFor, readingTime, storySources } from '../lib/utils';
 const { article } = Astro.props;
 const { Content } = await render(article);
 const data = article.data;
@@ -18,9 +18,30 @@ const isRssPhoto = Boolean(data.imageUrl);
 const imageAlt = isRssPhoto
   ? `Photo associée à l'article : ${data.title}`
   : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}`;
-const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.pubDate);
+const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.updatedDate || data.pubDate);
+const isStory = data.kind !== 'repère';
+const sources = storySources(data);
+const count = outletCount(data);
+const coverage = coverageLabel(data);
+const hasBody = Boolean(article.body && article.body.trim());
+const excerptRef = sources.find((ref) => ref.excerpt);
+const stamp = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+const imageCredit = data.imageCredit || data.source;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': isStory ? 'NewsArticle' : 'Article',
+  headline: data.title,
+  description: data.summary,
+  datePublished: data.pubDate.toISOString(),
+  dateModified: (data.updatedDate || data.pubDate).toISOString(),
+  inLanguage: 'fr',
+  mainEntityOfPage: href,
+  author: { '@type': 'Organization', name: 'Greise' },
+  publisher: { '@type': 'Organization', name: 'Greise' },
+  ...(isStory && sources.length ? { isBasedOn: sources.map((ref) => ({ '@type': 'NewsArticle', url: ref.url, name: ref.title || data.title, publisher: { '@type': 'Organization', name: ref.name } })) } : {}),
+};
 ---
-<BaseLayout title={`${data.title} | Greise`} description={data.summary} image={image} type="article" canonicalPath={`/article/${article.id}/`}>
+<BaseLayout title={`${data.title} | Greise`} description={data.summary} image={image} type="article" canonicalPath={`/article/${article.id}/`} jsonLd={jsonLd}>
   <div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
   <article class="container article-page">
     <nav class="breadcrumb" aria-label="Fil d'Ariane">
@@ -30,50 +51,75 @@ const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 
     </nav>
 
     <header class="article-head">
-      <p class="eyebrow">{data.kind === 'repère' ? 'Dossier de repères' : 'À la une'}</p>
+      <p class="eyebrow">{isStory ? coverage : 'Dossier de repères'}</p>
       <h1>{data.title}</h1>
       <p class="article-deck">{data.summary}</p>
+      {isStory && data.generatedBy === 'ai' && <p class="deck-origin">Synthèse rédigée par Greise, avec l'aide d'un outil d'IA, à partir des titres et extraits de {outletNames(data)}. Elle peut contenir des erreurs : vérifiez dans les sources.</p>}
+      {isStory && data.generatedBy !== 'ai' && excerptRef && <p class="deck-origin">Extrait publié par {excerptRef.name} (éventuellement raccourci), non réécrit par Greise.</p>}
       <div class="article-byline meta">
-        <span>{data.source}</span><span aria-hidden="true">·</span>
-        <time datetime={data.pubDate.toISOString()}>{formattedDate}</time><span aria-hidden="true">·</span>
+        <span>{isStory ? `Sujet suivi par Greise` : 'Rédaction Greise'}</span><span aria-hidden="true">·</span>
+        <time datetime={(data.updatedDate || data.pubDate).toISOString()}>{isStory ? 'Mis à jour le ' : ''}{formattedDate}</time><span aria-hidden="true">·</span>
         <span>{readingTime(spoken)} min de lecture</span>
       </div>
     </header>
 
-    <div class="article-tools-row"><span class="article-kicker">GREISE · ACTUALITÉS &amp; ANALYSES</span><span class="article-reading-time">{readingTime(spoken)} min de lecture</span></div>
+    <div class="article-tools-row"><span class="article-kicker">GREISE · {isStory ? 'ACTUALITÉ RECOUPÉE' : 'REPÈRES'}</span><span class="article-reading-time">{readingTime(spoken)} min de lecture</span></div>
     <figure class="article-photo">
       <img class="article-hero-image" src={image} alt={imageAlt} width="1200" height="675" fetchpriority="high" />
       <figcaption class="image-credit">
         {isRssPhoto
-          ? `Photo récupérée depuis la source RSS. Crédit : ${data.source}.`
+          ? `Photo : ${imageCredit}, média source de l'article. Greise ne détient pas les droits de cette image.`
           : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}.`}
       </figcaption>
     </figure>
 
     <div class="article-sticky-audio"><AudioPlayer text={spoken} slug={article.id} /></div>
 
-    <aside class="article-importance" aria-labelledby="importance-title">
-      <h2 id="importance-title">Le contexte, en bref</h2>
-      <p>{data.whyItMatters}</p>
-    </aside>
+    {data.whyItMatters && (
+      <aside class="article-importance" aria-labelledby="importance-title">
+        <h2 id="importance-title">{isStory ? 'À retenir' : 'Le contexte, en bref'}</h2>
+        <p>{data.whyItMatters}</p>
+      </aside>
+    )}
 
-    <div class="article-body"><Content /></div>
+    {hasBody && <div class="article-body"><Content /></div>}
 
-    <section class="article-end-note"><span class="article-end-rule"></span><p>Vous venez de lire une publication de <strong>Greise</strong>. Comprendre le monde, au-delà des titres.</p></section>
+    {isStory ? (
+      <section class="source-box coverage-box" aria-labelledby="source-title">
+        <h2 id="source-title">Ce que disent les sources</h2>
+        <p class="coverage-lead">
+          {count > 1
+            ? <>Ce sujet est traité par <strong>{count} médias</strong> : {outletNames(data, 6)}. Greise les rapproche et renvoie vers chaque article.</>
+            : <>Pour l'instant, <strong>un seul média</strong> ({outletNames(data)}) rapporte cette information. Elle n'est pas encore recoupée : à confirmer.</>}
+        </p>
+        <ol class="source-list">
+          {sources.map((ref, index) => (
+            <li class="source-entry">
+              <div class="source-entry-head">
+                <strong>{ref.name}</strong>
+                {ref.pubDate && <time datetime={ref.pubDate.toISOString()}>{stamp.format(ref.pubDate)} UTC</time>}
+                {index === 0 && count > 1 && <span class="source-first">Premier à publier</span>}
+              </div>
+              <a class="source-entry-title" href={ref.url} target="_blank" rel="noopener noreferrer">{ref.title || data.title} ↗</a>
+              {ref.excerpt && <blockquote class="source-excerpt">{ref.excerpt}</blockquote>}
+            </li>
+          ))}
+        </ol>
+        <p class="meta">Les titres et extraits appartiennent à leurs éditeurs. Seuls les articles originaux font foi : consultez-les pour le texte intégral et les mises à jour.</p>
+      </section>
+    ) : (
+      <section class="source-box" aria-labelledby="source-title">
+        <h2 id="source-title">Sources &amp; transparence</h2>
+        <p>Dossier de repères rédigé par Greise. Il explique un mécanisme et ne rapporte pas l'actualité du jour. Pour un fait précis, remontez au document ou à l'institution d'origine.</p>
+      </section>
+    )}
 
-    <section class="source-box" aria-labelledby="source-title">
-      <h2 id="source-title">Sources &amp; transparence</h2>
-      <p>
-        {data.sourceUrl
-          ? <a href={data.sourceUrl} target="_blank" rel="noopener noreferrer">Consulter l'article original publié par {data.source} ↗</a>
-          : <span>Dossier de repères préparé par la rédaction de Greise.</span>}
-      </p>
-      <p class="meta">Greise propose une contextualisation complète, lisible ici sans quitter le site. Consultez la source originale pour le texte intégral du média d'origine et ses mises à jour.</p>
-    </section>
+    <section class="article-end-note"><span class="article-end-rule"></span><p>{isStory ? <>Greise <strong>rassemble et recoupe</strong> l'actualité publiée par d'autres médias. Les articles originaux restent la référence.</> : <>Un dossier de repères de <strong>Greise</strong>. Comprendre le monde, au-delà des titres.</>}</p></section>
 
     <div class="share-row" aria-label="Partager cet article">
       <a class="button" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(href)}`} target="_blank" rel="noopener noreferrer">Partager sur Facebook</a>
-      <a class="button" href="https://tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">Greise sur TikTok</a>
+      <a class="button" href="https://tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">Suivre Greise sur TikTok</a>
+      <a class="button" href={pathFor('/flux-rss/')}>Flux RSS Greise</a>
       <button class="button" type="button" data-copy-link={href}>Copier le lien</button>
       <span class="copy-status" aria-live="polite"></span>
     </div>

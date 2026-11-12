@@ -10,7 +10,7 @@ const { category } = Astro.props;
 const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
 const articles = [...editorial, ...rss].filter((article) => article.data.category === category.slug).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
-<BaseLayout title={`${category.label} | Greise`} description={`${category.short}. Décryptages et actualités ${category.label.toLowerCase()} en français, gratuitement.`} canonicalPath={`/categorie/${category.slug}/`}>
+<BaseLayout title={`${category.label} | Greise`} description={`${category.short}. Décryptages et actualités ${category.label.toLowerCase()} en français, gratuitement.`} canonicalPath={`/categorie/${category.slug}/`} feed={{ title: `Greise | ${category.label}`, href: pathFor(`/rss/${category.slug}.xml`) }}>
   <section class="container page-intro"><p class="eyebrow">Les rubriques de Greise</p><h1>{category.label}</h1><p>{category.short}. Retrouvez les articles et les repères publiés dans cette rubrique.</p><a class="button" href={pathFor('/')}>← Retour à toutes les actualités</a></section>
   <section class="container section" aria-label={`Articles ${category.label}`}>
     {articles.length ? <div class="article-grid">{articles.map((article) => <ArticleCard article={article} />)}</div> : <div class="empty-state">Aucun article pour le moment dans cette rubrique.</div>}

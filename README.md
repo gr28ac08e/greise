@@ -1,69 +1,74 @@
 # Greise
 
-**L’actualité internationale, sans frontières.** Greise est un site d’actualité français, statique et gratuit, construit avec Astro et publié sur GitHub Pages. Il n’y a pas de paywall. Un compte lecteur gratuit permet de commenter et réagir; la newsletter reste facultative. Les articles renvoient à leur média source; les dossiers de repères sont identifiés comme tels.
+**L’actualité recoupée, avec ses sources.** Greise rassemble ce que plusieurs médias publient sur un même sujet, indique combien de médias le rapportent et renvoie vers chaque article d’origine. Le site est statique et gratuit (Astro, GitHub Pages) et **publie son propre flux RSS**, pour devenir à son tour une source.
 
-## Structure de l’accueil
+Greise ne produit pas de reportages : c’est un agrégateur éditorialisé, dans l’esprit de Perplexity Discover. Un compte lecteur facultatif permet de commenter et réagir ; la lettre d’information est facultative. Les dossiers de repères, rédigés par Greise, sont signalés « Dossier Greise ».
 
-L’accueil reprend l’esprit de la maquette fournie : masthead sombre avec date, logo Greise centré, recherche, abonnement et thème; barre horizontale des rubriques; grande une illustrée avec pagination; colonne latérale de trois articles; carte « À suivre »; fil complet en dessous. La mise en page s’adapte aux téléphones. La recherche passe les termes dans l’URL; le menu hamburger conserve l’accès aux pages éditoriales. La une utilise les photos de flux quand elles existent et crédite le média.
+## Comment fonctionne le recoupement
 
-## Prérequis
+1. `npm run fetch` lit les flux RSS des médias (`scripts/sources.config.mjs`) sur les 48 dernières heures.
+2. `npm run summarize` rapproche les articles qui parlent du même événement (`scripts/lib/cluster.mjs`) : similarité TF-IDF sur titres et extraits, noms propres et chiffres pondérés, fenêtre de 36 h, liaison moyenne pour éviter les regroupements en chaîne. Un média compte pour une seule voix (`outlet` dans la config, par exemple toutes les rubriques franceinfo).
+3. Chaque **sujet** devient un fichier Markdown dans `src/content/rss` avec la liste de ses sources (`sources:` en JSON sur une ligne). Quand un nouveau média rejoint un sujet existant, le fichier est mis à jour et **son adresse ne change pas**.
+4. Libellés affichés : « Recoupé par N médias », « Source unique » (à confirmer), « Dossier Greise ».
 
-Node.js 22.23.4 ou plus récent et npm (Astro 7). Aucune clé API n’est nécessaire pour installer, construire ou publier le site, ni pour afficher les photos RSS ou utiliser la synthèse vocale du navigateur. Les résumés IA et les fichiers MP3 sont des options facultatives et peuvent occasionner des frais si une clé OpenAI est ajoutée.
+Sans clé OpenAI, aucun texte n’est inventé : le sujet reprend le titre et un court extrait du premier média (signalé « Extrait publié par… ») et la page liste ce que dit chaque source. Avec `OPENAI_API_KEY`, une synthèse prudente est rédigée à partir des seuls titres et extraits, signalée « Synthèse rédigée par Greise, avec l’aide d’un outil d’IA ». Les MP3 ne sont produits que pour ces synthèses.
 
-## Installation et développement local
+Recouper n’est pas vérifier : plusieurs médias peuvent reprendre la même dépêche, et le regroupement automatique peut se tromper. C’est dit sur le site (voir la page Politique éditoriale).
+
+## Flux RSS de Greise
+
+| Flux | Adresse |
+| --- | --- |
+| Tous les sujets | `/rss.xml` |
+| Par rubrique | `/rss/international.xml`, `/rss/economie.xml`, `/rss/tech.xml`, `/rss/culture.xml`, `/rss/sport.xml` |
+
+Les flux sont du RSS 2.0, sans dépendance (`src/lib/feed.ts`). Chaque entrée contient le titre, la mention de recoupement, la liste des sources avec leurs liens et le lien vers la page du sujet. Les flux **ne contiennent ni photos ni extraits d’autres médias** (droits réservés à leurs éditeurs). Ils sont déclarés dans l’en-tête de chaque page (découverte automatique) et expliqués sur `/flux-rss/`.
+
+## Prérequis et développement
+
+Node.js 22.23.4 ou plus récent et npm (Astro 7). Aucune clé API n’est nécessaire pour installer, construire ou publier le site.
 
 ```bash
 npm install
 cp .env.example .env
-npm run dev
-```
-
-Le serveur local Astro est disponible par défaut à `http://localhost:4321/greise/`. Pour compiler et prévisualiser :
-
-```bash
-npm run build
-npm run preview
+npm run dev      # http://localhost:4321/greise/
+npm test         # tests du moteur de recoupement (node:test, sans dépendance)
+npm run build && npm run preview
 ```
 
 ## Collecte et génération
 
 ```bash
-npm run fetch       # lit les flux, garde les nouvelles récentes et dédoublonne
-npm run summarize   # écrit les articles Markdown; OpenAI si une clé est présente
-npm run audio       # produit des MP3 manquants si OPENAI_API_KEY est configurée
+npm run fetch       # lit les flux et garde les articles récents (doublons exacts écartés)
+npm run summarize   # recoupe et écrit un Markdown par sujet
+npm run audio       # MP3 des synthèses IA, si OPENAI_API_KEY est configurée
 npm run build
 ```
 
-Quinze flux sont configurés dans `scripts/sources.config.mjs`, dont cinq nouvelles rubriques franceinfo : Monde, Économie, Sciences, Culture et Sports. Les flux Les Échos et L’Équipe ont été retirés après des réponses HTTP 403. Les flux de Radio-Canada indiquent « usage personnel seulement » et ne sont donc pas utilisés sur cette publication publique. Les flux régionaux RSF vérifiés n’ont pas d’articles datant des dernières 48 heures lors du test et ne sont pas activés.
+Quinze flux sont configurés. Les flux Les Échos et L’Équipe ont été retirés après des réponses HTTP 403, et ceux de Radio-Canada indiquent « usage personnel seulement » : ils ne sont pas utilisés. Avant d’ajouter un flux, vérifiez ses conditions d’utilisation : certains éditeurs interdisent la reprise publique ou commerciale. Un flux momentanément inaccessible est ignoré sans bloquer les autres.
 
-La collecte lit les 48 dernières heures, dédoublonne les entrées et plafonne à 40 les articles générés par exécution. Les flux sont lus avec une concurrence bornée afin de rester rapides. Les scripts peuvent ignorer un flux momentanément inaccessible sans bloquer les autres. Les workflows mettent en cache les Markdown et MP3 pour réutiliser les contenus existants; les sorties vieillissantes sont supprimées. Les fichiers bruts restent dans `scripts/.cache` et ne sont pas versionnés.
-
-Les dossiers éditoriaux fixes vivent dans `src/content/articles`. Les articles RSS générés sont stockés séparément dans `src/content/rss`, via la collection Astro `rssArticles`. Le cache GitHub Actions ne restaure que ce dossier RSS et les MP3; il ne peut donc pas écraser les textes statiques corrigés du dépôt.
-
-Quand un flux fournit une photo, le site affiche son URL HTTPS, crédite le média source sur la carte et sur l’article, et renvoie au contenu d’origine. Les photos ne sont pas téléchargées ni réhébergées par Greise. Si le flux ne fournit pas d’image, la couverture SVG locale de la rubrique est utilisée. Aucun service payant n’est requis pour cette fonction.
+Les sujets de plus de 72 heures sans nouvelle source sont supprimés ; 40 sujets au plus sont conservés. Les dossiers éditoriaux fixes vivent dans `src/content/articles`, les sujets générés dans `src/content/rss` (collection `rssArticles`). Le cache GitHub Actions ne restaure que ce dossier et les MP3 : il ne peut pas écraser les textes statiques.
 
 ## Déploiement GitHub Pages
 
-Le dépôt vise `https://gr28ac08e.github.io/greise` et le sous-chemin `/greise`. Dans GitHub, ouvrez **Settings → Pages** et choisissez **GitHub Actions** comme source. Les pushes sur `main` lancent `deploy.yml`. `fetch-news.yml` s’exécute toutes les trois heures (UTC) et peut aussi être lancé manuellement depuis l’onglet Actions.
+Le site vise `https://gr28ac08e.github.io/greise` (sous-chemin `/greise`). Dans **Settings → Pages**, choisissez **GitHub Actions**. Les pushes sur `main` lancent `deploy.yml`. `fetch-news.yml` s’exécute toutes les trois heures (UTC), lance d’abord les tests puis la collecte, et peut être déclenché à la main depuis l’onglet Actions.
 
-Pour les résumés IA et l’audio TTS uniquement, ajoutez `OPENAI_API_KEY` dans **Settings → Secrets and variables → Actions → New repository secret**. La clé reste uniquement dans le gestionnaire de secrets GitHub; ne la mettez jamais dans un fichier commité. Ces fonctionnalités ne sont pas activées par défaut. Sans cette clé, la collecte utilise les extraits RSS et l’audio repose sur la synthèse vocale gratuite du navigateur.
+Pour les synthèses IA et l’audio uniquement, ajoutez `OPENAI_API_KEY` dans **Settings → Secrets and variables → Actions**. La clé ne doit jamais être commitée. La variable locale facultative `SITE_URL` définit une autre URL canonique.
 
-La variable d’environnement locale facultative `SITE_URL` permet de définir une autre URL canonique; `.env.example` est un modèle sans secret réel.
+## Accueil
 
-## Accessibilité et contenus
+L’accueil reprend la maquette « Buenos Aires Daily » : masthead (date, logo centré, recherche, abonnement), barre de rubriques en pastille, scène unique avec la photo de la une en fond, titre serif en dégradé cyan avec un mot en italique, durée de lecture, mention de recoupement, pagination 1 à 4, carte « À suivre » et trois cartes vitrées à droite. La une privilégie les sujets recoupés par le plus de médias. Le thème est sombre uniquement. Sur téléphone, tout passe en une colonne.
 
-Navigation au clavier, lien de saut au contenu, focus visibles, contrastes renforcés, mode clair/sombre mémorisé localement, réduction des animations respectant `prefers-reduced-motion`, couvertures SVG locales de repli, crédit des photos RSS et synthèse Web Speech en `fr-FR`. Les métadonnées et le contenu des pages sont rendus au build afin d’être lisibles sans JavaScript.
+## Accessibilité, données et droits
 
-La photo `public/avatar.jpg` provient du profil public [@gresie13 sur TikTok](https://tiktok.com/@gresie13). Elle est affichée avec le mot-symbole dans l’en-tête et le pied de page; un PNG réduit sert de favicon.
+Navigation au clavier, lien de saut au contenu, focus visibles, contrastes renforcés, `prefers-reduced-motion`, synthèse vocale du navigateur en `fr-FR`, contenu rendu au build (lisible sans JavaScript).
 
-Les contenus des flux sont des résumés/contextualisations, non les articles originaux. Vérifiez les sources citées pour le texte complet et les mises à jour. Les dossiers de repères initiaux sont des contenus explicatifs, pas des nouvelles du jour. Les informations civiles de l’éditeur et du directeur de publication n’ayant pas été fournies, elles restent à compléter par le responsable avant une exploitation professionnelle; voir la page Mentions légales.
+Les photos fournies par les flux sont affichées depuis le serveur du média, créditées et reliées à l’article ; Greise ne les réhéberge pas et n’en détient pas les droits. Les mentions légales décrivent les traitements de données (lettre d’information via FormSubmit, comptes et commentaires via Supabase, stockage local du navigateur, Google Fonts). L’identité de l’éditeur doit y être complétée avant toute exploitation professionnelle.
+
+La photo `public/avatar.jpg` provient du profil public [@gresie13 sur TikTok](https://tiktok.com/@gresie13).
 
 ## Réseaux
 
 - TikTok : https://tiktok.com/@gresie13
 - Facebook : https://www.facebook.com/profile.php?id=61590273613236
 - Contact : [greise013@gmail.com](mailto:greise013@gmail.com)
-
-## Accueil de type magazine
-
-La page d’accueil reprend une structure de journal numérique : date et menu, mot-symbole Greise centré, recherche et bouton « Suivre Greise », puis navigation horizontale des cinq rubriques. La une illustrée est sélectionnable par pagination, les autres récits apparaissent dans un rail latéral, puis dans un fil filtrable. Le thème sombre cyan est affiché par défaut; le lecteur peut basculer vers le thème clair. La recherche s’effectue sans service externe et le menu fonctionne au clavier.

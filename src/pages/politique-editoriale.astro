@@ -1,13 +1,37 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { pathFor } from '../lib/utils';
 ---
-<BaseLayout title="Politique éditoriale | Greise" description="Comment Greise collecte, résume, attribue et corrige les contenus d’actualité.">
+<BaseLayout title="Politique éditoriale | Greise" description="Comment Greise collecte, recoupe, attribue et corrige les contenus d’actualité, et comment elle utilise l’IA.">
   <article class="container prose">
     <p class="eyebrow">Transparence</p><h1>Politique éditoriale</h1>
-    <h2>Sources et attribution</h2><p>Greise agrège des flux RSS de médias et éditeurs identifiés. Le nom de la source et le lien vers l’article original sont présentés avec chaque contenu d’actualité.</p>
-    <p>Lorsqu’un flux fournit une photo, Greise charge son URL HTTPS, l’attribue au média source et conserve le lien vers l’article original. En l’absence de photo dans le flux, une illustration locale de rubrique est utilisée.</p>
-    <h2>Résumé et contexte</h2><p>Les résumés sont conçus pour restituer les éléments communiqués par la source, sans se substituer à l’article original. Un texte automatique peut comporter des erreurs ou manquer de contexte; il doit être vérifié à la source. Les dossiers de repères sont distingués des nouvelles récentes.</p>
-    <p>Les titres RSS sont ponctuellement normalisés pour remplacer les tirets longs par une ponctuation simple. Le sens et l’attribution de l’information restent inchangés.</p>
-    <h2>Corrections</h2><p>Greise prend les signalements au sérieux. Pour demander une correction ou le retrait d’un contenu, contactez <a href="mailto:greise013@gmail.com">greise013@gmail.com</a> en joignant le lien concerné et les éléments utiles.</p>
+
+    <h2>Ce que Greise fait, et ne fait pas</h2>
+    <p>Greise rassemble et recoupe l’actualité publiée par d’autres médias. Greise ne mène pas d’enquête propre et ne republie pas d’articles complets. Sur la page d’un sujet, vous trouvez le titre, les médias qui le traitent, un court extrait de chacun et un lien vers l’article original. Les dossiers de repères, rédigés par Greise, sont signalés « Dossier Greise » et distincts de l’actualité.</p>
+
+    <h2>Sources</h2>
+    <p>Greise lit des flux RSS publics de médias identifiés. Le nom du média, l’heure de publication et le lien de chaque article sont conservés et affichés. Un média compte pour une seule voix, même s’il publie plusieurs articles sur le sujet. Si un éditeur demande que son flux ne soit plus utilisé, il est retiré.</p>
+
+    <h2>Le recoupement</h2>
+    <p>Les articles publiés à moins de 36 heures d’intervalle sont comparés automatiquement d’après leurs titres et extraits (mots communs, noms propres, chiffres). Ceux qui parlent du même événement sont regroupés. Trois mentions s’affichent :</p>
+    <ul>
+      <li><strong>Recoupé par N médias</strong> : au moins deux médias distincts rapportent le sujet.</li>
+      <li><strong>Source unique</strong> : un seul média le rapporte pour l’instant ; l’information est à confirmer.</li>
+      <li><strong>Dossier Greise</strong> : contenu rédigé par Greise, qui n’est pas une nouvelle du jour.</li>
+    </ul>
+    <p>Recouper n’est pas vérifier. Que plusieurs médias reprennent une même information, parfois issue de la même dépêche, ne prouve pas qu’elle soit exacte. Le regroupement automatique peut aussi se tromper en réunissant deux sujets proches ou en séparant deux articles sur le même fait. Consultez toujours les sources.</p>
+
+    <h2>Textes, extraits et intelligence artificielle</h2>
+    <p>Quand la page indique « Extrait publié par… », le texte vient du média cité, éventuellement raccourci, sans réécriture. Quand elle indique « Synthèse rédigée par Greise, avec l’aide d’un outil d’IA », le texte a été produit par un modèle de langage à partir des seuls titres et extraits des médias listés, avec pour consigne de ne rien ajouter et de signaler les divergences. Il peut contenir des erreurs et n’est pas relu avant publication.</p>
+    <p>Les titres sont ponctuellement normalisés (les tirets longs sont remplacés par une ponctuation simple). Le sens et l’attribution restent inchangés.</p>
+
+    <h2>Images</h2>
+    <p>Quand un flux fournit une photo, Greise l’affiche depuis le serveur du média source, avec son crédit et le lien vers l’article. Greise ne détient pas les droits de ces photos et ne les réhéberge pas et ne les diffuse pas dans son propre flux RSS. Sans photo, une illustration de rubrique est utilisée.</p>
+
+    <h2>Le flux RSS de Greise</h2>
+    <p>Le <a href={pathFor('/flux-rss/')}>flux RSS de Greise</a> contient le titre, la mention de recoupement, la liste des sources avec leurs liens et le lien vers la page du sujet. Il ne reprend pas les extraits des autres médias.</p>
+
+    <h2>Corrections et retraits</h2>
+    <p>Pour signaler une erreur, demander une correction ou le retrait d’un contenu, écrivez à <a href="mailto:greise013@gmail.com">greise013@gmail.com</a> en joignant le lien concerné. Les corrections de fond sont indiquées sur la page concernée.</p>
   </article>
 </BaseLayout>
