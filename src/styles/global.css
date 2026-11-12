@@ -1269,3 +1269,8 @@ html .site-footer.footer-pro .footer-bottom { color: #c9b8ad; border-top-color: 
 .rules-box { flex: 1 1 100%; font-size: .85rem; color: var(--text-secondary); }
 .rules-box summary { cursor: pointer; color: var(--accent); font-weight: 600; }
 .rules-box ul { margin: .5rem 0 0; padding-left: 1.2rem; display: grid; gap: .25rem; }
+.comment-replies { margin: .3rem 0 .8rem 2.6rem; padding-left: .9rem; border-left: 2px solid var(--border-strong); display: grid; gap: .6rem; }
+.comment-reply { border: 0; background: none; color: var(--accent); font: 600 .8rem Inter, system-ui, sans-serif; cursor: pointer; padding: .2rem .4rem; }
+.reply-form { display: grid; gap: .5rem; margin-top: .6rem; }
+.reply-form textarea { width: 100%; padding: .6rem .75rem; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg-elevated); color: var(--text-primary); font: inherit; }
+.reply-form .button { justify-self: start; }
