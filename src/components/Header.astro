@@ -11,7 +11,7 @@ const query = Astro.url.searchParams.get('q') || '';
 <header class="greise-header">
   <div class="container greise-masthead">
     <div class="masthead-left">
-      <button class="masthead-menu" id="masthead-menu" type="button" aria-expanded="false" aria-controls="edition-nav" aria-label="Ouvrir le menu">
+      <button class="masthead-menu" id="masthead-menu" type="button" aria-expanded="false" aria-controls="site-drawer" aria-label="Ouvrir le menu">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <time class="masthead-date" datetime={new Date().toISOString()}>{today}</time>
@@ -26,6 +26,11 @@ const query = Astro.url.searchParams.get('q') || '';
         <label class="sr-only" for="greise-search">Rechercher une actualité</label>
         <input id="greise-search" type="search" name="q" placeholder="Rechercher" value={query || undefined} />
       </form>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Changer de thème" title="Changer de thème">
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <span class="label" data-theme-label>Sombre</span>
+      </button>
       <a class="greise-subscribe" href={pathFor('/abonnement/#newsletter')}>S'abonner</a>
     </div>
   </div>
@@ -38,13 +43,78 @@ const query = Astro.url.searchParams.get('q') || '';
     </div></div>
   </nav>
 </header>
+<div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+<aside class="drawer" id="site-drawer" aria-label="Menu" aria-hidden="true">
+  <div class="drawer-head"><strong>Greise</strong><button class="drawer-close" type="button" data-drawer-close aria-label="Fermer le menu">×</button></div>
+  <nav aria-label="Rubriques">
+    <h2>Rubriques</h2>
+    <a href={pathFor('/')}>Accueil</a>
+    <a href={pathFor('/en-bref/')}>En bref : l'essentiel du jour</a>
+    {categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a>)}
+  </nav>
+  <section aria-label="Apparence">
+    <h2>Thème</h2>
+    <div class="theme-choice">
+      <button type="button" data-set-theme="dark" aria-pressed="true">Sombre</button>
+      <button type="button" data-set-theme="sunset" aria-pressed="false">Coucher de soleil</button>
+    </div>
+  </section>
+  <section aria-label="Taille du texte">
+    <h2>Taille du texte</h2>
+    <div class="size-choice">
+      <button type="button" data-set-text="normal" aria-pressed="true">A</button>
+      <button type="button" data-set-text="large" aria-pressed="false">A+</button>
+      <button type="button" data-set-text="xlarge" aria-pressed="false">A++</button>
+    </div>
+  </section>
+  <nav aria-label="Greise">
+    <h2>Greise</h2>
+    <a href={pathFor('/a-propos/')}>À propos</a>
+    <a href={pathFor('/politique-editoriale/')}>Politique éditoriale</a>
+    <a href={pathFor('/flux-rss/')}>Flux RSS</a>
+    <a href={pathFor('/abonnement/#newsletter')}>Lettre d'information</a>
+    <a href={pathFor('/contact/')}>Contact</a>
+    <a href={pathFor('/mentions-legales/')}>Mentions légales</a>
+    <a href="https://tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">TikTok @gresie13</a>
+  </nav>
+  <p class="drawer-note">Vos choix (thème, taille du texte) restent sur cet appareil.</p>
+</aside>
 <script>
+  const root = document.documentElement;
   const menu = document.querySelector<HTMLButtonElement>('#masthead-menu');
-  const nav = document.querySelector<HTMLElement>('#edition-nav');
-  menu?.addEventListener('click', () => {
-    const expanded = menu.getAttribute('aria-expanded') === 'true';
-    menu.setAttribute('aria-expanded', String(!expanded));
-    menu.setAttribute('aria-label', expanded ? 'Ouvrir le menu' : 'Fermer le menu');
-    nav?.classList.toggle('is-open', !expanded);
-  });
+  const drawer = document.querySelector<HTMLElement>('#site-drawer');
+  const backdrop = document.querySelector<HTMLElement>('#drawer-backdrop');
+  const store = (key: string, value: string) => { try { localStorage.setItem(key, value); } catch {} };
+  const label = (theme: string) => (theme === 'sunset' ? 'Soleil' : 'Sombre');
+  function applyTheme(theme: string) {
+    root.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'sunset' ? '#fff0e0' : '#111111');
+    document.querySelectorAll('[data-theme-label]').forEach((el) => { el.textContent = label(theme); });
+    document.querySelectorAll<HTMLElement>('[data-set-theme]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setTheme === theme)));
+  }
+  function applyText(size: string) {
+    if (size === 'normal') delete root.dataset.text; else root.dataset.text = size;
+    document.querySelectorAll<HTMLElement>('[data-set-text]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setText === size)));
+  }
+  applyTheme(root.dataset.theme || 'dark');
+  applyText(root.dataset.text || 'normal');
+  document.querySelectorAll('[data-theme-toggle]').forEach((b) => b.addEventListener('click', () => { const next = root.dataset.theme === 'sunset' ? 'dark' : 'sunset'; applyTheme(next); store('greise-theme', next); }));
+  document.querySelectorAll<HTMLElement>('[data-set-theme]').forEach((b) => b.addEventListener('click', () => { const t = b.dataset.setTheme || 'dark'; applyTheme(t); store('greise-theme', t); }));
+  document.querySelectorAll<HTMLElement>('[data-set-text]').forEach((b) => b.addEventListener('click', () => { const t = b.dataset.setText || 'normal'; applyText(t); store('greise-text', t); }));
+  function setDrawer(open: boolean) {
+    if (!drawer || !menu || !backdrop) return;
+    drawer.classList.toggle('is-open', open);
+    backdrop.hidden = false;
+    backdrop.classList.toggle('is-open', open);
+    drawer.setAttribute('aria-hidden', String(!open));
+    menu.setAttribute('aria-expanded', String(open));
+    menu.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+    document.body.classList.toggle('drawer-open', open);
+    if (open) drawer.querySelector<HTMLElement>('a, button')?.focus(); else menu.focus();
+  }
+  menu?.addEventListener('click', () => setDrawer(!drawer?.classList.contains('is-open')));
+  backdrop?.addEventListener('click', () => setDrawer(false));
+  drawer?.querySelector('[data-drawer-close]')?.addEventListener('click', () => setDrawer(false));
+  drawer?.querySelectorAll('nav a').forEach((a) => a.addEventListener('click', () => setDrawer(false)));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && drawer?.classList.contains('is-open')) setDrawer(false); });
 </script>

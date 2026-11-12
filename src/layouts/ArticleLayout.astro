@@ -120,6 +120,7 @@ const jsonLd = {
       <a class="button" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(href)}`} target="_blank" rel="noopener noreferrer">Partager sur Facebook</a>
       <a class="button" href="https://tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">Suivre Greise sur TikTok</a>
       <a class="button" href={pathFor('/flux-rss/')}>Flux RSS Greise</a>
+      <button class="button" type="button" data-share hidden data-share-title={data.title} data-share-url={href}>Partager…</button>
       <button class="button" type="button" data-copy-link={href}>Copier le lien</button>
       <span class="copy-status" aria-live="polite"></span>
     </div>
@@ -139,6 +140,11 @@ const jsonLd = {
       const updateReadingProgress = () => { const article = document.querySelector<HTMLElement>('.article-page'); if (!article || !progressBar) return; const rect = article.getBoundingClientRect(); const total = article.offsetHeight - window.innerHeight; const passed = Math.min(1, Math.max(0, -rect.top / Math.max(1, total))); progressBar.style.transform = `scaleX(${passed})`; };
       window.addEventListener('scroll', updateReadingProgress, { passive: true });
       updateReadingProgress();
+      document.querySelectorAll<HTMLButtonElement>('[data-share]').forEach((button) => {
+        if (!navigator.share) return;
+        button.hidden = false;
+        button.addEventListener('click', () => { navigator.share({ title: button.dataset.shareTitle || document.title, url: button.dataset.shareUrl || location.href }).catch(() => {}); });
+      });
       document.querySelectorAll<HTMLButtonElement>('[data-copy-link]').forEach((button) => {
         button.addEventListener('click', async () => {
           const status = button.parentElement?.querySelector<HTMLElement>('.copy-status');

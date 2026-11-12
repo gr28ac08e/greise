@@ -9,9 +9,9 @@ const item = (outlet, category, title, rawDescription, hours, extra = {}) => ({
 });
 
 const articles = [
-  item('France 24', 'international', 'Guinée : le président sortant revendique la victoire à la présidentielle', 'Le chef de l’État sortant a proclamé sa victoire dimanche soir, alors que l’opposition conteste le scrutin.', 6, { imageUrl: 'https://images.example/guinee.jpg' }),
-  item('RFI', 'international', 'Présidentielle en Guinée, le chef de l’État sortant se proclame vainqueur', 'L’opposition guinéenne dénonce des irrégularités dans le scrutin présidentiel organisé dimanche.', 5),
-  item('Le Monde', 'international', 'En Guinée, le président sortant revendique sa réélection malgré les contestations', 'Le scrutin présidentiel de dimanche est contesté par l’opposition qui parle de fraudes.', 3),
+  item('France 24', 'international', 'Guinée \u2014 le président sortant revendique la victoire à la présidentielle', 'Le chef de l’État sortant a proclamé sa victoire dimanche soir &#8211; alors que l’opposition conteste le scrutin.', 6, { imageUrl: 'https://images.example/guinee.jpg' }),
+  item('RFI', 'international', 'Présidentielle en Guinée, le chef de l’État sortant se proclame vainqueur', 'L’opposition guinéenne dénonce &#x2014; des irrégularités dans le scrutin présidentiel organisé dimanche.', 5),
+  item('Le Monde', 'international', 'En Guinée, le président sortant revendique sa réélection malgré les contestations', 'Le scrutin présidentiel de dimanche est contesté &mdash; par l’opposition qui parle de fraudes.', 3),
   item('La Tribune', 'economie', 'La Banque centrale européenne maintient ses taux directeurs inchangés', 'La BCE laisse ses taux inchangés face à une inflation qui reste proche de 2 %.', 4),
   item('Futura Sciences', 'tech', 'Un nouveau télescope spatial livre ses premières images de galaxies lointaines', 'Les premières images du télescope montrent des galaxies formées peu après le Big Bang.', 8),
 ];
