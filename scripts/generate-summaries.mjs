@@ -1,128 +1,224 @@
+// Construit les « sujets » Greise : regroupe les articles de médias différents qui traitent du même
+// événement (recoupement), conserve le lien vers chaque source et écrit un fichier Markdown par sujet.
+//
+// Sans clé OpenAI : aucun texte n'est inventé. Le sujet reprend le titre et un court extrait du premier
+// média, et la page liste ce que dit chaque source avec son lien. Avec OPENAI_API_KEY : une synthèse
+// prudente est rédigée à partir des seuls titres et extraits fournis par les médias.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import OpenAI from 'openai';
+import { cleanCopy, shorten, slugify } from './lib/text.mjs';
+import { clusterArticles, dedupeByOutlet } from './lib/cluster.mjs';
 
-const IN = path.join(process.cwd(), 'scripts/.cache/raw-articles.json');
-const CACHE = path.join(process.cwd(), 'scripts/.cache/generated.json');
-const OUT_DIR = path.join(process.cwd(), 'src/content/rss');
+const ROOT = process.cwd();
+const IN = path.join(ROOT, 'scripts/.cache/raw-articles.json');
+const CACHE = path.join(ROOT, 'scripts/.cache/generated.json');
+const OUT_DIR = path.join(ROOT, 'src/content/rss');
+const MAX_STORIES = 40;
+const KEEP_HOURS = 72;
 const CATEGORY_IMAGE = { international: '/images/international.svg', economie: '/images/economie.svg', tech: '/images/tech.svg', culture: '/images/culture.svg', sport: '/images/sport.svg' };
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-let aiCount = 0;
-let fallbackCount = 0;
 
-function slugify(value) {
-  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 66);
+const openai = process.env.OPENAI_API_KEY ? new (await import('openai')).default({ apiKey: process.env.OPENAI_API_KEY }) : null;
+let aiCount = 0;
+let plainCount = 0;
+
+const quote = (value) => JSON.stringify(String(value ?? ''));
+const asJsonLine = (value) => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+const time = (iso) => new Date(iso).valueOf();
+
+// ---------------------------------------------------------------- lecture des sujets existants
+function field(frontmatter, name) {
+  return frontmatter.match(new RegExp(`^${name}: (.*)$`, 'm'))?.[1]?.trim() || '';
 }
-function quote(value) { return JSON.stringify(String(value ?? '')); }
-function cleanCopy(value) {
-  return String(value ?? '')
-    .replace(/\s+[\u2014\u2013]\s+/g, ', ')
-    .replace(/[\u2014\u2013]/g, '-')
-    .replace(/[ \t]+/g, ' ')
-    .replace(/[ \t]+\n[ \t]*/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .replace(/\s+([,;:.!?])/g, '$1')
-    .replace(/([,;:.!?]){2,}/g, '$1')
-    .trim();
+function jsonField(frontmatter, name) {
+  const raw = field(frontmatter, name);
+  if (!raw) return '';
+  try { return JSON.parse(raw); } catch { return raw.replace(/^"|"$/g, ''); }
 }
-function safeExcerpt(value) { return cleanCopy(value).slice(0, 600); }
-function makeFallback(article) {
-  const excerpt = safeExcerpt(article.rawDescription);
+
+function parseStory(markdown, fileName) {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!match) return null;
+  const fm = match[1];
+  const generatedBy = field(fm, 'generatedBy');
+  if (generatedBy !== 'rss' && generatedBy !== 'ai') return null; // les dossiers éditoriaux ne sont pas touchés
+  const title = jsonField(fm, 'title');
+  const pubDate = jsonField(fm, 'pubDate');
+  let sources = jsonField(fm, 'sources');
+  const hasSources = Array.isArray(sources);
+  if (!hasSources) {
+    const url = jsonField(fm, 'sourceUrl');
+    sources = url ? [{ name: jsonField(fm, 'source') || 'Source', url, title, pubDate, excerpt: shorten(jsonField(fm, 'summary'), 280) }] : [];
+  }
   return {
-    summary: excerpt || `Le flux de ${article.source} signale la publication de cet article. Consultez la source originale pour en connaître les éléments et les mises à jour.`,
-    whyItMatters: excerpt ? 'L’extrait donne un premier repère, mais ne restitue pas nécessairement tout le contexte. La source originale permet de vérifier les détails et les évolutions.' : 'Le flux RSS ne fournit pas de résumé détaillé. Le contexte et la portée du sujet doivent être vérifiés dans l’article original.',
-    report: excerpt ? `${excerpt}\n\nCe résumé reprend uniquement l’extrait transmis dans le flux RSS de ${article.source}. Il peut omettre des informations importantes. Consultez la source originale pour le contexte complet et les dernières mises à jour.` : `Le flux RSS de ${article.source} fournit le titre de cet article sans extrait détaillé. Ce texte ne prétend pas en résumer le contenu : consultez l’article original pour en connaître les faits, le contexte et les éventuelles mises à jour.`
+    fileName,
+    slug: fileName.replace(/\.md$/, ''),
+    title,
+    pubDate,
+    updatedDate: jsonField(fm, 'updatedDate') || sources.reduce((latest, ref) => (time(ref.pubDate) > time(latest) ? ref.pubDate : latest), pubDate),
+    category: field(fm, 'category'),
+    imageUrl: jsonField(fm, 'imageUrl') || '',
+    imageCredit: jsonField(fm, 'imageCredit') || jsonField(fm, 'source') || '',
+    generatedBy,
+    sources,
+    hasSources,
   };
 }
-async function summarize(article) {
-  const fallback = makeFallback(article);
-  if (!openai) { fallbackCount++; return fallback; }
-  const prompt = `Tu es journaliste francophone pour Greise. Résume avec prudence uniquement les informations présentes dans le titre et l’extrait fournis. N’invente ni détails, ni citations, ni faits manquants. Si l’extrait est insuffisant, dis-le clairement et renvoie à la source. Rédige en français neutre. Évite les tirets longs et préfère une ponctuation simple.\nRetourne un JSON strict : {"summary":"3 à 5 phrases, 90 mots maximum","whyItMatters":"2 phrases prudentes sur le contexte ou ce qu’il faut vérifier","report":"6 à 10 phrases, 220 mots maximum, ne déduis pas des détails absents"}.\nTitre : ${article.title}\nSource : ${article.source}\nExtrait RSS : ${safeExcerpt(article.rawDescription) || '[aucun extrait fourni]'}\nLien d’origine : ${article.link}`;
+
+async function loadExisting() {
+  const stories = [];
+  let names = [];
+  try { names = await fs.readdir(OUT_DIR); } catch { return stories; }
+  for (const name of names) {
+    if (!name.endsWith('.md')) continue;
+    const story = parseStory(await fs.readFile(path.join(OUT_DIR, name), 'utf8'), name);
+    if (story && story.title && story.sources.length) stories.push(story);
+  }
+  return stories;
+}
+
+// ---------------------------------------------------------------- construction des sujets
+const refFromRaw = (article) => ({
+  name: article.outlet || article.source,
+  url: article.link,
+  title: article.title,
+  pubDate: article.pubDate,
+  excerpt: shorten(article.rawDescription || '', 280),
+});
+
+function majority(values, fallback) {
+  const counts = new Map();
+  values.filter(Boolean).forEach((value) => counts.set(value, (counts.get(value) || 0) + 1));
+  let best = fallback;
+  let bestCount = 0;
+  for (const [value, count] of counts) if (count > bestCount) { best = value; bestCount = count; }
+  return best;
+}
+
+function plainText(story) {
+  const lead = story.sources.find((ref) => ref.excerpt) || null;
+  const outlets = story.sources.map((ref) => ref.name);
+  return {
+    title: story.title,
+    summary: lead ? shorten(lead.excerpt, 240) : 'Consultez les sources ci-dessous pour le détail de cette information.',
+    whyItMatters: '',
+    report: '',
+    generatedBy: 'rss',
+    outlets,
+  };
+}
+
+async function aiText(story) {
+  const fallback = plainText(story);
+  if (!openai) { plainCount++; return fallback; }
+  const sourcesBlock = story.sources.map((ref, i) => `Source ${i + 1} : ${ref.name} (${ref.pubDate})\nTitre : ${ref.title}\nExtrait : ${ref.excerpt || '[aucun extrait]'}`).join('\n\n');
+  const prompt = `Tu es journaliste francophone pour Greise, un média qui recoupe l’actualité publiée par d’autres médias. À partir UNIQUEMENT des titres et extraits ci-dessous (${story.sources.length} média${story.sources.length > 1 ? 's' : ''}), rédige une synthèse neutre. N’invente aucun fait, chiffre, nom ou citation. Signale les divergences et ce que seul un média rapporte, en le nommant. Si un seul média est cité, dis que l’information n’est pas encore recoupée. Évite les tirets longs.\nRetourne un JSON strict : {"title":"titre neutre et factuel, 100 caractères maximum","summary":"2 à 3 phrases, 70 mots maximum","whyItMatters":"1 à 2 phrases sur ce qui est confirmé par plusieurs médias, ce qui ne l’est pas, et ce qu’il faut suivre","report":"synthèse de 5 à 9 phrases, 200 mots maximum"}\n\n${sourcesBlock}`;
   try {
     const response = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, temperature: 0.2 });
     const content = response.choices?.[0]?.message?.content;
-    if (!content) throw new Error('réponse OpenAI vide ou au format inattendu');
+    if (!content) throw new Error('réponse OpenAI vide');
     const parsed = JSON.parse(content);
     aiCount++;
-    return { summary: cleanCopy(parsed.summary || fallback.summary), whyItMatters: cleanCopy(parsed.whyItMatters || fallback.whyItMatters), report: cleanCopy(parsed.report || fallback.report) };
+    return {
+      title: cleanCopy(parsed.title || fallback.title).slice(0, 140),
+      summary: cleanCopy(parsed.summary || fallback.summary),
+      whyItMatters: cleanCopy(parsed.whyItMatters || ''),
+      report: cleanCopy(parsed.report || ''),
+      generatedBy: 'ai',
+    };
   } catch (error) {
-    fallbackCount++;
-    console.warn(`[repli RSS] ${article.title}: ${error.message}`);
+    plainCount++;
+    console.warn(`[repli sans IA] ${story.title}: ${error.message}`);
     return fallback;
   }
 }
-function normalizeMarkdown(markdown, article = null) {
-  const match = markdown.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-  if (!match) return cleanCopy(markdown);
-  let frontmatter = match[1];
-  for (const field of ['title', 'summary', 'whyItMatters']) {
-    const pattern = new RegExp(`^${field}: ("(?:\\\\.|[^"\\\\])*")$`, 'm');
-    frontmatter = frontmatter.replace(pattern, (line, encoded) => {
-      try { return `${field}: ${quote(cleanCopy(JSON.parse(encoded)))}`; }
-      catch { return line; }
-    });
-  }
-  if (article?.imageUrl) {
-    const imageLine = `imageUrl: ${quote(article.imageUrl)}`;
-    if (/^imageUrl:/m.test(frontmatter)) frontmatter = frontmatter.replace(/^imageUrl:.*$/m, imageLine);
-    else frontmatter = frontmatter.replace(/^(image:.*)$/m, `$1\n${imageLine}`);
-  }
-  return `---\n${frontmatter}\n---\n\n${cleanCopy(match[2])}\n`;
-}
-function sourceUrlFromMarkdown(markdown) {
-  const value = markdown.match(/^sourceUrl: ("(?:\\\\.|[^"\\\\])*")$/m)?.[1];
-  if (!value) return '';
-  try { return JSON.parse(value); } catch { return ''; }
+
+function toMarkdown(story, text) {
+  const lines = [
+    '---',
+    `title: ${quote(text.title)}`,
+    `source: ${quote(story.sources[0].name)}`,
+    `sourceUrl: ${quote(story.sources[0].url)}`,
+    `category: ${story.category}`,
+    `pubDate: ${quote(story.pubDate)}`,
+    `updatedDate: ${quote(story.updatedDate)}`,
+    `summary: ${quote(cleanCopy(text.summary))}`,
+    `whyItMatters: ${quote(cleanCopy(text.whyItMatters || ''))}`,
+    `image: ${CATEGORY_IMAGE[story.category] || '/images/repere.svg'}`,
+  ];
+  if (story.imageUrl) { lines.push(`imageUrl: ${quote(story.imageUrl)}`); lines.push(`imageCredit: ${quote(story.imageCredit)}`); }
+  lines.push(`sources: ${asJsonLine(story.sources)}`);
+  lines.push(`audioFile: ${quote(`/audio/${story.slug}.mp3`)}`, 'featured: false', `generatedBy: ${text.generatedBy}`, 'kind: actualité', '---', '', `${cleanCopy(text.report || '')}`.trim(), '');
+  return lines.join('\n');
 }
 
+// ---------------------------------------------------------------- programme principal
 async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
-  const raw = JSON.parse(await fs.readFile(IN, 'utf8'));
-  const byLink = new Map(raw.map((article) => [article.link, article]));
-  const generated = [];
-  const keep = new Set();
-  for (const article of raw.slice(0, 40)) {
-    try {
-      const hash = createHash('sha256').update(article.link).digest('hex').slice(0, 7);
-      const slug = `${slugify(article.title) || 'article'}-${hash}`;
-      const fileName = `${slug}.md`;
-      const file = path.join(OUT_DIR, fileName);
-      keep.add(fileName);
-      try {
-        const existing = await fs.readFile(file, 'utf8');
-        const updated = normalizeMarkdown(existing, article);
-        if (updated !== existing) await fs.writeFile(file, updated);
-        generated.push({ ...article, slug });
-        continue;
-      } catch (error) {
-        if (error.code !== 'ENOENT') throw error;
-      }
-      const text = await summarize(article);
-      const markdown = `---\ntitle: ${quote(article.title)}\nsource: ${quote(article.source)}\nsourceUrl: ${quote(article.link)}\ncategory: ${article.category}\npubDate: ${quote(article.pubDate)}\nsummary: ${quote(cleanCopy(text.summary))}\nwhyItMatters: ${quote(cleanCopy(text.whyItMatters))}\nimage: ${CATEGORY_IMAGE[article.category] || '/images/repere.svg'}\n${article.imageUrl ? `imageUrl: ${quote(article.imageUrl)}\n` : ''}audioFile: ${quote(`/audio/${slug}.mp3`)}\nfeatured: false\ngeneratedBy: rss\nkind: actualité\n---\n\n${cleanCopy(text.report)}\n`;
-      await fs.writeFile(file, markdown);
-      generated.push({ ...article, slug });
-      console.log(`✓ ${slug}`);
-    } catch (error) {
-      console.warn(`[skip] ${article.title}: ${error.message}`);
-    }
+  let raw = [];
+  try { raw = JSON.parse(await fs.readFile(IN, 'utf8')); } catch { console.warn('[info] aucune collecte récente : seuls les sujets existants sont conservés.'); }
+
+  const cutoff = Date.now() - KEEP_HOURS * 3600_000;
+  const everyExisting = await loadExisting();
+  const existing = [];
+  for (const story of everyExisting) {
+    if (time(story.updatedDate) < cutoff) await fs.rm(path.join(OUT_DIR, story.fileName), { force: true });
+    else existing.push(story);
+  }
+  const knownLinks = new Set(existing.flatMap((story) => story.sources.map((ref) => ref.url)));
+  const fresh = raw.filter((article) => !knownLinks.has(article.link));
+
+  const items = [
+    ...existing.map((story) => ({ kind: 'file', story, title: story.title, rawDescription: story.sources.map((ref) => ref.excerpt).join(' '), pubDate: story.pubDate })),
+    ...fresh.map((article) => ({ kind: 'raw', article, title: article.title, rawDescription: article.rawDescription, pubDate: article.pubDate })),
+  ];
+  const groups = clusterArticles(items);
+
+  const stories = [];
+  for (const group of groups) {
+    const members = group.map((index) => items[index]);
+    const files = members.filter((member) => member.kind === 'file').map((member) => member.story).sort((a, b) => time(a.pubDate) - time(b.pubDate));
+    const raws = members.filter((member) => member.kind === 'raw').map((member) => member.article).sort((a, b) => time(a.pubDate) - time(b.pubDate));
+
+    const byUrl = new Map();
+    for (const ref of [...files.flatMap((story) => story.sources), ...raws.map(refFromRaw)]) if (!byUrl.has(ref.url)) byUrl.set(ref.url, ref);
+    const sources = dedupeByOutlet([...byUrl.values()]);
+    const withImage = [...files.filter((story) => story.imageUrl).map((story) => ({ imageUrl: story.imageUrl, credit: story.imageCredit })), ...raws.filter((article) => article.imageUrl).map((article) => ({ imageUrl: article.imageUrl, credit: article.outlet || article.source }))][0];
+    const pubDate = [...files.map((story) => story.pubDate), ...sources.map((ref) => ref.pubDate)].sort((a, b) => time(a) - time(b))[0];
+    const updatedDate = sources.map((ref) => ref.pubDate).sort((a, b) => time(b) - time(a))[0] || pubDate;
+    const lead = files[0];
+    const title = lead?.title || sources[0].title;
+    const earliestLink = sources[0].url;
+    const slug = lead?.slug || `${slugify(title) || 'sujet'}-${createHash('sha256').update(earliestLink).digest('hex').slice(0, 7)}`;
+    const category = majority([...files.map((story) => story.category), ...raws.map((article) => article.category)], lead?.category || raws[0]?.category || 'international');
+    stories.push({ slug, title, category, pubDate, updatedDate, sources, imageUrl: withImage?.imageUrl || '', imageCredit: withImage?.credit || '', files, changed: !(files.length === 1 && raws.length === 0 && files[0].hasSources) });
   }
 
-  const cutoff = Date.now() - 72 * 60 * 60 * 1000;
-  for (const name of await fs.readdir(OUT_DIR)) {
-    if (!name.endsWith('.md')) continue;
-    const file = path.join(OUT_DIR, name);
-    const content = await fs.readFile(file, 'utf8');
-    if (!content.startsWith('---\n') || !content.includes('generatedBy: rss')) continue;
-    const linkedArticle = byLink.get(sourceUrlFromMarkdown(content));
-    const updated = normalizeMarkdown(content, linkedArticle);
-    if (updated !== content) await fs.writeFile(file, updated);
-    if (keep.has(name)) continue;
-    const date = updated.match(/^pubDate:\s*"?([^"\n]+)"?/m)?.[1];
-    if (date && new Date(date).valueOf() < cutoff) await fs.rm(file, { force: true });
+  stories.sort((a, b) => time(b.updatedDate) - time(a.updatedDate));
+  const selected = stories.slice(0, MAX_STORIES);
+  const keep = new Set(selected.map((story) => `${story.slug}.md`));
+
+  for (const story of selected) {
+    if (!story.changed) continue;
+    const text = await aiText(story);
+    await fs.writeFile(path.join(OUT_DIR, `${story.slug}.md`), toMarkdown(story, text));
+    console.log(`✓ ${story.slug} (${new Set(story.sources.map((ref) => ref.name)).size} média${story.sources.length > 1 ? 's' : ''}, ${text.generatedBy})`);
   }
-  await fs.writeFile(CACHE, JSON.stringify(generated, null, 2));
-  console.log(`✓ ${generated.length} articles traités : ${aiCount} résumés OpenAI, ${fallbackCount} replis RSS`);
+
+  // Suppression des fichiers fusionnés dans un autre sujet ou sortis du top.
+  for (const story of everyExisting) {
+    if (!keep.has(story.fileName)) await fs.rm(path.join(OUT_DIR, story.fileName), { force: true });
+  }
+
+  const summary = [];
+  for (const story of selected) {
+    const markdown = await fs.readFile(path.join(OUT_DIR, `${story.slug}.md`), 'utf8');
+    summary.push({ slug: story.slug, title: story.title, generatedBy: field(markdown.match(/^---\n([\s\S]*?)\n---/)[1], 'generatedBy') });
+  }
+  await fs.mkdir(path.dirname(CACHE), { recursive: true });
+  await fs.writeFile(CACHE, JSON.stringify(summary, null, 2));
+  const corroborated = selected.filter((story) => new Set(story.sources.map((ref) => ref.name)).size > 1).length;
+  console.log(`✓ ${selected.length} sujets (${corroborated} recoupés par au moins deux médias) : ${aiCount} synthèses IA, ${plainCount} sans IA`);
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

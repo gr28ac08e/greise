@@ -27,16 +27,14 @@ const query = Astro.url.searchParams.get('q') || '';
         <input id="greise-search" type="search" name="q" placeholder="Rechercher" value={query || undefined} />
       </form>
       <a class="greise-subscribe" href={pathFor('/abonnement/#newsletter')}>S'abonner</a>
-      <button class="icon-button" id="theme-toggle" type="button" aria-label="Activer le thème clair" title="Changer de thème">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
-      </button>
     </div>
   </div>
   <nav class="edition-nav" id="edition-nav" aria-label="Navigation principale">
     <div class="container edition-inner"><div class="edition-links">
       <a href={pathFor('/')} aria-current={isHome ? 'page' : undefined}>Accueil</a>
       {categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)} aria-current={current.includes(`/categorie/${category.slug}`) ? 'page' : undefined}>{category.label}</a>)}
-      <a href={pathFor('/a-propos/')} aria-current={current.includes('/a-propos') ? 'page' : undefined}>Analyses</a>
+      <a href={pathFor('/a-propos/')} aria-current={current.includes('/a-propos') ? 'page' : undefined}>À propos</a>
+      <a href={pathFor('/flux-rss/')} aria-current={current.includes('/flux-rss') ? 'page' : undefined}>Flux RSS</a>
     </div></div>
   </nav>
 </header>
@@ -49,13 +47,4 @@ const query = Astro.url.searchParams.get('q') || '';
     menu.setAttribute('aria-label', expanded ? 'Ouvrir le menu' : 'Fermer le menu');
     nav?.classList.toggle('is-open', !expanded);
   });
-
-  const search = document.querySelector<HTMLInputElement>('#greise-search');
-  const applyPageSearch = () => {
-    const query = (search?.value || '').trim().toLocaleLowerCase('fr');
-    document.querySelectorAll<HTMLElement>('[data-page-item]').forEach((item) => {
-      item.hidden = !!query && !item.innerText.toLocaleLowerCase('fr').includes(query);
-    });
-  };
-  search?.addEventListener('input', applyPageSearch);
 </script>

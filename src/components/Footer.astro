@@ -7,7 +7,7 @@ import NewsletterForm from './NewsletterForm.astro';
   <div class="container footer-inner">
     <div class="footer-brand">
       <a class="brand" href={pathFor('/')} aria-label="Greise, accueil"><img class="brand-avatar" src={pathFor('/avatar.jpg')} alt="" width="36" height="36" />GREISE<span class="brand-dot">.</span></a>
-      <p>L’actualité internationale, sans frontières. Des repères clairs, des histoires à comprendre et à écouter.</p>
+      <p>Greise rapproche ce que disent plusieurs médias sur un même sujet et vous envoie vers chaque source. À lire, à écouter, à comprendre.</p>
       <NewsletterForm />
     </div>
     <nav class="footer-column" aria-label="Catégories">
@@ -21,6 +21,7 @@ import NewsletterForm from './NewsletterForm.astro';
         <li><a href={pathFor('/contact/')}>Contact</a></li>
         <li><a href={pathFor('/mentions-legales/')}>Mentions légales</a></li>
         <li><a href={pathFor('/politique-editoriale/')}>Politique éditoriale</a></li>
+        <li><a href={pathFor('/flux-rss/')}>Flux RSS</a></li>
       </ul>
     </nav>
     <div class="footer-column">
@@ -30,7 +31,7 @@ import NewsletterForm from './NewsletterForm.astro';
     </div>
   </div>
   <div class="container footer-bottom">
-    <span>© 2025 Greise | Média indépendant</span>
+    <span>© {new Date().getFullYear()} Greise | L'actualité recoupée, avec ses sources</span>
     <span>Fait pour lire, écouter et comprendre.</span>
   </div>
 </footer>

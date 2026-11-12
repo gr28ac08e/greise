@@ -1,3 +1,4 @@
+// `outlet` regroupe les flux d'un même média : pour le recoupement, un média compte pour une seule voix.
 export const sources = [
   { name: 'France 24', url: 'https://www.france24.com/fr/rss', category: 'international' },
   { name: 'RFI', url: 'https://www.rfi.fr/fr/rss', category: 'international' },
@@ -9,9 +10,9 @@ export const sources = [
   { name: 'Futura Sciences', url: 'https://www.futura-sciences.com/rss/actualites.xml', category: 'tech' },
   { name: 'Télérama', url: 'https://www.telerama.fr/rss/une.xml', category: 'culture' },
   { name: 'Beaux Arts', url: 'https://www.beauxarts.com/feed/', category: 'culture' },
-  { name: 'Franceinfo, Monde', url: 'https://www.franceinfo.fr/monde.rss', category: 'international' },
-  { name: 'Franceinfo, Économie', url: 'https://www.franceinfo.fr/economie.rss', category: 'economie' },
-  { name: 'Franceinfo, Sciences', url: 'https://www.franceinfo.fr/sciences.rss', category: 'tech' },
-  { name: 'Franceinfo, Culture', url: 'https://www.franceinfo.fr/culture.rss', category: 'culture' },
-  { name: 'Franceinfo, Sports', url: 'https://www.franceinfo.fr/sports.rss', category: 'sport' },
+  { name: 'Franceinfo, Monde', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/monde.rss', category: 'international' },
+  { name: 'Franceinfo, Économie', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/economie.rss', category: 'economie' },
+  { name: 'Franceinfo, Sciences', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/sciences.rss', category: 'tech' },
+  { name: 'Franceinfo, Culture', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/culture.rss', category: 'culture' },
+  { name: 'Franceinfo, Sports', outlet: 'Franceinfo', url: 'https://www.franceinfo.fr/sports.rss', category: 'sport' },
 ];

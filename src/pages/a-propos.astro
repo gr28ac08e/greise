@@ -2,15 +2,18 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { pathFor } from '../lib/utils';
 ---
-<BaseLayout title="À propos de Greise | Média indépendant" description="Découvrez la mission de Greise, média indépendant d’actualité internationale en français.">
+<BaseLayout title="À propos de Greise | L'actualité recoupée" description="Greise rapproche ce que disent plusieurs médias sur un même sujet, renvoie vers chaque source et publie son propre flux RSS.">
   <article class="container prose">
-    <p class="eyebrow">Notre démarche</p><h1>L’actualité, sans frontières.</h1>
-    <p>Greise est un média indépendant en français consacré à l’actualité internationale. Son ambition : rendre les grands sujets plus faciles à lire, à écouter et à comprendre, sans inscription ni abonnement.</p>
-    <h2>Une lecture sourcée</h2>
-    <p>Les articles d’actualité renvoient vers leur publication d’origine. Les résumés automatisés, lorsqu’ils sont activés, sont produits à partir des titres et extraits fournis par les flux RSS référencés; ils ne remplacent pas la lecture de la source. Les dossiers de repères sont identifiés séparément.</p>
-    <p>Les titres, extraits, dates et liens sont attribués aux éditeurs d’origine. En cas d’erreur, de demande de correction ou de retrait, écrivez-nous à <a href="mailto:greise013@gmail.com">greise013@gmail.com</a>.</p>
-    <h2>Un média gratuit</h2>
-    <p>La consultation est libre : pas de compte, pas de paywall. La lecture audio peut utiliser la synthèse vocale de votre navigateur; les versions audio générées sont proposées lorsque disponibles.</p>
-    <h2>Contact</h2><p>Une question, une remarque ou une demande éditoriale ? <a href={pathFor('/contact/')}>Contactez Greise</a>.</p>
+    <p class="eyebrow">Notre démarche</p><h1>Ce que disent les médias, côte à côte.</h1>
+    <p>Greise est un projet indépendant et à but non lucratif, basé en France. C’est un site d’actualité en français qui <strong>rassemble et recoupe</strong> l’information publiée par d’autres médias. Pour chaque sujet, nous indiquons combien de médias le rapportent, ce que chacun en dit, et nous renvoyons vers chaque article d’origine. Greise n’est pas une rédaction de terrain : nous ne produisons pas de reportages et ne nous substituons pas aux journalistes dont nous reprenons les titres.</p>
+    <h2>Comment ça marche</h2>
+    <p>Plusieurs fois par jour, Greise lit les flux RSS publics de médias référencés. Les articles qui parlent du même événement sont rapprochés automatiquement, puis présentés ensemble : « Recoupé par 3 médias » signifie que trois médias distincts ont publié sur ce sujet. « Source unique » signifie que l’information n’est, pour l’instant, rapportée que par un média : elle reste à confirmer.</p>
+    <p>Le rapprochement est automatique et peut se tromper. Chaque sujet liste ses sources pour que vous puissiez vérifier vous-même. Notre <a href={pathFor('/politique-editoriale/')}>politique éditoriale</a> détaille la méthode, les limites et l’usage de l’IA.</p>
+    <h2>Greise est aussi une source</h2>
+    <p>Les sujets recoupés par Greise sont publiés dans un <a href={pathFor('/flux-rss/')}>flux RSS</a>, global et par rubrique. D’autres sites, lecteurs RSS et agrégateurs peuvent le reprendre, à condition de citer Greise et de conserver le lien vers la page du sujet.</p>
+    <h2>Gratuit, avec des comptes facultatifs</h2>
+    <p>La lecture est libre, sans paywall ni publicité. Vous pouvez créer un compte lecteur pour commenter et réagir, ou vous inscrire à la lettre d’information. La lecture audio utilise la synthèse vocale de votre navigateur ou, lorsqu’elles existent, des versions audio générées.</p>
+    <h2>Corrections et contact</h2>
+    <p>Une erreur, une demande de correction ou de retrait ? Écrivez-nous à <a href="mailto:greise013@gmail.com">greise013@gmail.com</a> ou via la <a href={pathFor('/contact/')}>page de contact</a>. Greise est aussi sur <a href="https://tiktok.com/@gresie13" target="_blank" rel="noopener noreferrer">TikTok</a>.</p>
   </article>
 </BaseLayout>
