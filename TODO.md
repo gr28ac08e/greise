@@ -22,8 +22,8 @@
 ## À compléter ou mesurer
 
 - [ ] Lancer `npm run build` : le dernier build complet date d’avant le recoupement et le flux RSS (modifications validées par tests unitaires et vérification de syntaxe, pas par un build Astro).
-- [ ] Compléter l’identité de l’éditeur dans les mentions légales (espace réservé à remplacer).
-- [ ] Vérifier le nom du compte TikTok : le site renvoie à `@gresie13`, le dépôt s’appelle `greise`.
+- [x] Mentions légales complétées : éditeur Greise, projet non commercial basé en France, contact par email, lien avec le compte TikTok @gresie13.
+- [x] Compte TikTok confirmé par le propriétaire : `@gresie13`.
 - [ ] Choisir le rythme et l’outil d’envoi de la lettre : le formulaire ne fait que collecter les adresses par FormSubmit.
 - [ ] Vérifier les conditions d’utilisation RSS de chaque média avant une diffusion publique large.
 - [ ] Héberger les polices en local (Google Fonts transmet l’adresse IP des visiteurs).
