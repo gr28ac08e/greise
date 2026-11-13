@@ -29,6 +29,9 @@ assert.match(page, /application\/ld\+json/, 'la page doit contenir le JSON-LD');
 assert.match(page, /isBasedOn/, 'le JSON-LD doit citer ses sources');
 
 const home = await read('index.html');
+assert.match(home, /Content-Security-Policy/, 'la politique de sécurité (CSP) doit être déclarée');
+assert.match(home, /profil-192\.png/, "l'icône doit être la photo de profil");
+assert.match(await read('manifest.webmanifest'), /profil-512\.png/, 'le manifeste doit utiliser la photo de profil');
 assert.match(home, /Recoupé par 3 médias/, 'l’accueil doit afficher le recoupement');
 assert.match(home, /rel="alternate" type="application\/rss\+xml"/, 'l’accueil doit déclarer le flux RSS');
 assert.match(await read('flux-rss/index.html'), /rss\.xml/, 'la page Flux RSS doit citer les flux');

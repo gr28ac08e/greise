@@ -13,12 +13,8 @@ const configured = backendConfigured();
   data-key={BACKEND.anonKey}
 >
   <div data-auth></div>
-  <p class="comments-note" data-global-status aria-live="polite"></p>
-  <div class="comments-list" data-list>
-    <p class="comments-note">Chargement des commentaires…</p>
-  </div>
-  <form class="comments-form" data-form>
-    <label class="comments-label" for="comment-input">Votre commentaire</label>
+  <form class="comments-form" id="comment-composer" data-form>
+    <label class="comments-label" for="comment-input">Ajouter un commentaire</label>
     <textarea
       id="comment-input"
       data-input
@@ -31,6 +27,10 @@ const configured = backendConfigured();
       <span class="comments-note" data-status aria-live="polite"></span>
     </div>
   </form>
+  <p class="comments-note" data-global-status aria-live="polite"></p>
+  <div class="comments-list" data-list>
+    <p class="comments-note">Chargement des commentaires…</p>
+  </div>
   <noscript>
     <p class="comments-note">Les commentaires nécessitent JavaScript.</p>
   </noscript>
@@ -101,10 +101,15 @@ const configured = backendConfigured();
       });
 
     function init() {
-      supabase.auth.onAuthStateChange(function (_event, session) {
+      supabase.auth.onAuthStateChange(function (event, session) {
         user = session ? session.user : null;
         renderAuth();
         loadComments();
+        if (user && event === 'SIGNED_IN') {
+          var wanted = false;
+          try { wanted = sessionStorage.getItem('greise-focus-comment') === '1'; sessionStorage.removeItem('greise-focus-comment'); } catch (e) {}
+          if (wanted) { form.scrollIntoView({ behavior: 'smooth', block: 'center' }); input.focus(); setNote('Vous êtes connecté : écrivez votre commentaire.'); }
+        }
       });
       supabase.auth.getSession().then(function (res) {
         user = res.data && res.data.session ? res.data.session.user : null;
@@ -114,6 +119,8 @@ const configured = backendConfigured();
       bindForm();
       bindList();
       input.value = draftGet();
+      var hashErr = /error_description=([^&]+)/.exec(location.hash);
+      if (hashErr) { setGlobal('Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau ci-dessus.'); history.replaceState(null, '', location.pathname); }
       input.addEventListener('input', function () { if (!user) draftSet(input.value.trim()); });
     }
 
@@ -163,11 +170,12 @@ const configured = backendConfigured();
       var email = authForm.email.value.trim();
       if (!email || !authForm.rules.checked) return;
       draftSet(input.value.trim());
+      try { sessionStorage.setItem('greise-focus-comment', '1'); } catch (e) {}
       setGlobal('Envoi du lien…');
       try {
         var res = await supabase.auth.signInWithOtp({
           email: email,
-          options: { emailRedirectTo: location.href.split('#')[0] + '#comments-title', data: { display_name: email.split('@')[0] } },
+          options: { emailRedirectTo: location.origin + location.pathname, data: { display_name: email.split('@')[0] } },
         });
         if (res.error) throw res.error;
         setGlobal('Lien envoyé. Ouvrez votre boîte mail (pensez aux courriers indésirables) et cliquez dessus : vous reviendrez ici connecté.');
