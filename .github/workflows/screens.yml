@@ -1,0 +1,41 @@
+name: Captures d'écran
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  screens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.4
+          cache: npm
+      - run: npm ci
+      - name: Construire avec des sujets factices
+        run: |
+          node tests/make-fixture.mjs
+          npm run summarize
+          npm run build
+      - name: Servir et capturer
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+          (npm run preview -- --host 127.0.0.1 --port 4321 > preview.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4321/greise/ >/dev/null && break; sleep 1; done
+          BASE_URL=http://127.0.0.1:4321/greise node tests/screens.mjs
+      - name: Publier les captures sur la branche ci-screens
+        if: github.event.pull_request.head.repo.fork != true
+        run: |
+          cd screens
+          git init -q -b ci-screens
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -q -m "Captures $GITHUB_SHA"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci-screens
