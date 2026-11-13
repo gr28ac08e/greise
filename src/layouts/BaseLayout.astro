@@ -23,12 +23,14 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#111111" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data:; media-src 'self'; connect-src 'self' https://*.supabase.co https://formsubmit.co https://cdn.jsdelivr.net; form-action 'self' https://formsubmit.co; base-uri 'self'; object-src 'none'; manifest-src 'self'; worker-src 'self'" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="description" content={description} />
     {noIndex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="author" content="Greise" />
-    <link rel="icon" type="image/png" sizes="192x192" href={pathFor('/favicon.png')} />
+    <link rel="icon" type="image/png" sizes="192x192" href={pathFor('/profil-192.png')} />
     <link rel="manifest" href={pathFor('/manifest.webmanifest')} />
-    <link rel="apple-touch-icon" href={pathFor('/favicon.png')} />
+    <link rel="apple-touch-icon" href={pathFor('/profil-180.png')} />
     <link rel="canonical" href={canonical} />
     <link rel="alternate" type="application/rss+xml" title="Greise : l'actualité recoupée" href={pathFor('/rss.xml')} />
     {feed && <link rel="alternate" type="application/rss+xml" title={feed.title} href={feed.href} />}
