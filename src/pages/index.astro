@@ -295,8 +295,8 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       });
       visible = 6;
       if (heroGrid) heroGrid.hidden = Boolean(activeQuery);
-      if (latestTitle) latestTitle.textContent = activeQuery ? `Résultats pour « ${value.trim()} »` : 'Dernières actualités';
-      if (latestDescription) latestDescription.textContent = activeQuery ? `${matchingCards.length} résultat${matchingCards.length > 1 ? 's' : ''} dans les publications Greise.` : "Le monde en contexte, une publication après l'autre.";
+      if (latestTitle) latestTitle.textContent = activeQuery ? `Résultats pour « ${value.trim()} »` : "Fil d'actualité";
+      if (latestDescription) latestDescription.textContent = activeQuery ? `${matchingCards.length} résultat${matchingCards.length > 1 ? 's' : ''} dans les publications Greise.` : "Réagissez et commentez directement sous chaque sujet.";
       if (searchStatus) searchStatus.textContent = activeQuery ? `${matchingCards.length} article${matchingCards.length > 1 ? 's' : ''} trouvé${matchingCards.length > 1 ? 's' : ''}.` : '';
       updateCardVisibility();
     };
@@ -493,7 +493,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       if (!recommendationSection || !recommendationList) return;
       let followed: string[] = [];
       try { followed = JSON.parse(localStorage.getItem('greise-followed-categories') || '[]'); } catch {}
-      recommendationSection.hidden = false;
+      recommendationSection.hidden = !followed.length;
       recommendationList.replaceChildren();
       const matches = Array.from(document.querySelectorAll<HTMLElement>('[data-article-card]')).filter((card) => followed.includes(card.dataset.category || '')).slice(0, 4);
       if (recommendationEmpty) recommendationEmpty.hidden = matches.length > 0;
