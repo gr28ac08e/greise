@@ -5,7 +5,8 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
-import { categories, categoryLabel, coverageLabel, emphasizeParts, outletCount, pathFor, readingTime, storySources } from '../lib/utils';
+import { BACKEND, backendConfigured } from '../lib/backend';
+import { categoryLabel, coverageLabel, emphasizeParts, outletCount, outletNames, pathFor, readingTime, storySources } from '../lib/utils';
 
 const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
 const dateOf = (article: { data: { pubDate: Date; updatedDate?: Date } }) => (article.data.updatedDate || article.data.pubDate).valueOf();
@@ -28,6 +29,11 @@ const leadDate = lead ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month
 const creditFor = (article: (typeof newest)[number]) => (article.data.imageUrl ? `Photo : ${article.data.imageCredit || article.data.source}` : '');
 const sourcesJson = (article: (typeof newest)[number]) => JSON.stringify(storySources(article.data).map((ref) => ({ name: ref.name, url: ref.url, title: ref.title || article.data.title })));
 const leadAlt = lead ? (lead.data.imageUrl ? `Photo liée à l'article : ${lead.data.title}` : `Illustration de la rubrique ${categoryLabel(lead.data.category)}`) : '';
+const liveStories = newest.filter((article) => article.data.kind !== 'repère').slice(0, 10);
+const clock = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
+const dayClock = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
+const builtAt = clock.format(new Date());
+const configured = backendConfigured();
 const nextStory = newest.find((article) => !selectedIds.has(article.id));
 const feed = leadStories.slice(1, 4).map((article) => ({
   time: `${readMinutesFor(article)} min de lecture · ${coverageLabel(article.data)}`,
@@ -150,26 +156,100 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     <section class="container section"><div class="empty-state">Les prochains articles arriveront bientôt. Revenez nous lire.</div></section>
   )}
 
+  {liveStories.length > 0 && (
+    <section class="container live-stories" aria-labelledby="live-title">
+      <div class="live-stories-head">
+        <h2 id="live-title"><span class="live-dot" aria-hidden="true"></span>À la minute</h2>
+        <span class="live-updated">Mis à jour à <time data-built={new Date().toISOString()}>{builtAt}</time></span>
+      </div>
+      <div class="story-rail" role="list">
+        <a class="story-tile story-tile-live" role="listitem" href={pathFor('/en-bref/')}>
+          <span class="story-live-pill"><span class="live-dot" aria-hidden="true"></span>EN DIRECT</span>
+          <strong>L'essentiel du jour en une minute</strong>
+          <span class="story-sub">Les sujets les plus recoupés</span>
+        </a>
+        {liveStories.map((story) => (
+          <a class="story-tile" role="listitem" href={pathFor(`/article/${story.id}/`)}>
+            <img src={imageFor(story)} alt="" width="360" height="640" loading="lazy" decoding="async" />
+            <span class="story-shade" aria-hidden="true"></span>
+            <span class="story-top"><span class="story-time" data-ago={(story.data.updatedDate || story.data.pubDate).toISOString()}>{dayClock.format(story.data.updatedDate || story.data.pubDate)}</span></span>
+            <span class="story-bottom">
+              <small>{categoryLabel(story.data.category)}</small>
+              <strong>{story.data.title}</strong>
+              <span class="story-sub">{coverageLabel(story.data)}</span>
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
   <section class="container section recommended-section" aria-labelledby="recommended-title" data-recommended-section hidden>
     <div class="section-heading"><h2 id="recommended-title">Pour vous</h2><p>Une sélection construite à partir des rubriques que vous suivez.</p></div>
     <div class="recommended-list" data-recommended-list></div>
     <p class="recommended-empty" data-recommended-empty>Suivez une rubrique depuis une carte d'actualité pour personnaliser votre fil.</p>
   </section>
 
-  <section class="container section" id="tous-les-articles" aria-labelledby="latest-title">
-    <div class="section-heading"><h2 id="latest-title">Dernières actualités</h2><p id="latest-description">Le monde en contexte, une publication après l'autre.</p></div>
-    <nav class="category-bar" aria-label="Filtrer par catégorie">
-      <a href={pathFor('/')} aria-current="page">Tout</a>
-      {categories.map((category) => <a href={pathFor(`/categorie/${category.slug}/`)}>{category.label}</a>)}
-    </nav>
+  <section class="container section feed-section" id="tous-les-articles" aria-labelledby="latest-title">
+    <div class="section-heading"><h2 id="latest-title">Fil d'actualité</h2><p id="latest-description">Réagissez et commentez directement sous chaque sujet.</p></div>
     <p class="search-status" id="search-status" aria-live="polite"></p>
     {shown.length ? (
-      <div class="article-list" id="article-grid">
-        {shown.map((article, index) => <div class="article-grid-item" data-page-item data-index={index} data-lead-duplicate={article.id === lead?.id ? 'true' : undefined}><ArticleCard article={article} /></div>)}
+      <div class="feed" id="article-grid">
+        {shown.map((article, index) => {
+          const slugId = article.id;
+          const isStory = article.data.kind !== 'repère';
+          const count = outletCount(article.data);
+          return (
+            <article
+              class="post"
+              data-page-item
+              data-index={index}
+              data-lead-duplicate={article.id === lead?.id ? 'true' : undefined}
+              data-article-card
+              data-slug={slugId}
+              data-category={article.data.category}
+              data-href={pathFor(`/article/${slugId}/`)}
+              data-image={imageFor(article)}
+              data-title={article.data.title}
+              data-summary={article.data.summary}
+            >
+              <header class="post-head">
+                <span class="post-avatar" aria-hidden="true">{isStory ? count || 'G' : 'G'}</span>
+                <div class="post-id">
+                  <strong>{isStory ? coverageLabel(article.data) : 'Dossier Greise'}</strong>
+                  <span class="post-sub"><time datetime={(article.data.updatedDate || article.data.pubDate).toISOString()} data-ago={(article.data.updatedDate || article.data.pubDate).toISOString()}>{dayClock.format(article.data.updatedDate || article.data.pubDate)}</time> · <a href={pathFor(`/categorie/${article.data.category}/`)}>{categoryLabel(article.data.category)}</a></span>
+                </div>
+              </header>
+              <h3 class="post-title"><a href={pathFor(`/article/${slugId}/`)}>{article.data.title}</a></h3>
+              {article.data.summary && <p class="post-summary">{article.data.summary}</p>}
+              <a class="post-media" href={pathFor(`/article/${slugId}/`)} tabindex="-1" aria-hidden="true"><img src={imageFor(article)} alt="" width="1200" height="675" loading="lazy" decoding="async" /></a>
+              {article.data.imageUrl && <p class="post-credit">{creditFor(article)}</p>}
+              <p class="post-origin">{isStory ? `Sources : ${outletNames(article.data, 3)}` : 'Rédigé par Greise'}</p>
+              <div class="post-stats"><span data-like-count></span><span class="post-stats-right"><button type="button" class="post-link" data-toggle-comments tabindex="-1" aria-hidden="true"><span data-comment-count>0 commentaire</span></button></span></div>
+              <div class="post-actions" role="group" aria-label="Actions sur ce sujet">
+                <button type="button" class="post-action" data-like-post aria-pressed="false">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                  J'aime
+                </button>
+                <button type="button" class="post-action" data-toggle-comments aria-expanded="false">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  Commenter
+                </button>
+                <button type="button" class="post-action" data-share-post data-url={pathFor(`/article/${slugId}/`)}>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></svg>
+                  Partager
+                </button>
+              </div>
+              <div class="post-comments" hidden>
+                <div class="comments-app" data-comments data-lazy data-slug={slugId} data-configured={String(configured)} data-url={BACKEND.url} data-key={BACKEND.anonKey}></div>
+              </div>
+            </article>
+          );
+        })}
       </div>
     ) : <div class="empty-state">Les nouvelles publications de Greise s'afficheront ici.</div>}
     <p class="empty-state search-empty" id="search-empty" hidden>Aucun article ne correspond à votre recherche.</p>
-    {shown.length > 6 && <div class="load-more-wrap"><button class="button" type="button" id="load-more">Charger plus</button></div>}
+    {shown.length > 6 && <div class="load-more-wrap"><button class="button" type="button" id="load-more">Voir la suite du fil</button></div>}
   </section>
 
   <section class="container section" aria-labelledby="debat-title">
@@ -180,9 +260,9 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       </div>
       <div class="debate-card">
         <div class="debate-card-top"><div class="debate-author"><span class="debate-avatar" aria-hidden="true">G</span><div><strong>La rédaction Greise</strong><span class="debate-author-sub">Modération</span></div></div><span class="debate-badge">Contribution constructive</span></div>
-        <p class="debate-quote">« Chaque article de Greise renvoie à sa source originale. Créez votre compte lecteur avec votre adresse email pour réagir, apporter un éclairage ou contester avec des arguments. Vos commentaires sont publics et modérés selon notre politique éditoriale. »</p>
+        <p class="debate-quote">« Chaque article de Greise renvoie à sa source originale. Une simple adresse email suffit pour réagir, apporter un éclairage ou contester avec des arguments. Vos commentaires sont publics et modérés selon notre politique éditoriale. »</p>
       </div>
-      <div class="debate-cta"><span>Ouvrez n'importe quel article pour commenter avec votre compte lecteur.</span><a class="button button-primary" href={pathFor('/abonnement/')}>Créer mon compte lecteur</a></div>
+      <div class="debate-cta"><span>Ouvrez n'importe quel article pour commenter avec votre compte lecteur.</span><a class="button button-primary" href="#tous-les-articles">Aller au fil et commenter</a></div>
     </div>
   </section>
 
@@ -298,6 +378,114 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     };
     slides.forEach((slide) => slide.addEventListener('click', () => showLead(slide)));
 
+    const posts = Array.from(document.querySelectorAll<HTMLElement>('.post'));
+    const agoText = (iso: string) => {
+      const s = (Date.now() - new Date(iso).getTime()) / 1000;
+      if (!isFinite(s) || s < 0) return '';
+      if (s < 90) return "à l'instant";
+      if (s < 3600) return `il y a ${Math.floor(s / 60)} min`;
+      if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`;
+      if (s < 7 * 86400) return `il y a ${Math.floor(s / 86400)} j`;
+      return '';
+    };
+    const refreshAgo = () => document.querySelectorAll<HTMLElement>('[data-ago]').forEach((el) => { const t = agoText(el.dataset.ago || ''); if (t) el.textContent = t; });
+    refreshAgo();
+    window.setInterval(refreshAgo, 60000);
+    const builtTime = document.querySelector<HTMLElement>('[data-built]');
+    if (builtTime?.dataset.built) { const t = agoText(builtTime.dataset.built); if (t) { builtTime.parentElement!.textContent = `Mis à jour ${t}`; } }
+
+    // Défilement infini du fil : le bouton se déclenche seul quand il arrive à l'écran.
+    if (loadMore && 'IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting) && !loadMore.hidden) loadMore.click(); }, { rootMargin: '600px 0px' }).observe(loadMore);
+    }
+
+    // Commentaires en ligne, comme sur un réseau social : le bloc s'ouvre sous le sujet.
+    const mountComments = (post: HTMLElement) => {
+      const panel = post.querySelector<HTMLElement>('.post-comments');
+      const root = panel?.querySelector<HTMLElement>('[data-comments]');
+      const mount = (window as any).greiseMountComments;
+      if (root && typeof mount === 'function') mount(root);
+      return { panel, root };
+    };
+    const toggleComments = (post: HTMLElement, forceOpen = false) => {
+      const { panel } = mountComments(post);
+      if (!panel) return;
+      const open = forceOpen ? true : panel.hidden;
+      panel.hidden = !open;
+      post.querySelectorAll<HTMLElement>('button[data-toggle-comments]').forEach((b) => b.setAttribute('aria-expanded', String(open)));
+      if (open) panel.querySelector<HTMLTextAreaElement>('textarea')?.focus({ preventScroll: false });
+    };
+    posts.forEach((post) => {
+      post.querySelectorAll<HTMLElement>('[data-toggle-comments]').forEach((b) => b.addEventListener('click', () => toggleComments(post)));
+      post.querySelector<HTMLElement>('[data-share-post]')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget as HTMLElement;
+        const url = new URL(button.dataset.url || location.pathname, location.origin).toString();
+        const title = post.dataset.title || document.title;
+        try {
+          if (navigator.share) await navigator.share({ title, url });
+          else { await navigator.clipboard.writeText(url); button.lastChild!.textContent = ' Lien copié'; window.setTimeout(() => { button.lastChild!.textContent = ' Partager'; }, 2000); }
+        } catch {}
+      });
+    });
+
+    // Compteurs et « J'aime » des sujets (Supabase), chargés une fois que le fil est visible.
+    const feedRoot = document.querySelector<HTMLElement>('#article-grid');
+    const sample = feedRoot?.querySelector<HTMLElement>('[data-comments]');
+    const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
+    let feedClient: any = null;
+    let feedUser: any = null;
+    const refreshStats = async () => {
+      if (!feedClient) return;
+      const slugs = posts.map((p) => p.dataset.slug || '').filter(Boolean);
+      const [c, r] = await Promise.all([
+        feedClient.from('comments').select('article_slug').in('article_slug', slugs),
+        feedClient.from('article_reactions').select('article_slug, user_id').in('article_slug', slugs),
+      ]);
+      const comments: Record<string, number> = {};
+      const likes: Record<string, number> = {};
+      const mine: Record<string, boolean> = {};
+      (c.data || []).forEach((row: any) => { comments[row.article_slug] = (comments[row.article_slug] || 0) + 1; });
+      (r.data || []).forEach((row: any) => { likes[row.article_slug] = (likes[row.article_slug] || 0) + 1; if (feedUser && row.user_id === feedUser.id) mine[row.article_slug] = true; });
+      posts.forEach((post) => {
+        const slug = post.dataset.slug || '';
+        const cc = post.querySelector<HTMLElement>('[data-comment-count]');
+        const lc = post.querySelector<HTMLElement>('[data-like-count]');
+        if (cc) cc.textContent = plural(comments[slug] || 0, 'commentaire', 'commentaires');
+        if (lc) lc.textContent = likes[slug] ? plural(likes[slug], "mention J'aime", "mentions J'aime") : '';
+        const btn = post.querySelector<HTMLElement>('[data-like-post]');
+        btn?.setAttribute('aria-pressed', String(Boolean(mine[slug])));
+        post.querySelector<HTMLElement>('button[data-toggle-comments][aria-hidden]')?.removeAttribute('tabindex');
+      });
+    };
+    const startStats = async () => {
+      const getClient = (window as any).greiseGetClient;
+      if (!sample || sample.dataset.configured !== 'true' || typeof getClient !== 'function') return;
+      try {
+        feedClient = await getClient(sample.dataset.url, sample.dataset.key);
+        const session = await feedClient.auth.getSession();
+        feedUser = session.data?.session?.user || null;
+        feedClient.auth.onAuthStateChange((_e: string, s: any) => { feedUser = s?.user || null; refreshStats(); });
+        refreshStats();
+      } catch {}
+    };
+    window.addEventListener('load', startStats);
+    posts.forEach((post) => {
+      post.querySelector<HTMLElement>('[data-like-post]')?.addEventListener('click', async () => {
+        const slug = post.dataset.slug || '';
+        if (!feedClient) { toggleComments(post, true); return; }
+        if (!feedUser) {
+          toggleComments(post, true);
+          const root = post.querySelector<HTMLElement>('[data-comments]') as any;
+          root?.__requireAuth?.("Indiquez votre adresse email pour réagir à ce sujet.");
+          return;
+        }
+        const pressed = post.querySelector<HTMLElement>('[data-like-post]')?.getAttribute('aria-pressed') === 'true';
+        if (pressed) await feedClient.from('article_reactions').delete().eq('article_slug', slug).eq('user_id', feedUser.id);
+        else await feedClient.from('article_reactions').upsert({ article_slug: slug, user_id: feedUser.id, reaction_type: 'approve' });
+        refreshStats();
+      });
+    });
+
     const recommendationSection = document.querySelector<HTMLElement>('[data-recommended-section]');
     const recommendationList = document.querySelector<HTMLElement>('[data-recommended-list]');
     const recommendationEmpty = document.querySelector<HTMLElement>('[data-recommended-empty]');
@@ -327,4 +515,5 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     modal?.querySelectorAll<HTMLButtonElement>('[data-sources-close]').forEach((closeButton) => closeButton.addEventListener('click', () => modal?.close()));
     modal?.addEventListener('click', (event) => { if (event.target === modal) modal.close(); });
   </script>
+  <script is:inline src={pathFor('/comments.js')} defer></script>
 </BaseLayout>

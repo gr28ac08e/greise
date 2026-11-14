@@ -17,7 +17,7 @@ const articleSchema = z.object({
   title,
   source: text.default('Greise'),
   sourceUrl: z.string().url().optional(),
-  category: z.enum(['international', 'economie', 'tech', 'culture', 'livres', 'sport']),
+  category: z.enum(['france', 'international', 'europe', 'afrique', 'moyen-orient', 'asie', 'ameriques', 'economie', 'tech', 'culture', 'livres', 'sport']),
   pubDate: z.coerce.date(),
   summary: text,
   whyItMatters: text.default(''),
