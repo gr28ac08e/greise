@@ -4,6 +4,7 @@
 // Sans clé OpenAI : aucun texte n'est inventé. Le sujet reprend le titre et un court extrait du premier
 // média, et la page liste ce que dit chaque source avec son lien. Avec OPENAI_API_KEY : une synthèse
 // prudente est rédigée à partir des seuls titres et extraits fournis par les médias.
+import { pickCategory } from './lib/category.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -16,7 +17,8 @@ const CACHE = path.join(ROOT, 'scripts/.cache/generated.json');
 const OUT_DIR = path.join(ROOT, 'src/content/rss');
 const MAX_STORIES = 40;
 const KEEP_HOURS = 72;
-const CATEGORY_IMAGE = { international: '/images/international.svg', economie: '/images/economie.svg', tech: '/images/tech.svg', culture: '/images/culture.svg', livres: '/images/livres.svg', sport: '/images/sport.svg' };
+const REGION_IMAGE = '/images/international.svg';
+const CATEGORY_IMAGE = { france: REGION_IMAGE, europe: REGION_IMAGE, afrique: REGION_IMAGE, 'moyen-orient': REGION_IMAGE, asie: REGION_IMAGE, ameriques: REGION_IMAGE, international: '/images/international.svg', economie: '/images/economie.svg', tech: '/images/tech.svg', culture: '/images/culture.svg', livres: '/images/livres.svg', sport: '/images/sport.svg' };
 
 const openai = process.env.OPENAI_API_KEY ? new (await import('openai')).default({ apiKey: process.env.OPENAI_API_KEY }) : null;
 let aiCount = 0;
@@ -190,7 +192,7 @@ async function main() {
     const title = lead?.title || sources[0].title;
     const earliestLink = sources[0].url;
     const slug = lead?.slug || `${slugify(title) || 'sujet'}-${createHash('sha256').update(earliestLink).digest('hex').slice(0, 7)}`;
-    const category = majority([...files.map((story) => story.category), ...raws.map((article) => article.category)], lead?.category || raws[0]?.category || 'international');
+    const category = pickCategory([...files.map((story) => story.category), ...raws.map((article) => article.category)], lead?.category || raws[0]?.category || 'international');
     stories.push({ slug, title, category, pubDate, updatedDate, sources, imageUrl: withImage?.imageUrl || '', imageCredit: withImage?.credit || '', files, changed: !(files.length === 1 && raws.length === 0 && files[0].hasSources) });
   }
 

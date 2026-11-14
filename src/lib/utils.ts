@@ -1,11 +1,24 @@
 export const categories = [
+  { slug: 'france', label: 'France', short: 'La vie politique, sociale et économique du pays' },
   { slug: 'international', label: 'International', short: 'Le monde en perspective' },
+  { slug: 'europe', label: 'Europe', short: 'Institutions, pays et sociétés du continent' },
+  { slug: 'afrique', label: 'Afrique', short: 'Les actualités du continent africain' },
+  { slug: 'moyen-orient', label: 'Moyen-Orient', short: 'Conflits, diplomatie et sociétés de la région' },
+  { slug: 'asie', label: 'Asie', short: 'De la Chine à l\'Inde, du Japon à l\'Asie du Sud-Est' },
+  { slug: 'ameriques', label: 'Amériques', short: 'Du Canada au Chili, en passant par les États-Unis' },
   { slug: 'economie', label: 'Économie', short: 'Les forces qui façonnent les échanges' },
   { slug: 'tech', label: 'Tech & Science', short: 'Idées, recherche et usages' },
   { slug: 'culture', label: 'Culture', short: 'Création, récits et patrimoine' },
   { slug: 'livres', label: 'Livres', short: 'Lectures, parutions et auteurs' },
   { slug: 'sport', label: 'Sport', short: 'Jeux, performances et société' },
 ] as const;
+
+const WORLD_REGIONS = ['europe', 'afrique', 'moyen-orient', 'asie', 'ameriques'];
+
+/** La rubrique « International » regroupe aussi les zones du monde (hors France). */
+export function inCategory(articleCategory: string, slug: string): boolean {
+  return articleCategory === slug || (slug === 'international' && WORLD_REGIONS.includes(articleCategory));
+}
 
 export type CategorySlug = (typeof categories)[number]['slug'];
 

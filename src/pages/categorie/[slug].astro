@@ -2,13 +2,13 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
-import { categories, pathFor } from '../../lib/utils';
+import { categories, inCategory, pathFor } from '../../lib/utils';
 export async function getStaticPaths() {
   return categories.map((category) => ({ params: { slug: category.slug }, props: { category } }));
 }
 const { category } = Astro.props;
 const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
-const articles = [...editorial, ...rss].filter((article) => article.data.category === category.slug).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const articles = [...editorial, ...rss].filter((article) => inCategory(article.data.category, category.slug)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 <BaseLayout title={`${category.label} | Greise`} description={`${category.short}. Décryptages et actualités ${category.label.toLowerCase()} en français, gratuitement.`} canonicalPath={`/categorie/${category.slug}/`} feed={{ title: `Greise | ${category.label}`, href: pathFor(`/rss/${category.slug}.xml`) }}>
   <section class="container page-intro"><p class="eyebrow">Les rubriques de Greise</p><h1>{category.label}</h1><p>{category.short}. Retrouvez les articles et les repères publiés dans cette rubrique.</p>{category.slug === 'livres' && <p>Cette rubrique accueillera aussi les livres publiés par Greise, en plus de l'actualité littéraire recoupée.</p>}<a class="button" href={pathFor('/')}>← Retour à toutes les actualités</a></section>

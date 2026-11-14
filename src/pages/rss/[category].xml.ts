@@ -1,7 +1,7 @@
 import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
 import { buildRss } from '../../lib/feed';
-import { categories, pathFor } from '../../lib/utils';
+import { categories, inCategory, pathFor } from '../../lib/utils';
 
 export function getStaticPaths() {
   return categories.map((category) => ({ params: { category: category.slug }, props: { label: category.label, short: category.short } }));
@@ -17,7 +17,7 @@ export async function GET({ site, params, props }: APIContext) {
     link: abs(`/categorie/${slug}/`),
     selfUrl: abs(`/rss/${slug}.xml`),
     abs,
-    entries: [...editorial, ...rss].filter((entry) => entry.data.category === slug),
+    entries: [...editorial, ...rss].filter((entry) => inCategory(entry.data.category, slug)),
   });
   return new Response(body, { headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' } });
 }

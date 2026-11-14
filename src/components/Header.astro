@@ -17,8 +17,8 @@ const query = Astro.url.searchParams.get('q') || '';
       <time class="masthead-date" datetime={new Date().toISOString()}>{today}</time>
     </div>
     <a class="greise-brand" href={pathFor('/')} aria-label="Greise, accueil">
-      <img src={pathFor('/logo.svg')} alt="Greise" width="250" height="58" />
-      <span class="greise-brand-caption">ACTUALITÉS &amp; ANALYSES</span>
+      <span class="greise-wordmark">Greise</span>
+      <span class="greise-brand-caption">Actualités &amp; analyses</span>
     </a>
     <div class="greise-tools">
       <form class="masthead-search" role="search" action={pathFor('/')} method="get">
