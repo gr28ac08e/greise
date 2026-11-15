@@ -2,7 +2,7 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 
-const base = process.env.BASE_URL || 'http://localhost:4321/greise';
+const base = process.env.BASE_URL || 'http://localhost:4321';
 const out = process.env.OUT_DIR || 'screens';
 await fs.mkdir(out, { recursive: true });
 const browser = await chromium.launch();

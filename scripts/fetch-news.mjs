@@ -4,7 +4,7 @@ import path from 'node:path';
 import { sources } from './sources.config.mjs';
 import { stripHtml, cleanCopy, cleanTitle, validUrl } from './lib/text.mjs';
 
-const SITE_URL = process.env.SITE_URL || 'https://gr28ac08e.github.io/greise';
+const SITE_URL = process.env.SITE_URL || 'https://greise-media.github.io';
 
 const parser = new Parser({
   timeout: 15_000,

@@ -8,7 +8,7 @@ La page d’accueil doit reprendre la composition de la capture fournie : masthe
 
 ## Architecture et dépendances
 
-- Astro génère le HTML des pages, les deux Content Collections Markdown, le sitemap et les liens compatibles avec `/greise`.
+- Astro génère le HTML des pages, les deux Content Collections Markdown, le sitemap et les liens, servis à la racine du domaine.
 - CSS vanilla, variables de thème, thème sombre unique. Aucun cadre visuel nouveau dépend d’une bibliothèque ou d’une API payante.
 - En-tête : date en français et menu hamburger à gauche, mot-symbole centré, recherche GET et bouton « Suivre Greise » à droite. Deuxième ligne horizontale avec Accueil et les cinq rubriques réelles. Menu hamburger accessible avec Contact, À propos et documents éditoriaux.
 - Accueil : quatre actualités RSS illustrées alimentent un carrousel accessible; première actualité en grand panneau image avec titre, catégorie, résumé, source et temps de lecture. Les autres actualités servent les cartes de la colonne droite et la carte suivante. Le fil complet reste sous la une avec filtre GET et chargement progressif.
@@ -38,4 +38,4 @@ La page d’accueil doit reprendre la composition de la capture fournie : masthe
 
 ## Publication
 
-Le dépôt est `gr28ac08e/greise`, avec `site: https://gr28ac08e.github.io/greise` et `base: /greise`. GitHub Pages publie via Actions. Le site doit rester pleinement disponible sans clé API et sans service payant. Les images d’actualité demeurent celles des flux RSS et sont créditées.
+Le dépôt est `greise-media/greise-media.github.io`, avec `site: https://greise-media.github.io` et `base: /`. GitHub Pages publie via Actions. Le site doit rester pleinement disponible sans clé API et sans service payant. Les images d’actualité demeurent celles des flux RSS et sont créditées.

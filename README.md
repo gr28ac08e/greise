@@ -31,7 +31,7 @@ Node.js 22.23.4 ou plus récent et npm (Astro 7). Aucune clé API n’est néces
 ```bash
 npm install
 cp .env.example .env
-npm run dev      # http://localhost:4321/greise/
+npm run dev      # http://localhost:4321/
 npm test         # tests du moteur de recoupement (node:test, sans dépendance)
 npm run build && npm run preview
 ```
@@ -51,7 +51,7 @@ Les sujets de plus de 72 heures sans nouvelle source sont supprimés ; 40 sujets
 
 ## Déploiement GitHub Pages
 
-Le site vise `https://gr28ac08e.github.io/greise` (sous-chemin `/greise`). Dans **Settings → Pages**, choisissez **GitHub Actions**. Les pushes sur `main` lancent `deploy.yml`. `fetch-news.yml` s’exécute toutes les heures (à la minute 7), lance d’abord les tests puis la collecte, et peut être déclenché à la main depuis l’onglet Actions.
+Le site vise `https://greise-media.github.io` (racine du domaine, sans sous-chemin). Dans **Settings → Pages**, choisissez **GitHub Actions**. Les pushes sur `main` lancent `deploy.yml`. `fetch-news.yml` s’exécute toutes les heures (à la minute 7), lance d’abord les tests puis la collecte, et peut être déclenché à la main depuis l’onglet Actions.
 
 Pour les synthèses IA et l’audio uniquement, ajoutez `OPENAI_API_KEY` dans **Settings → Secrets and variables → Actions**. La clé ne doit jamais être commitée. La variable locale facultative `SITE_URL` définit une autre URL canonique.
 
