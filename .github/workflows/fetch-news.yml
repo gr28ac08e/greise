@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Récupérer le dépôt
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Restaurer le cache des articles RSS et MP3
         uses: actions/cache@v4
         with:
