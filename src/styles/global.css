@@ -1389,3 +1389,25 @@ html .post-media img { height: auto; aspect-ratio: 16 / 9; max-height: 460px; }
   .hero-stage .side-card-featured { display: grid; }
   .hero-stage .side-card-featured .side-thumb { aspect-ratio: 16 / 9; }
 }
+
+/* ===== Titre de section : titre puis phrase d'explication, bien séparés ===== */
+.section-heading { display: block; }
+.section-heading h2 { display: block; }
+.section-heading p { display: block; max-width: 44rem; margin: .45rem 0 0; font-style: normal; font-size: .92rem; line-height: 1.5; color: var(--text-muted); }
+.feed-section .section-heading { max-width: 680px; margin-inline: auto; }
+.feed-section .section-heading h2 { font-family: Fraunces, Georgia, serif; font-size: clamp(1.5rem, 4vw, 2rem); }
+
+/* ===== Une : fondu, barre de progression, bouton pause ===== */
+.hero-stage .lead-column, .hero-stage .lead-figure img { transition: opacity .22s ease; }
+.hero-stage.is-changing .lead-column, .hero-stage.is-changing .lead-figure img { opacity: 0; }
+.lead-page-button { position: relative; overflow: hidden; }
+.lead-page-button::after { content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+.hero-stage.is-autoplaying .lead-page-button.is-active::after { animation: lead-progress var(--dur, 7s) linear forwards; }
+@keyframes lead-progress { to { transform: scaleX(1); } }
+.lead-autoplay { display: inline-grid; place-items: center; width: 36px; height: 36px; margin-left: .35rem; border: 1px solid var(--border-strong); border-radius: 50%; background: transparent; color: var(--text-secondary); cursor: pointer; }
+.hero-stage .lead-autoplay { border-color: rgb(255 255 255 / 35%); color: #eee; }
+.lead-autoplay:hover { border-color: var(--accent); color: var(--accent); }
+.lead-autoplay .ap-play { display: none; }
+.lead-autoplay[aria-pressed='true'] .ap-play { display: block; }
+.lead-autoplay[aria-pressed='true'] .ap-pause { display: none; }
+@media (prefers-reduced-motion: reduce) { .hero-stage .lead-column, .hero-stage .lead-figure img { transition: none; } .hero-stage.is-autoplaying .lead-page-button.is-active::after { animation: none; } }

@@ -17,6 +17,12 @@ jobs:
           node-version: 22.23.4
           cache: npm
       - run: npm ci
+      - name: Vérifier que la bibliothèque Supabase épinglée existe sur le CDN
+        run: |
+          url=$(grep -rhoE "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@[0-9.]+/\+esm" public/comments.js | head -1)
+          echo "$url"
+          test -n "$url"
+          curl -sfI "$url" > /dev/null
       - name: Tester le recoupement
         run: npm test
       - name: Construire le site
