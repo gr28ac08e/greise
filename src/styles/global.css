@@ -1397,21 +1397,3 @@ html .post-media img { height: auto; aspect-ratio: 16 / 9; max-height: 460px; }
 .feed-section .section-heading { max-width: 680px; margin-inline: auto; }
 .feed-section .section-heading h2 { font-family: Fraunces, Georgia, serif; font-size: clamp(1.5rem, 4vw, 2rem); }
 
-/* ===== Une : fondu, barre de progression, bouton pause ===== */
-.hero-stage .lead-column { transition: opacity .24s ease; will-change: opacity; }
-.hero-stage.is-changing .lead-column { opacity: 0; }
-.lead-figure .lead-ghost { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; opacity: 0; transition: opacity .8s ease; pointer-events: none; filter: grayscale(1) brightness(.62) contrast(1.05); }
-.lead-figure .lead-ghost.is-in { opacity: 1; }
-@media (max-width: 760px) { .lead-figure .lead-ghost { filter: none; object-position: center 30%; } }
-.lead-page-button { position: relative; overflow: hidden; }
-.lead-page-button::after { content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
-.hero-stage.is-autoplaying .lead-page-button.is-active::after { animation: lead-progress var(--dur, 7s) linear forwards; }
-@keyframes lead-progress { to { transform: scaleX(1); } }
-.lead-autoplay { display: inline-grid; place-items: center; width: 36px; height: 36px; margin-left: .35rem; border: 1px solid var(--border-strong); border-radius: 50%; background: transparent; color: var(--text-secondary); cursor: pointer; }
-.hero-stage .lead-autoplay { border-color: rgb(255 255 255 / 35%); color: #eee; }
-.lead-autoplay:hover { border-color: var(--accent); color: var(--accent); }
-.lead-autoplay .ap-play { display: none; }
-.lead-autoplay[aria-pressed='true'] .ap-play { display: block; }
-.lead-autoplay[aria-pressed='true'] .ap-pause { display: none; }
-@media (prefers-reduced-motion: reduce) { .hero-stage .lead-column, .lead-figure .lead-ghost { transition: none; } .hero-stage.is-autoplaying .lead-page-button.is-active::after { animation: none; } }
-.hero-stage .lead-card:hover .lead-figure img, .hero-stage .lead-figure img { transform: none !important; transition: none; }
