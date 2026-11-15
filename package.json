@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.5.1",
-    "astro": "^7.4.7",
+    "astro": "^7.4.11",
     "openai": "^7.55.0",
     "rss-parser": "^3.13.0"
   },
