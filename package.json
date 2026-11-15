@@ -15,7 +15,7 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.5.1",
     "astro": "^7.4.7",
-    "openai": "^7.53.0",
+    "openai": "^7.55.0",
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {
