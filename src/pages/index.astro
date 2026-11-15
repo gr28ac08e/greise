@@ -91,7 +91,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
                     data-credit={creditFor(story)}
                   >{index + 1}</button>
                 ))}
-                <button class="lead-autoplay" type="button" data-autoplay-toggle aria-pressed="false" aria-label="Mettre en pause le défilement automatique" title="Pause / lecture"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><g class="ap-pause"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></g><path class="ap-play" d="M8 5v14l11-7z"/></svg></button>
               </div>
             )}
             <div class="lead-actions">
@@ -320,10 +319,10 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     const leadAudio = document.querySelector<HTMLElement>('#lead-audio-wrapper');
     const sourceArticle = document.querySelector<HTMLElement>('#sources-article');
     const sourcesList = document.querySelector<HTMLElement>('#sources-list');
-    const showLead = (button: HTMLButtonElement, skipImage = false) => {
+    const showLead = (button: HTMLButtonElement) => {
       const data = button.dataset;
       if (!data.title || !data.href || !data.image) return;
-      if (leadImageElement && !skipImage) { leadImageElement.src = data.image; leadImageElement.alt = data.alt || ''; }
+      if (leadImageElement) { leadImageElement.src = data.image; leadImageElement.alt = data.alt || ''; }
       if (leadImageLink) { leadImageLink.href = data.href; leadImageLink.setAttribute('aria-label', `Ouvrir l'article : ${data.title}`); }
       if (leadTitleLink) {
         leadTitleLink.href = data.href;
@@ -377,78 +376,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       }
       slides.forEach((item) => { const selected = item === button; item.classList.toggle('is-active', selected); item.setAttribute('aria-pressed', String(selected)); });
     };
-    // Défilement automatique de la une : fondu, minuteur visible, pause au survol, au focus, au toucher,
-    // quand l'onglet est caché, quand la fenêtre des sources est ouverte, et sur demande (bouton pause).
-    const DURATION = 7000;
-    const stage = document.querySelector<HTMLElement>('.hero-stage');
-    const toggle = document.querySelector<HTMLButtonElement>('[data-autoplay-toggle]');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let current = 0;
-    let timer = 0;
-    let userPaused = reduced;
-    let hoverPaused = false;
-    const canRun = () => slides.length > 1 && !userPaused && !hoverPaused && !document.hidden && !document.querySelector('dialog[open]');
-    // Transition sans à-coup : la photo suivante est préchargée puis fondue PAR-DESSUS l'ancienne
-    // (jamais de fond noir entre deux), le texte s'efface et revient, et la hauteur du bloc ne rétrécit
-    // jamais pendant le défilement (pas de saut de la page).
-    const figure = leadImageElement?.closest<HTMLElement>('.lead-figure') || null;
-    let busy = false;
-    const lockHeight = () => { if (stage) stage.style.minHeight = `${Math.max(stage.offsetHeight, parseFloat(stage.style.minHeight || '0'))}px`; };
-    window.addEventListener('resize', () => { if (stage) stage.style.minHeight = ''; });
-    const preload = (src: string) => new Promise<void>((resolve) => { const img = new Image(); img.src = src; (img.decode ? img.decode() : Promise.resolve()).then(() => resolve(), () => resolve()); });
-    slides.forEach((s) => { if (s.dataset.image) { const i = new Image(); i.src = s.dataset.image; } });
-    const swap = async (button: HTMLButtonElement) => {
-      current = slides.indexOf(button);
-      if (reduced || !stage || !figure || !leadImageElement || busy) { showLead(button); return; }
-      busy = true;
-      lockHeight();
-      const src = button.dataset.image || '';
-      await preload(src);
-      const ghost = document.createElement('img');
-      ghost.className = 'lead-ghost';
-      ghost.alt = '';
-      ghost.src = src;
-      figure.appendChild(ghost);
-      void ghost.offsetWidth;
-      stage.classList.add('is-changing');
-      ghost.classList.add('is-in');
-      window.setTimeout(() => { showLead(button, true); stage.classList.remove('is-changing'); }, 240);
-      window.setTimeout(() => {
-        leadImageElement.src = src;
-        leadImageElement.alt = button.dataset.alt || '';
-        ghost.remove();
-        busy = false;
-      }, 900);
-    };
-    const schedule = () => {
-      window.clearTimeout(timer);
-      stage?.classList.toggle('is-autoplaying', canRun());
-      if (!canRun()) return;
-      // Redémarre l'animation de la barre de progression
-      slides.forEach((s) => s.style.setProperty('--dur', `${DURATION}ms`));
-      timer = window.setTimeout(() => { swap(slides[(current + 1) % slides.length]); schedule(); }, DURATION);
-    };
-    const restartBar = () => { stage?.classList.remove('is-autoplaying'); void stage?.offsetWidth; schedule(); };
-    slides.forEach((slide, index) => slide.addEventListener('click', () => { current = index; showLead(slide); restartBar(); }));
-    if (slides.length > 1 && stage) {
-      toggle?.setAttribute('aria-pressed', String(userPaused));
-      toggle?.setAttribute('aria-label', userPaused ? 'Reprendre le défilement automatique' : 'Mettre en pause le défilement automatique');
-      toggle?.addEventListener('click', () => {
-        userPaused = !userPaused;
-        toggle.setAttribute('aria-pressed', String(userPaused));
-        toggle.setAttribute('aria-label', userPaused ? 'Reprendre le défilement automatique' : 'Mettre en pause le défilement automatique');
-        restartBar();
-      });
-      stage.addEventListener('pointerenter', (e) => { if ((e as PointerEvent).pointerType === 'mouse') { hoverPaused = true; schedule(); } });
-      stage.addEventListener('pointerleave', () => { hoverPaused = false; restartBar(); });
-      stage.addEventListener('focusin', () => { hoverPaused = true; schedule(); });
-      stage.addEventListener('focusout', () => { hoverPaused = false; restartBar(); });
-      stage.addEventListener('touchstart', () => { hoverPaused = true; schedule(); }, { passive: true });
-      stage.addEventListener('touchend', () => { window.setTimeout(() => { hoverPaused = false; restartBar(); }, 4000); }, { passive: true });
-      document.addEventListener('visibilitychange', restartBar);
-      document.querySelector('#sources-modal')?.addEventListener('close', restartBar);
-      restartBar();
-    } else { toggle?.setAttribute('hidden', ''); }
+    slides.forEach((slide) => slide.addEventListener('click', () => showLead(slide)));
 
     const posts = Array.from(document.querySelectorAll<HTMLElement>('.post'));
     const agoText = (iso: string) => {
