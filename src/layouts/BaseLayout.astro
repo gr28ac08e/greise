@@ -3,8 +3,26 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { pathFor } from '../lib/utils';
+import { BACKEND } from '../lib/backend';
 interface Props { title: string; description: string; image?: string; type?: string; canonicalPath?: string; noIndex?: boolean; jsonLd?: Record<string, unknown>; feed?: { title: string; href: string } }
 const { title, description, image = '/avatar.jpg', type = 'website', canonicalPath = Astro.url.pathname.replace(import.meta.env.BASE_URL, '/'), noIndex = false, jsonLd, feed } = Astro.props;
+const supabaseOrigin = new URL(BACKEND.url).origin;
+const csp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "img-src 'self' https: data:",
+  "media-src 'self'",
+  `connect-src 'self' ${supabaseOrigin} https://formsubmit.co https://cdn.jsdelivr.net`,
+  "form-action 'self' https://formsubmit.co",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-src 'none'",
+  "manifest-src 'self'",
+  "worker-src 'self'",
+  'upgrade-insecure-requests',
+].join('; ');
 const ldJson = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : '';
 const canonical = new URL(pathFor(canonicalPath), Astro.site).toString();
 const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image), Astro.site).toString();
@@ -13,6 +31,10 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
 <html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
+    <script is:inline>
+      // Anti-clickjacking : GitHub Pages ne permet pas d'envoyer l'en-tête X-Frame-Options.
+      if (window.top !== window.self) { document.documentElement.style.display = 'none'; try { window.top.location = window.self.location; } catch (e) {} }
+    </script>
     <script is:inline>
       try {
         var t = localStorage.getItem('greise-theme');
@@ -23,7 +45,7 @@ const socialImage = image.startsWith('https://') ? image : new URL(pathFor(image
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#111111" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data:; media-src 'self'; connect-src 'self' https://*.supabase.co https://formsubmit.co https://cdn.jsdelivr.net; form-action 'self' https://formsubmit.co; base-uri 'self'; object-src 'none'; manifest-src 'self'; worker-src 'self'" />
+    <meta http-equiv="Content-Security-Policy" content={csp} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="description" content={description} />
     {noIndex && <meta name="robots" content="noindex, nofollow" />}

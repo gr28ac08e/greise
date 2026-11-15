@@ -97,7 +97,7 @@ const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', 
       if (reactionWrap) reactionWrap.dataset.ready = 'true';
       return;
     }
-    import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').then(async ({ createClient }) => {
+    import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm').then(async ({ createClient }) => {
       const client = createClient(backendUrl, backendKey);
       const sessionResult = await client.auth.getSession();
       const user = sessionResult.data.session?.user || null;

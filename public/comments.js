@@ -5,7 +5,7 @@
   var clientPromise = null;
   function getClient(url, key) {
     if (!clientPromise) {
-      clientPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').then(function (mod) { return mod.createClient(url, key); });
+      clientPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm').then(function (mod) { return mod.createClient(url, key); });
     }
     return clientPromise;
   }
