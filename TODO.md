@@ -2,8 +2,8 @@
 
 ## Livré
 
-- [x] Dépôt public [`gr28ac08e/greise`](https://github.com/gr28ac08e/greise), branche `main`, et site GitHub Pages : <https://gr28ac08e.github.io/greise/>.
-- [x] Site Astro statique en français, compatible avec le sous-chemin `/greise`, installation reproductible, sitemap et métadonnées SEO.
+- [x] Dépôt public [`greise-media/greise-media.github.io`](https://github.com/greise-media/greise-media.github.io), branche `main`, et site GitHub Pages : <https://greise-media.github.io/>.
+- [x] Site Astro statique en français, servi à la racine du domaine `greise-media.github.io`, installation reproductible, sitemap et métadonnées SEO.
 - [x] Identité Greise, avatar, favicon, visuels locaux et photos HTTPS des flux, avec crédit au média source.
 - [x] Cinq rubriques : International, Économie, Tech & Science, Culture et Sport.
 - [x] Quinze flux RSS configurés, dont cinq flux thématiques franceinfo ajoutés. Les deux flux auparavant bloqués par HTTP 403 ont été retirés.

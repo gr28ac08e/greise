@@ -57,7 +57,7 @@ export interface FeedOptions {
   link: string;
   /** URL absolue du flux lui-même. */
   selfUrl: string;
-  /** Construit une URL absolue à partir d'un chemin du site (gère le préfixe /greise). */
+  /** Construit une URL absolue à partir d'un chemin du site (gère le préfixe de base, ici « / »). */
   abs: (path: string) => string;
   entries: FeedEntry[];
   limit?: number;
@@ -87,7 +87,7 @@ export function buildRss(options: FeedOptions): string {
   const built = entries.length ? new Date(Math.max(...entries.map(latest))) : now;
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:greise="https://gr28ac08e.github.io/greise/ns/1.0">',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:greise="https://greise-media.github.io/ns/1.0">',
     '  <channel>',
     `    <title>${escapeXml(title)}</title>`,
     `    <link>${escapeXml(link)}</link>`,

@@ -27,8 +27,8 @@ jobs:
           npm install --no-save playwright@1.49.1
           npx playwright install --with-deps chromium
           (npm run preview -- --host 127.0.0.1 --port 4321 > preview.log 2>&1 &)
-          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4321/greise/ >/dev/null && break; sleep 1; done
-          BASE_URL=http://127.0.0.1:4321/greise node tests/screens.mjs
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4321/ >/dev/null && break; sleep 1; done
+          BASE_URL=http://127.0.0.1:4321 node tests/screens.mjs
       - name: Publier les captures sur la branche ci-screens
         if: github.event.pull_request.head.repo.fork != true
         run: |
