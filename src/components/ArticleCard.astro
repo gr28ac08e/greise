@@ -8,9 +8,8 @@ const bodyText = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.
 const isStory = data.kind !== 'repère';
 const coverage = coverageLabel(data);
 const multi = outletCount(data) > 1;
-const imageCredit = data.imageCredit || data.source;
 const href = pathFor(`/article/${article.id}/`);
-const image = data.imageUrl || pathFor(data.image || '/images/repere.svg');
+const image = pathFor(data.image || '/images/repere.svg');
 const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(data.pubDate);
 ---
 <article class="article-card" data-article-card data-slug={article.id} data-category={data.category} data-title={data.title} data-summary={data.summary} data-image={image} data-href={href} data-backend-url={BACKEND.url} data-backend-key={backendConfigured() ? BACKEND.anonKey : ''}>
@@ -18,7 +17,6 @@ const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', 
     <a class="card-cover" href={href} tabindex="-1" aria-hidden="true">
       <img src={image} alt="" width="1200" height="675" loading="lazy" decoding="async" />
     </a>
-    {data.imageUrl && <figcaption class="image-credit">Photo : {imageCredit}</figcaption>}
   </figure>
   <div class="card-content">
     <div class="card-topline">
