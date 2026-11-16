@@ -17,6 +17,7 @@ const CACHE = path.join(ROOT, 'scripts/.cache/generated.json');
 const OUT_DIR = path.join(ROOT, 'src/content/rss');
 const MAX_STORIES = 40;
 const KEEP_HOURS = 72;
+const EXCERPT_MAX = 520; // les flux donnent 2 à 4 phrases au plus ; on les garde entières, coupées en fin de phrase
 const REGION_IMAGE = '/images/international.svg';
 const CATEGORY_IMAGE = { france: REGION_IMAGE, europe: REGION_IMAGE, afrique: REGION_IMAGE, 'moyen-orient': REGION_IMAGE, asie: REGION_IMAGE, ameriques: REGION_IMAGE, international: '/images/international.svg', economie: '/images/economie.svg', tech: '/images/tech.svg', culture: '/images/culture.svg', livres: '/images/livres.svg', sport: '/images/sport.svg' };
 
@@ -50,7 +51,7 @@ function parseStory(markdown, fileName) {
   const hasSources = Array.isArray(sources);
   if (!hasSources) {
     const url = jsonField(fm, 'sourceUrl');
-    sources = url ? [{ name: jsonField(fm, 'source') || 'Source', url, title, pubDate, excerpt: shorten(jsonField(fm, 'summary'), 280) }] : [];
+    sources = url ? [{ name: jsonField(fm, 'source') || 'Source', url, title, pubDate, excerpt: shorten(jsonField(fm, 'summary'), EXCERPT_MAX) }] : [];
   }
   return {
     fileName,
@@ -85,7 +86,7 @@ const refFromRaw = (article) => ({
   url: article.link,
   title: cleanTitle(article.title),
   pubDate: article.pubDate,
-  excerpt: shorten(cleanCopy(article.rawDescription || ''), 280),
+  excerpt: shorten(cleanCopy(article.rawDescription || ''), EXCERPT_MAX),
 });
 
 function majority(values, fallback) {
@@ -102,7 +103,7 @@ function plainText(story) {
   const outlets = story.sources.map((ref) => ref.name);
   return {
     title: story.title,
-    summary: lead ? shorten(lead.excerpt, 240) : 'Consultez les sources ci-dessous pour le détail de cette information.',
+    summary: lead ? shorten(lead.excerpt, EXCERPT_MAX) : 'Consultez les sources ci-dessous pour le détail de cette information.',
     whyItMatters: '',
     report: '',
     generatedBy: 'rss',
