@@ -59,6 +59,8 @@ function parseStory(markdown, fileName) {
     pubDate,
     updatedDate: jsonField(fm, 'updatedDate') || sources.reduce((latest, ref) => (time(ref.pubDate) > time(latest) ? ref.pubDate : latest), pubDate),
     category: field(fm, 'category'),
+    imageUrl: jsonField(fm, 'imageUrl') || '',
+    imageCredit: jsonField(fm, 'imageCredit') || jsonField(fm, 'source') || '',
     generatedBy,
     sources,
     hasSources,
@@ -146,6 +148,7 @@ function toMarkdown(story, text) {
     `whyItMatters: ${quote(cleanCopy(text.whyItMatters || ''))}`,
     `image: ${CATEGORY_IMAGE[story.category] || '/images/repere.svg'}`,
   ];
+  if (story.imageUrl) { lines.push(`imageUrl: ${quote(story.imageUrl)}`); lines.push(`imageCredit: ${quote(story.imageCredit)}`); }
   lines.push(`sources: ${asJsonLine(story.sources)}`);
   lines.push(`audioFile: ${quote(`/audio/${story.slug}.mp3`)}`, 'featured: false', `generatedBy: ${text.generatedBy}`, 'kind: actualité', '---', '', `${cleanCopy(text.report || '')}`.trim(), '');
   return lines.join('\n');
@@ -182,6 +185,7 @@ async function main() {
     const byUrl = new Map();
     for (const ref of [...files.flatMap((story) => story.sources), ...raws.map(refFromRaw)]) if (!byUrl.has(ref.url)) byUrl.set(ref.url, ref);
     const sources = dedupeByOutlet([...byUrl.values()]);
+    const withImage = [...files.filter((story) => story.imageUrl).map((story) => ({ imageUrl: story.imageUrl, credit: story.imageCredit })), ...raws.filter((article) => article.imageUrl).map((article) => ({ imageUrl: article.imageUrl, credit: article.outlet || article.source }))][0];
     const pubDate = [...files.map((story) => story.pubDate), ...sources.map((ref) => ref.pubDate)].sort((a, b) => time(a) - time(b))[0];
     const updatedDate = sources.map((ref) => ref.pubDate).sort((a, b) => time(b) - time(a))[0] || pubDate;
     const lead = files[0];
@@ -189,7 +193,7 @@ async function main() {
     const earliestLink = sources[0].url;
     const slug = lead?.slug || `${slugify(title) || 'sujet'}-${createHash('sha256').update(earliestLink).digest('hex').slice(0, 7)}`;
     const category = pickCategory([...files.map((story) => story.category), ...raws.map((article) => article.category)], lead?.category || raws[0]?.category || 'international');
-    stories.push({ slug, title, category, pubDate, updatedDate, sources, files, changed: !(files.length === 1 && raws.length === 0 && files[0].hasSources) });
+    stories.push({ slug, title, category, pubDate, updatedDate, sources, imageUrl: withImage?.imageUrl || '', imageCredit: withImage?.credit || '', files, changed: !(files.length === 1 && raws.length === 0 && files[0].hasSources) });
   }
 
   stories.sort((a, b) => time(b.updatedDate) - time(a.updatedDate));

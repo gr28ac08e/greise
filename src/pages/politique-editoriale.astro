@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { pathFor } from '../lib/utils';
 ---
-<BaseLayout title="Politique éditoriale | Greise" description="Comment Greise collecte, recoupe, attribue et corrige les contenus d’actualité, et ce qu’elle affiche ou non.">
+<BaseLayout title="Politique éditoriale | Greise" description="Comment Greise collecte, recoupe, attribue et corrige les contenus d’actualité, et ce qu’elle affiche.">
   <article class="container prose">
     <p class="eyebrow">Transparence</p><h1>Politique éditoriale</h1>
 
@@ -25,7 +25,7 @@ import { pathFor } from '../lib/utils';
     <p>Les titres sont ponctuellement normalisés (les tirets longs sont remplacés par une ponctuation simple). Le sens et l’attribution restent inchangés.</p>
 
     <h2>Images</h2>
-    <p>Greise n’affiche pas les photos des médias, car elle n’en détient pas les droits. Chaque sujet est illustré par une illustration de rubrique propre à Greise.</p>
+    <p>Quand un flux fournit une photo, Greise l’affiche depuis le serveur du média source, avec son crédit et le lien vers l’article. Greise ne détient pas les droits de ces photos et ne les réhéberge pas et ne les diffuse pas dans son propre flux RSS. Sans photo, une illustration de rubrique est utilisée.</p>
 
     <h2>Le flux RSS de Greise</h2>
     <p>Le <a href={pathFor('/flux-rss/')}>flux RSS de Greise</a> contient le titre, la mention de recoupement, la liste des sources avec leurs liens et le lien vers la page du sujet. Il ne reprend pas les extraits des autres médias.</p>
