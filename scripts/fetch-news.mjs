@@ -84,6 +84,8 @@ async function main() {
     const sourceArticles = [];
     try {
       const feed = await parser.parseURL(source.url);
+      const lengths = [];
+      let withEncoded = 0;
       for (const item of (feed.items || []).slice(0, 12)) {
         const title = cleanTitle(item.title || '');
         const link = validUrl(item.link || item.guid || '');
@@ -91,11 +93,16 @@ async function main() {
         const dateValue = item.isoDate || item.pubDate;
         const pubDate = dateValue ? new Date(dateValue) : new Date();
         if (Number.isNaN(pubDate.valueOf()) || pubDate.valueOf() < cutoff) continue;
-        const description = cleanCopy(stripHtml(item.contentSnippet || item.summary || item.content || item.encodedContent || item['content:encoded'] || '').slice(0, 1200));
+        const fullText = cleanCopy(stripHtml(item.contentSnippet || item.summary || item.content || item.encodedContent || item['content:encoded'] || ''));
+        lengths.push(fullText.length);
+        if (item.encodedContent || item['content:encoded']) withEncoded++;
+        const description = fullText.slice(0, 1200);
         const imageUrl = imageFromItem(item);
         sourceArticles.push({ title, link, source: source.name, outlet: source.outlet || source.name, category: source.category, pubDate: pubDate.toISOString(), rawDescription: description, guid: String(item.guid || link), ...(imageUrl ? { imageUrl } : {}) });
       }
-      console.log(`[ok] ${source.name}`);
+      const sorted = [...lengths].sort((a, b) => a - b);
+      const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+      console.log(`[ok] ${source.name} : ${lengths.length} articles, description médiane ${median} car., max ${sorted.at(-1) ?? 0}, content:encoded sur ${withEncoded}`);
     } catch (error) {
       console.warn(`[skip] ${source.name}: ${error.message}`);
     }
