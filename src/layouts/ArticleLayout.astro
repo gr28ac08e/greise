@@ -13,11 +13,8 @@ const [editorial, rss] = await Promise.all([getCollection('articles'), getCollec
 const related = [...editorial, ...rss].filter((item) => item.id !== article.id && item.data.category === data.category).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
 const spoken = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.body || ''}`;
 const href = new URL(pathFor(`/article/${article.id}/`), Astro.site).toString();
-const image = data.imageUrl || data.image;
-const isRssPhoto = Boolean(data.imageUrl);
-const imageAlt = isRssPhoto
-  ? `Photo associée à l'article : ${data.title}`
-  : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}`;
+const image = data.image;
+const imageAlt = `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}`;
 const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.updatedDate || data.pubDate);
 const isStory = data.kind !== 'repère';
 const sources = storySources(data);
@@ -26,7 +23,6 @@ const coverage = coverageLabel(data);
 const hasBody = Boolean(article.body && article.body.trim());
 const excerptRef = sources.find((ref) => ref.excerpt);
 const stamp = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-const imageCredit = data.imageCredit || data.source;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': isStory ? 'NewsArticle' : 'Article',
@@ -41,7 +37,7 @@ const jsonLd = {
   ...(isStory && sources.length ? { isBasedOn: sources.map((ref) => ({ '@type': 'NewsArticle', url: ref.url, name: ref.title || data.title, publisher: { '@type': 'Organization', name: ref.name } })) } : {}),
 };
 ---
-<BaseLayout title={`${data.title} | Greise`} description={data.summary} image={image} type="article" canonicalPath={`/article/${article.id}/`} jsonLd={jsonLd}>
+<BaseLayout title={`${data.title} | Greise`} description={data.summary} type="article" canonicalPath={`/article/${article.id}/`} jsonLd={jsonLd}>
   <div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
   <article class="container article-page">
     <nav class="breadcrumb" aria-label="Fil d'Ariane">
@@ -67,9 +63,7 @@ const jsonLd = {
     <figure class="article-photo">
       <img class="article-hero-image" src={image} alt={imageAlt} width="1200" height="675" fetchpriority="high" />
       <figcaption class="image-credit">
-        {isRssPhoto
-          ? `Photo : ${imageCredit}, média source de l'article. Greise ne détient pas les droits de cette image.`
-          : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}.`}
+        Illustration éditoriale de la rubrique {categoryLabel(data.category)}.
       </figcaption>
     </figure>
 

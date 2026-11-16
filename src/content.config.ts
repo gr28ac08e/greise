@@ -24,9 +24,7 @@ const articleSchema = z.object({
   updatedDate: z.coerce.date().optional(),
   // Médias dont les articles ont été recoupés pour ce sujet (un lien par média).
   sources: z.array(sourceRef).default([]),
-  imageCredit: text.optional(),
   image: z.string().default('/images/repere.svg'),
-  imageUrl: z.string().url().optional(),
   audioFile: z.string().optional(),
   featured: z.boolean().default(false),
   generatedBy: z.string().optional(),

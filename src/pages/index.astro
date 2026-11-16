@@ -13,12 +13,11 @@ const dateOf = (article: { data: { pubDate: Date; updatedDate?: Date } }) => (ar
 const newest = [...editorial, ...rss].sort((a, b) => dateOf(b) - dateOf(a));
 // La une privilégie les sujets recoupés par plusieurs médias (puis les plus récents), avec photo si possible.
 const byCoverage = [...newest.slice(0, 16)].sort((a, b) => outletCount(b.data) - outletCount(a.data) || dateOf(b) - dateOf(a));
-const withPhotos = byCoverage.filter((article) => Boolean(article.data.imageUrl));
-const leadStories = Array.from(new Map([...withPhotos, ...byCoverage, ...newest].map((article) => [article.id, article])).values()).slice(0, 4);
+const leadStories = Array.from(new Map([...byCoverage, ...newest].map((article) => [article.id, article])).values()).slice(0, 4);
 const lead = leadStories[0] || newest[0];
 const selectedIds = new Set(leadStories.map((article) => article.id));
 const shown = newest;
-const imageFor = (article: (typeof newest)[number]) => article.data.imageUrl || pathFor(article.data.image || '/images/repere.svg');
+const imageFor = (article: (typeof newest)[number]) => pathFor(article.data.image || '/images/repere.svg');
 const spokenFor = (article: (typeof newest)[number]) => `${article.data.title}. ${article.data.summary} ${article.data.whyItMatters} ${article.body || ''}`;
 const audioFor = (article: (typeof newest)[number]) => existsSync(resolve(process.cwd(), 'public', 'audio', `${article.id}.mp3`)) ? pathFor(`/audio/${article.id}.mp3`) : '';
 const readMinutesFor = (article: (typeof newest)[number]) => readingTime(spokenFor(article));
@@ -26,9 +25,8 @@ const leadImage = lead ? imageFor(lead) : '';
 const leadParts = lead ? emphasizeParts(lead.data.title) : { before: '', word: '', after: '' };
 const leadHref = lead ? pathFor(`/article/${lead.id}/`) : '';
 const leadDate = lead ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(lead.data.updatedDate || lead.data.pubDate) : '';
-const creditFor = (article: (typeof newest)[number]) => (article.data.imageUrl ? `Photo : ${article.data.imageCredit || article.data.source}` : '');
 const sourcesJson = (article: (typeof newest)[number]) => JSON.stringify(storySources(article.data).map((ref) => ({ name: ref.name, url: ref.url, title: ref.title || article.data.title })));
-const leadAlt = lead ? (lead.data.imageUrl ? `Photo liée à l'article : ${lead.data.title}` : `Illustration de la rubrique ${categoryLabel(lead.data.category)}`) : '';
+const leadAlt = lead ? `Illustration de la rubrique ${categoryLabel(lead.data.category)}` : '';
 const liveStories = newest.filter((article) => article.data.kind !== 'repère').slice(0, 10);
 const clock = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
 const dayClock = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
@@ -40,7 +38,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
   category: categoryLabel(article.data.category),
   title: article.data.title,
   summary: article.data.summary,
-  credit: creditFor(article),
   image: imageFor(article),
   href: pathFor(`/article/${article.id}/`),
 }));
@@ -51,7 +48,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     <section class="container hero-grid hero-stage" aria-label="À la une">
       <a class="lead-figure" id="lead-image-link" href={leadHref} aria-label={`Ouvrir l'article : ${lead.data.title}`} tabindex="-1">
         <img id="lead-image" src={leadImage} alt={leadAlt} width="1200" height="675" fetchpriority="high" />
-        {lead.data.imageUrl && <span class="lead-credit" id="lead-credit">{creditFor(lead)}</span>}
       </a>
 
       <div class="lead-column">
@@ -82,13 +78,12 @@ const feed = leadStories.slice(1, 4).map((article) => ({
                     data-category={categoryLabel(story.data.category)}
                     data-href={pathFor(`/article/${story.id}/`)}
                     data-image={imageFor(story)}
-                    data-alt={story.data.imageUrl ? `Photo liée à l'article : ${story.data.title}` : `Illustration de la rubrique ${categoryLabel(story.data.category)}`}
+                    data-alt={`Illustration de la rubrique ${categoryLabel(story.data.category)}`}
                     data-date={story.data.pubDate.toISOString()}
                     data-date-label={new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(story.data.pubDate)}
                     data-reading-time={readMinutesFor(story)}
                     data-audio-text={spokenFor(story)}
                     data-audio-src={audioFor(story) || undefined}
-                    data-credit={creditFor(story)}
                   >{index + 1}</button>
                 ))}
               </div>
@@ -111,7 +106,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
               <span class="next-story-copy">
                 <strong id="next-story-title">{nextStory.data.title}</strong>
                 <span class="next-story-meta">{readMinutesFor(nextStory)} min de lecture · {coverageLabel(nextStory.data)}</span>
-                {nextStory.data.imageUrl && <span class="next-story-credit">{creditFor(nextStory)}</span>}
               </span>
             </a>
           </section>
@@ -127,7 +121,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
                 <h2 class="side-title"><a href={item.href}>{item.title}</a></h2>
                 {index === 0 && <p class="side-summary">{item.summary}</p>}
                 <p class="side-meta">{item.time}</p>
-                {item.credit && <p class="side-credit">{item.credit}</p>}
               </div>
             </article>
           ))}
@@ -223,7 +216,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
               <h3 class="post-title"><a href={pathFor(`/article/${slugId}/`)}>{article.data.title}</a></h3>
               {article.data.summary && <p class="post-summary">{article.data.summary}</p>}
               <a class="post-media" href={pathFor(`/article/${slugId}/`)} tabindex="-1" aria-hidden="true"><img src={imageFor(article)} alt="" width="1200" height="675" loading="lazy" decoding="async" /></a>
-              {article.data.imageUrl && <p class="post-credit">{creditFor(article)}</p>}
               <p class="post-origin">{isStory ? `Sources : ${outletNames(article.data, 3)}` : 'Rédigé par Greise'}</p>
               <div class="post-stats"><span data-like-count></span><span class="post-stats-right"><button type="button" class="post-link" data-toggle-comments tabindex="-1" aria-hidden="true"><span data-comment-count>0 commentaire</span></button></span></div>
               <div class="post-actions" role="group" aria-label="Actions sur ce sujet">
@@ -315,7 +307,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
     const leadAvatar = document.querySelector<HTMLElement>('#lead-avatar');
     const leadDate = document.querySelector<HTMLTimeElement>('#lead-date');
     const leadReadingTime = document.querySelector<HTMLElement>('#lead-reading-time');
-    const leadCredit = document.querySelector<HTMLElement>('#lead-credit');
     const leadAudio = document.querySelector<HTMLElement>('#lead-audio-wrapper');
     const sourceArticle = document.querySelector<HTMLElement>('#sources-article');
     const sourcesList = document.querySelector<HTMLElement>('#sources-list');
@@ -339,7 +330,6 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       if (leadAvatar) leadAvatar.textContent = data.outlets || 'G';
       if (leadDate) { leadDate.textContent = data.dateLabel || ''; leadDate.dateTime = data.date || ''; }
       if (leadReadingTime) leadReadingTime.textContent = data.readingTime || '';
-      if (leadCredit) { leadCredit.textContent = data.credit || ''; leadCredit.hidden = !data.credit; }
       const audioButton = leadAudio?.querySelector<HTMLButtonElement>('[data-audio]');
       if (audioButton) {
         if (audioButton.dataset.state === 'playing' || audioButton.dataset.state === 'paused') {
