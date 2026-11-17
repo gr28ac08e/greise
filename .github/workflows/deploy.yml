@@ -21,7 +21,7 @@ jobs:
       - name: Récupérer le dépôt
         uses: actions/checkout@v7
       - name: Restaurer les articles RSS et MP3 déjà collectés
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             src/content/rss
