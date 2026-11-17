@@ -1,0 +1,47 @@
+name: Sauvegarder les articles
+
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sauvegarde
+  cancel-in-progress: false
+
+jobs:
+  sauvegarde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v7
+      - name: Restaurer les articles RSS depuis le cache
+        uses: actions/cache/restore@v4
+        with:
+          path: src/content/rss
+          key: greise-rss-v3-${{ runner.os }}-sauvegarde
+          restore-keys: greise-rss-v3-${{ runner.os }}-
+      - name: Copier les articles vers la branche « sauvegarde »
+        run: |
+          set -eu
+          n=$(ls src/content/rss/*.md 2>/dev/null | wc -l)
+          if [ "$n" -eq 0 ]; then echo "Aucun article à sauvegarder."; exit 0; fi
+          git config user.name "greise-sauvegarde"
+          git config user.email "actions@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin sauvegarde >/dev/null 2>&1; then
+            git fetch --depth=1 origin sauvegarde
+            git worktree add -B sauvegarde ../sauv FETCH_HEAD
+          else
+            git worktree add --orphan -b sauvegarde ../sauv
+          fi
+          rm -rf ../sauv/rss && mkdir -p ../sauv/rss
+          cp src/content/rss/*.md ../sauv/rss/
+          cp -r src/content/articles ../sauv/analyses 2>/dev/null || true
+          cd ../sauv
+          git add -A
+          if git diff --cached --quiet; then echo "Aucun changement."; exit 0; fi
+          git commit -m "Sauvegarde des articles ($n sujets) $(date -u +%F)"
+          git push origin sauvegarde
