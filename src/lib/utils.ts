@@ -71,9 +71,13 @@ export function outletCount(data: StoryLike): number {
   return new Set(storySources(data).map((ref) => ref.name.trim().toLocaleLowerCase('fr'))).size;
 }
 
-/** Libellé court de recoupement : « Recoupé par 3 médias », « Source unique », « Dossier Greise ». */
+/** Contenus rédigés par Greise (et non des sujets recoupés) : dossiers de repères et analyses. */
+export const isEditorial = (kind?: string): boolean => kind === 'repère' || kind === 'analyse';
+export const editorialLabel = (kind?: string): string => (kind === 'analyse' ? 'Analyse Greise' : 'Dossier Greise');
+
+/** Libellé court de recoupement : « Recoupé par 3 médias », « Source unique », « Analyse Greise ». */
 export function coverageLabel(data: StoryLike): string {
-  if (data.kind === 'repère') return 'Dossier Greise';
+  if (isEditorial(data.kind)) return editorialLabel(data.kind);
   const count = outletCount(data);
   if (count > 1) return `Recoupé par ${count} médias`;
   return 'Source unique';

@@ -6,7 +6,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import AudioPlayer from '../components/AudioPlayer.astro';
 import { BACKEND, backendConfigured } from '../lib/backend';
-import { categoryLabel, coverageLabel, emphasizeParts, outletCount, outletNames, pathFor, readingTime, storySources } from '../lib/utils';
+import { categoryLabel, coverageLabel, editorialLabel, emphasizeParts, isEditorial, outletCount, outletNames, pathFor, readingTime, storySources } from '../lib/utils';
 
 const [editorial, rss] = await Promise.all([getCollection('articles'), getCollection('rssArticles')]);
 const dateOf = (article: { data: { pubDate: Date; updatedDate?: Date } }) => (article.data.updatedDate || article.data.pubDate).valueOf();
@@ -29,7 +29,7 @@ const leadDate = lead ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month
 const creditFor = (article: (typeof newest)[number]) => (article.data.imageUrl ? `Photo : ${article.data.imageCredit || article.data.source}` : '');
 const sourcesJson = (article: (typeof newest)[number]) => JSON.stringify(storySources(article.data).map((ref) => ({ name: ref.name, url: ref.url, title: ref.title || article.data.title })));
 const leadAlt = lead ? (lead.data.imageUrl ? `Photo liée à l'article : ${lead.data.title}` : `Illustration de la rubrique ${categoryLabel(lead.data.category)}`) : '';
-const liveStories = newest.filter((article) => article.data.kind !== 'repère').slice(0, 10);
+const liveStories = newest.filter((article) => !isEditorial(article.data.kind)).slice(0, 10);
 const clock = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
 const dayClock = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
 const builtAt = clock.format(new Date());
@@ -197,7 +197,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
       <div class="feed" id="article-grid">
         {shown.map((article, index) => {
           const slugId = article.id;
-          const isStory = article.data.kind !== 'repère';
+          const isStory = !isEditorial(article.data.kind);
           const count = outletCount(article.data);
           return (
             <article
@@ -216,7 +216,7 @@ const feed = leadStories.slice(1, 4).map((article) => ({
               <header class="post-head">
                 <span class="post-avatar" aria-hidden="true">{isStory ? count || 'G' : 'G'}</span>
                 <div class="post-id">
-                  <strong>{isStory ? coverageLabel(article.data) : 'Dossier Greise'}</strong>
+                  <strong>{isStory ? coverageLabel(article.data) : editorialLabel(article.data.kind)}</strong>
                   <span class="post-sub"><time datetime={(article.data.updatedDate || article.data.pubDate).toISOString()} data-ago={(article.data.updatedDate || article.data.pubDate).toISOString()}>{dayClock.format(article.data.updatedDate || article.data.pubDate)}</time> · <a href={pathFor(`/categorie/${article.data.category}/`)}>{categoryLabel(article.data.category)}</a></span>
                 </div>
               </header>

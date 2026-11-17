@@ -7,6 +7,7 @@ dist/
 scripts/.cache/*
 !scripts/.cache/.gitkeep
 src/content/rss/*.md
+src/content/articles/zz-test-*.md
 !src/content/rss/.gitkeep
 public/audio/*.mp3
 .DS_Store

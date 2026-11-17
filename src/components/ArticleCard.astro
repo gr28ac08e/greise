@@ -1,11 +1,11 @@
 ---
 import AudioPlayer from './AudioPlayer.astro';
 import { BACKEND, backendConfigured } from '../lib/backend';
-import { categoryLabel, coverageLabel, outletCount, outletNames, pathFor, readingTime } from '../lib/utils';
+import { categoryLabel, coverageLabel, isEditorial, outletCount, outletNames, pathFor, readingTime } from '../lib/utils';
 const { article } = Astro.props;
 const data = article.data;
 const bodyText = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.body || ''}`;
-const isStory = data.kind !== 'repère';
+const isStory = !isEditorial(data.kind);
 const coverage = coverageLabel(data);
 const multi = outletCount(data) > 1;
 const imageCredit = data.imageCredit || data.source;

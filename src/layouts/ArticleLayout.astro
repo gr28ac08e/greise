@@ -5,7 +5,7 @@ import AudioPlayer from '../components/AudioPlayer.astro';
 import Comments from '../components/Comments.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import { getCollection } from 'astro:content';
-import { categoryLabel, coverageLabel, outletCount, outletNames, pathFor, readingTime, storySources } from '../lib/utils';
+import { categoryLabel, coverageLabel, isEditorial, outletCount, outletNames, pathFor, readingTime, storySources } from '../lib/utils';
 const { article } = Astro.props;
 const { Content } = await render(article);
 const data = article.data;
@@ -19,7 +19,8 @@ const imageAlt = isRssPhoto
   ? `Photo associée à l'article : ${data.title}`
   : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}`;
 const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.updatedDate || data.pubDate);
-const isStory = data.kind !== 'repère';
+const isStory = !isEditorial(data.kind);
+const isAnalysis = data.kind === 'analyse';
 const sources = storySources(data);
 const count = outletCount(data);
 const coverage = coverageLabel(data);
@@ -38,7 +39,7 @@ const jsonLd = {
   mainEntityOfPage: href,
   author: { '@type': 'Organization', name: 'Greise' },
   publisher: { '@type': 'Organization', name: 'Greise' },
-  ...(isStory && sources.length ? { isBasedOn: sources.map((ref) => ({ '@type': 'NewsArticle', url: ref.url, name: ref.title || data.title, publisher: { '@type': 'Organization', name: ref.name } })) } : {}),
+  ...((isStory || isAnalysis) && sources.length ? { isBasedOn: sources.map((ref) => ({ '@type': 'NewsArticle', url: ref.url, name: ref.title || data.title, publisher: { '@type': 'Organization', name: ref.name } })) } : {}),
 };
 ---
 <BaseLayout title={`${data.title} | Greise`} description={data.summary} image={image} type="article" canonicalPath={`/article/${article.id}/`} jsonLd={jsonLd}>
@@ -51,7 +52,7 @@ const jsonLd = {
     </nav>
 
     <header class="article-head">
-      <p class="eyebrow">{isStory ? coverage : 'Dossier de repères'}</p>
+      <p class="eyebrow">{isStory ? coverage : isAnalysis ? 'Analyse Greise' : 'Dossier de repères'}</p>
       <h1>{data.title}</h1>
       <p class="article-deck">{data.summary}</p>
       {isStory && data.generatedBy === 'ai' && <p class="deck-origin">Synthèse rédigée par Greise, avec l'aide d'un outil d'IA, à partir des titres et extraits de {outletNames(data)}. Elle peut contenir des erreurs : vérifiez dans les sources.</p>}
@@ -63,7 +64,7 @@ const jsonLd = {
       </div>
     </header>
 
-    <div class="article-tools-row"><span class="article-kicker">GREISE · {isStory ? 'ACTUALITÉ RECOUPÉE' : 'REPÈRES'}</span><span class="article-reading-time">{readingTime(spoken)} min de lecture</span></div>
+    <div class="article-tools-row"><span class="article-kicker">GREISE · {isStory ? 'ACTUALITÉ RECOUPÉE' : isAnalysis ? 'ANALYSE' : 'REPÈRES'}</span><span class="article-reading-time">{readingTime(spoken)} min de lecture</span></div>
     <figure class="article-photo">
       <img class="article-hero-image" src={image} alt={imageAlt} width="1200" height="675" fetchpriority="high" />
       <figcaption class="image-credit">
@@ -77,7 +78,7 @@ const jsonLd = {
 
     {data.whyItMatters && (
       <aside class="article-importance" aria-labelledby="importance-title">
-        <h2 id="importance-title">{isStory ? 'À retenir' : 'Le contexte, en bref'}</h2>
+        <h2 id="importance-title">{isStory || isAnalysis ? 'À retenir' : 'Le contexte, en bref'}</h2>
         <p>{data.whyItMatters}</p>
       </aside>
     )}
@@ -107,6 +108,19 @@ const jsonLd = {
         </ol>
         <p class="meta">Les titres et extraits appartiennent à leurs éditeurs. Seuls les articles originaux font foi : consultez-les pour le texte intégral et les mises à jour.</p>
       </section>
+    ) : isAnalysis ? (
+      <section class="source-box coverage-box" aria-labelledby="source-title">
+        <h2 id="source-title">Sources utilisées</h2>
+        <p class="coverage-lead">Cette analyse est rédigée par Greise à partir des publications ci-dessous. Les articles originaux restent la référence.</p>
+        <ol class="source-list">
+          {sources.map((ref) => (
+            <li class="source-entry">
+              <div class="source-entry-head"><strong>{ref.name}</strong>{ref.pubDate && <time datetime={ref.pubDate.toISOString()}>{stamp.format(ref.pubDate)} UTC</time>}</div>
+              <a class="source-entry-title" href={ref.url} target="_blank" rel="noopener noreferrer">{ref.title || data.title} ↗</a>
+            </li>
+          ))}
+        </ol>
+      </section>
     ) : (
       <section class="source-box" aria-labelledby="source-title">
         <h2 id="source-title">Sources &amp; transparence</h2>
@@ -114,7 +128,7 @@ const jsonLd = {
       </section>
     )}
 
-    <section class="article-end-note"><span class="article-end-rule"></span><p>{isStory ? <>Greise <strong>rassemble et recoupe</strong> l'actualité publiée par d'autres médias. Les articles originaux restent la référence.</> : <>Un dossier de repères de <strong>Greise</strong>. Comprendre le monde, au-delà des titres.</>}</p></section>
+    <section class="article-end-note"><span class="article-end-rule"></span><p>{isStory ? <>Greise <strong>rassemble et recoupe</strong> l'actualité publiée par d'autres médias. Les articles originaux restent la référence.</> : <>{isAnalysis ? <>Une analyse de <strong>Greise</strong>, construite à partir des sources citées ci-dessus.</> : <>Un dossier de repères de <strong>Greise</strong>. Comprendre le monde, au-delà des titres.</>}</>}</p></section>
 
     <div class="share-row" aria-label="Partager cet article">
       <a class="button" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(href)}`} target="_blank" rel="noopener noreferrer">Partager sur Facebook</a>

@@ -1,6 +1,6 @@
 // Flux RSS 2.0 propre à Greise : permet à d'autres sites, lecteurs RSS et agrégateurs de reprendre
 // l'actualité recoupée par Greise. Aucune dépendance : le XML est construit et échappé ici.
-import { categoryLabel, coverageLabel, outletCount, outletNames, storySources } from './utils';
+import { categoryLabel, coverageLabel, isEditorial, outletCount, outletNames, storySources } from './utils';
 
 export interface FeedEntry {
   id: string;
@@ -30,7 +30,7 @@ const cdata = (value: string): string => `<![CDATA[${value.replace(INVALID_XML, 
 /** Description courte, sans recopier l'extrait d'un autre média quand le sujet n'a pas été réécrit. */
 export function feedDescription(entry: FeedEntry): string {
   const { data } = entry;
-  if (data.kind === 'repère' || data.generatedBy === 'ai') return [data.summary, data.whyItMatters].filter(Boolean).join(' ');
+  if (isEditorial(data.kind) || data.generatedBy === 'ai') return [data.summary, data.whyItMatters].filter(Boolean).join(' ');
   const names = outletNames(data, 6);
   return outletCount(data) > 1
     ? `Sujet recoupé par ${outletCount(data)} médias : ${names}. Greise renvoie vers chaque article.`

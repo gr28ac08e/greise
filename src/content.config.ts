@@ -9,11 +9,11 @@ const sourceRef = z.object({
   name: text,
   url: z.string().url(),
   title,
-  pubDate: z.coerce.date(),
+  pubDate: z.coerce.date().optional(),
   excerpt: text.optional(),
 });
 
-const articleSchema = z.object({
+const articleObject = z.object({
   title,
   source: text.default('Greise'),
   sourceUrl: z.string().url().optional(),
@@ -30,7 +30,14 @@ const articleSchema = z.object({
   audioFile: z.string().optional(),
   featured: z.boolean().default(false),
   generatedBy: z.string().optional(),
-  kind: z.enum(['actualité', 'repère']).default('actualité'),
+  kind: z.enum(['actualité', 'repère', 'analyse']).default('actualité'),
+});
+
+// Une analyse Greise doit citer au moins deux sources, avec un lien vers chacune.
+const articleSchema = articleObject.superRefine((data, ctx) => {
+  if (data.kind === 'analyse' && data.sources.length < 2) {
+    ctx.addIssue({ code: 'custom', path: ['sources'], message: 'Une analyse doit lister au moins 2 sources (name, url, title).' });
+  }
 });
 
 const articles = defineCollection({
