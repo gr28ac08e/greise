@@ -38,6 +38,14 @@ assert.match(home, /Recoupé par 3 médias/, 'l’accueil doit afficher le recou
 assert.match(home, /rel="alternate" type="application\/rss\+xml"/, 'l’accueil doit déclarer le flux RSS');
 assert.match(await read('flux-rss/index.html'), /rss\.xml/, 'la page Flux RSS doit citer les flux');
 
+// Analyse Greise : libellé, liste des sources utilisées et liens vers chacune.
+const analyse = await read('article/zz-test-analyse/index.html');
+assert.match(analyse, /Analyse Greise/, 'la page analyse doit porter le libellé Analyse Greise');
+assert.match(analyse, /Sources utilisées/, 'la page analyse doit lister les sources utilisées');
+assert.match(analyse, /href="https:\/\/rfi\.example\/un"/, 'la page analyse doit lier la première source');
+assert.match(analyse, /href="https:\/\/lemonde\.example\/deux"/, 'la page analyse doit lier la deuxième source');
+assert.match(home, /Analyse Greise/, 'l’accueil doit afficher le libellé Analyse Greise');
+
 // Aucun tiret long ni entité HTML brute dans le texte visible d'aucune page, ni dans les flux.
 const LONG = /[\u2012-\u2015\u2212\u2E3A\u2E3B\uFE58\uFE63\uFF0D]/;
 async function* walk(dir) {

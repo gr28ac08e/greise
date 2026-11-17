@@ -17,5 +17,27 @@ const articles = [
 ];
 
 await fs.mkdir('scripts/.cache', { recursive: true });
+
+// Analyse Greise de test : vérifie le schéma (2 sources), la page et le libellé. Ignorée par git.
+await fs.mkdir('src/content/articles', { recursive: true });
+await fs.writeFile('src/content/articles/zz-test-analyse.md', `---
+title: "Analyse de test sur une élection"
+kind: analyse
+category: international
+pubDate: ${ago(2)}
+summary: "Une lecture croisée de deux publications fictives."
+whyItMatters: "Ce qui compte pour la suite."
+sources:
+  - name: "RFI"
+    url: "https://rfi.example/un"
+    title: "Premier article cité"
+  - name: "Le Monde"
+    url: "https://lemonde.example/deux"
+    title: "Deuxième article cité"
+    pubDate: ${ago(3)}
+---
+
+Texte de l'analyse de test.
+`);
 await fs.writeFile('scripts/.cache/raw-articles.json', JSON.stringify(articles, null, 2));
 console.log(`✓ ${articles.length} articles factices écrits`);

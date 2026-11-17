@@ -1,10 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { categoryLabel, coverageLabel, outletCount, outletNames, pathFor } from '../lib/utils';
+import { categoryLabel, coverageLabel, isEditorial, outletCount, outletNames, pathFor } from '../lib/utils';
 const rss = await getCollection('rssArticles');
 const stories = rss
-  .filter((a) => a.data.kind !== 'repère')
+  .filter((a) => !isEditorial(a.data.kind))
   .sort((a, b) => outletCount(b.data) - outletCount(a.data) || (b.data.updatedDate || b.data.pubDate).valueOf() - (a.data.updatedDate || a.data.pubDate).valueOf())
   .slice(0, 7);
 const built = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date());

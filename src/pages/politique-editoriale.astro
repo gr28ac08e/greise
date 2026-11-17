@@ -13,15 +13,18 @@ import { pathFor } from '../lib/utils';
     <p>Greise lit des flux RSS publics de médias identifiés. Le nom du média, l’heure de publication et le lien de chaque article sont conservés et affichés. Un média compte pour une seule voix, même s’il publie plusieurs articles sur le sujet. Si un éditeur demande que son flux ne soit plus utilisé, il est retiré.</p>
 
     <h2>Le recoupement</h2>
-    <p>Les articles publiés à moins de 36 heures d’intervalle sont comparés automatiquement d’après leurs titres et extraits (mots communs, noms propres, chiffres). Ceux qui parlent du même événement sont regroupés. Deux mentions s’affichent :</p>
+    <p>Les articles publiés à moins de 36 heures d’intervalle sont comparés automatiquement d’après leurs titres et extraits (mots communs, noms propres, chiffres). Ceux qui parlent du même événement sont regroupés. Trois mentions s’affichent :</p>
     <ul>
       <li><strong>Recoupé par N médias</strong> : au moins deux médias distincts rapportent le sujet.</li>
       <li><strong>Source unique</strong> : un seul média le rapporte pour l’instant ; l’information est à confirmer.</li>
+      <li><strong>Analyse Greise</strong> : texte rédigé par Greise à partir de plusieurs sources, toutes citées en bas du texte.</li>
     </ul>
     <p>Recouper n’est pas vérifier. Que plusieurs médias reprennent une même information, parfois issue de la même dépêche, ne prouve pas qu’elle soit exacte. Le regroupement automatique peut aussi se tromper en réunissant deux sujets proches ou en séparant deux articles sur le même fait. Consultez toujours les sources.</p>
 
     <h2>Textes et extraits</h2>
     <p>Les textes affichés sont des extraits courts publiés par les médias cités, éventuellement raccourcis, sans réécriture. La page indique « Extrait publié par… » avec le nom du média et un lien vers l’article complet. Greise n’utilise pas d’intelligence artificielle pour rédiger ces textes.</p>
+    <h2>Analyses Greise</h2>
+    <p>Une « Analyse Greise » est un texte rédigé par la rédaction à partir de plusieurs publications. Elle apporte une lecture propre (mise en relation, contexte, limites) plutôt qu’un résumé d’un article, ne cite que de courts passages, et liste en bas du texte toutes les sources utilisées, avec un lien vers chacune. Les articles originaux restent la référence.</p>
     <p>Les titres sont ponctuellement normalisés (les tirets longs sont remplacés par une ponctuation simple). Le sens et l’attribution restent inchangés.</p>
 
     <h2>Images</h2>
