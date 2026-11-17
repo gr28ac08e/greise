@@ -5,6 +5,7 @@ category: france
 pubDate: 2026-11-17
 summary: "Alors que les autorités françaises continuent de le nier, des militaires français seraient présents sur le sol ukrainien depuis au moins l’été 2026 dans le cadre d’une mission appelée « Volia », selon une enquête de RFI."
 whyItMatters: "Une présence qui contredit des mois de dénégations officielles et pose la question de l'information du Parlement."
+image: /images/analyses/volia-greise.jpg
 shareImage: /images/analyses/volia-greise.jpg
 sources:
   - name: "RFI (reprise par PressAfrik)"
@@ -20,8 +21,6 @@ sources:
     title: "Des soldats français opèrent en Ukraine au sein de la mission Volia, selon RFI"
     pubDate: 2026-11-16
 ---
-
-![Affiche Greise : des militaires français seraient présents en Ukraine depuis l'été 2026, selon une enquête de RFI](/images/analyses/volia-greise.jpg)
 
 « La rotation de formateurs français au profit de l'Ukraine en France, en Pologne ou ponctuellement en Ukraine, est une réalité. Mais on n'est pas dans une opération militaire. Il n'y a aucune intention d'être engagés dans des actions coercitives. » Cette déclaration, faite lundi 16 novembre 2026 à l'AFP par une source ayant connaissance du dossier, acte un aveu que Paris refusait jusqu'ici de formuler. Des militaires français opèrent bien sur le sol ukrainien. Non pas en première ligne, mais dans le cadre d'une mission confidentielle baptisée « Volia » (« volonté » en ukrainien), révélée par RFI et confirmée depuis par plusieurs médias. Une présence qui contredit des mois de dénégations officielles et pose la question de l'information du Parlement.
 
