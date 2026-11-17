@@ -19,7 +19,7 @@ jobs:
       - name: Récupérer le dépôt
         uses: actions/checkout@v7
       - name: Restaurer les articles RSS depuis le cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: src/content/rss
           key: greise-rss-v3-${{ runner.os }}-sauvegarde
