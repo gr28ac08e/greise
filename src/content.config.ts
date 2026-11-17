@@ -27,6 +27,8 @@ const articleObject = z.object({
   imageCredit: text.optional(),
   image: z.string().default('/images/repere.svg'),
   imageUrl: z.string().url().optional(),
+  // Affiche de partage (réseaux sociaux) d'une analyse : chemin dans public/, utilisée pour l'aperçu du lien.
+  shareImage: z.string().optional(),
   audioFile: z.string().optional(),
   featured: z.boolean().default(false),
   generatedBy: z.string().optional(),

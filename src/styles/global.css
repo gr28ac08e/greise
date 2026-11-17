@@ -1466,3 +1466,6 @@ a, button, [role='button'], input, select, textarea, summary { touch-action: man
   transition: text-decoration-color 200ms var(--ease-out), color 200ms var(--ease-out);
 }
 .article-body a:hover { text-decoration-color: currentColor; }
+
+/* Image insérée dans le texte d'une analyse (affiche portrait) : lisible en entier, sans occuper tout l'écran */
+.article-body img { display: block; max-width: min(100%, 560px); margin: 1.6rem auto; }
