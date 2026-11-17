@@ -21,14 +21,16 @@ jobs:
       - name: Restaurer les articles RSS depuis le cache
         uses: actions/cache/restore@v4
         with:
-          path: src/content/rss
+          path: |
+            src/content/rss
+            public/audio
           key: greise-rss-v3-${{ runner.os }}-sauvegarde
           restore-keys: greise-rss-v3-${{ runner.os }}-
       - name: Copier les articles vers la branche « sauvegarde »
         run: |
           set -eu
           n=$(ls src/content/rss/*.md 2>/dev/null | wc -l)
-          if [ "$n" -eq 0 ]; then echo "Aucun article à sauvegarder."; exit 0; fi
+          if [ "$n" -eq 0 ]; then echo "::error::Cache vide : aucun article à sauvegarder."; exit 1; fi
           git config user.name "greise-sauvegarde"
           git config user.email "actions@users.noreply.github.com"
           if git ls-remote --exit-code --heads origin sauvegarde >/dev/null 2>&1; then
