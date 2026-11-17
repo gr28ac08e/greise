@@ -1469,3 +1469,10 @@ a, button, [role='button'], input, select, textarea, summary { touch-action: man
 
 /* Image insérée dans le texte d'une analyse (affiche portrait) : lisible en entier, sans occuper tout l'écran */
 .article-body img { display: block; max-width: min(100%, 560px); margin: 1.6rem auto; }
+
+/* Affiches Greise (portrait) : affichées en entier dans le fil, sur fond sombre, sans recadrage */
+img[src*="/images/analyses/"].article-hero-image,
+.card-cover img[src*="/images/analyses/"],
+.lead-figure img[src*="/images/analyses/"],
+.side-thumb img[src*="/images/analyses/"] { object-fit: contain; background: #0b0b0c; }
+.article-hero-image[src*="/images/analyses/"] { max-height: 720px; }

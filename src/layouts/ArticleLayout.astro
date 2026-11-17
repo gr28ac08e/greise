@@ -15,7 +15,8 @@ const spoken = `${data.title}. ${data.summary} ${data.whyItMatters} ${article.bo
 const href = new URL(pathFor(`/article/${article.id}/`), Astro.site).toString();
 const image = data.imageUrl || data.image;
 const isRssPhoto = Boolean(data.imageUrl);
-const imageAlt = isRssPhoto
+const isPoster = !isRssPhoto && String(data.image || '').startsWith('/images/analyses/');
+const imageAlt = isPoster ? `Affiche Greise : ${data.title}` : isRssPhoto
   ? `Photo associée à l'article : ${data.title}`
   : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}`;
 const formattedDate = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(data.updatedDate || data.pubDate);
@@ -68,7 +69,7 @@ const jsonLd = {
     <figure class="article-photo">
       <img class="article-hero-image" src={image} alt={imageAlt} width="1200" height="675" fetchpriority="high" />
       <figcaption class="image-credit">
-        {isRssPhoto
+        {isPoster ? 'Affiche réalisée par Greise.' : isRssPhoto
           ? `Photo : ${imageCredit}, média source de l'article. Greise ne détient pas les droits de cette image.`
           : `Illustration éditoriale de la rubrique ${categoryLabel(data.category)}.`}
       </figcaption>
