@@ -1,0 +1,20 @@
+---
+title: "Dominique de Villepin candidat: un homme de droite populaire à gauche mais en quête d'électeurs"
+source: "France 24"
+sourceUrl: "https://www.france24.com/fr/france/20261120-france-presidentielle-2027-dominique-de-villepin-homme-droite-populaire-gauche-sans-electeurs"
+category: france
+pubDate: "2026-11-20T06:43:38.000Z"
+updatedDate: "2026-11-20T22:25:50.000Z"
+summary: "L'ancien Premier ministre Dominique de Villepin a officialisé vendredi sa candidature à l'élection présidentielle de 2027. L'homme du \"non\" de la France à la guerre en Irak en 2003 est revenu sur le devant de la scène ces dernières années pour ses prises de position sur les sujets internationaux, en particulier sur la guerre à Gaza. Mais sa popularité est surtout marquée à gauche, au sein d'un électorat qui ne devrait pas voter pour lui."
+whyItMatters: ""
+image: /images/international.svg
+imageUrl: "https://s.france24.com/media/display/fd73fc2c-e433-11f1-b4e5-6b451f569414/w:1024/p:16x9/main-Villepin.png"
+imageCredit: "France 24"
+sources: [{"name":"France 24","url":"https://www.france24.com/fr/france/20261120-france-presidentielle-2027-dominique-de-villepin-homme-droite-populaire-gauche-sans-electeurs","title":"Dominique de Villepin candidat: un homme de droite populaire à gauche mais en quête d'électeurs","pubDate":"2026-11-20T06:43:38.000Z","excerpt":"L'ancien Premier ministre Dominique de Villepin a officialisé vendredi sa candidature à l'élection présidentielle de 2027. L'homme du \"non\" de la France à la guerre en Irak en 2003 est revenu sur le devant de la scène ces dernières années pour ses prises de position sur les sujets internationaux, en particulier sur la guerre à Gaza. Mais sa popularité est surtout marquée à gauche, au sein d'un électorat qui ne devrait pas voter pour lui."},{"name":"RFI","url":"https://www.rfi.fr/fr/france/20261120-pr%C3%A9sidentielle-2027-en-france-dominique-de-villepin-annonce-officiellement-sa-candidature","title":"Présidentielle 2027 en France: Dominique de Villepin annonce officiellement sa candidature","pubDate":"2026-11-20T10:36:27.000Z","excerpt":"Il aura entretenu le suspense pendant des mois. Dominique de Villepin a enfin levé le voile sur ses ambitions. L'ancien Premier ministre s'est déclaré candidat à l'élection présidentielle française de 2027 lors d'une conférence de presse ce 20 novembre à Paris. Dominique de Villepin souhaite incarner une alternative au macronisme, et aux « deux grandes forces de la radicalité », « deux ennemis complémentaires », La France insoumise et le Rassemblement national, qui ont, selon lui, tout éclipsé."},{"name":"Courrier international","url":"https://www.courrierinternational.com/article/vu-de-suisse-dominique-de-villepin-peut-etre-le-candidat-chamboule-tout_288887","title":"Dominique de Villepin peut être le candidat chamboule-tout","pubDate":"2026-11-20T16:42:11.000Z","excerpt":"Le vendredi 20 novembre, l’ancien Premier ministre a annoncé son souhait de concourir à l’élection présidentielle. Ainsi, de Villepin rejoint le groupe déjà bien fourni des candidats de centre droit. Mais sa candidature a quelque chose de différent, veut croire “Blick”, qui souligne la carrure internationale de l’homme et sa forte présence médiatique."},{"name":"Le Monde","url":"https://www.lemonde.fr/election-presidentielle-2027/article/2026/11/20/presidentielle-2027-dominique-de-villepin-officialise-sa-candidature-entre-geste-gaullien-et-reference-revolutionnaire_6813715_6205049.html","title":"Présidentielle 2027: Dominique de Villepin officialise sa candidature, entre geste gaullien et référence révolutionnaire","pubDate":"2026-11-20T22:25:50.000Z","excerpt":"Après le faux départ de 2012, l’ancien premier ministre entend bien être présent au premier tour en avril. A 73 ans, il se frottera peut-être pour la première fois au suffrage universel. Il a dévoilé vendredi ses premières propositions et livré un réquisitoire implacable contre les différents partis."}]
+audioFile: "/audio/dominique-de-villepin-candidat-un-homme-de-droite-populaire-a-gauc-f82af28.mp3"
+featured: false
+generatedBy: rss
+kind: actualité
+---
+
+
